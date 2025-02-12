@@ -1,6 +1,7 @@
 package excluz.excluz.domain.streamer.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.domain.streamer.dto.request.StreamerLoginRequestDto;
@@ -36,7 +37,7 @@ public class StreamerService {
 	public StreamerLoginResponseDto streamerLogin(StreamerLoginRequestDto loginRequestDto) {
 		Streamer streamer = findStreamerByEmail(loginRequestDto);
 
-		if(!PasswordEncoder.maches(loginRequestDto.getPassword(), streamer.getPassword())){
+		if(!PasswordEncoder.matches(loginRequestDto.getPassword(), streamer.getPassword())){
 			throw new RuntimeException(); /*TODO: 예외처리 수정하기*/
 		}
 
@@ -46,9 +47,27 @@ public class StreamerService {
 		return StreamerLoginResponseDto.from(bearerToken);
 	}
 
+	@Transactional
+	public void deleteStreamer(Integer streamerId, String password) {
+		Streamer streamer = findStreamerById(streamerId);
+
+		if(!PasswordEncoder.matches(password, streamer.getPassword())){
+			throw new RuntimeException(); /*TODO: 예외처리 수정하기*/
+		}
+
+		// 소프트 딜리트
+		streamer.updateStreamerStatus(true);
+	}
+
 	/* 기타 메서드 */
 	private Streamer findStreamerByEmail(StreamerLoginRequestDto loginRequestDto) {
 		return streamerRepository.findByEmail(loginRequestDto.getEmail()).orElseThrow(
+			() -> new RuntimeException() /*TODO 예외처리 수정*/
+		);
+	}
+
+	private Streamer findStreamerById(Integer streamerId) {
+		return streamerRepository.findById(streamerId).orElseThrow(
 			() -> new RuntimeException() /*TODO 예외처리 수정*/
 		);
 	}
