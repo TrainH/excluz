@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "events")
 @NoArgsConstructor
-public class Event {
+public class Event extends BaseEntity  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,13 +49,6 @@ public class Event {
     @Column(name = "is_completed")
     private Boolean isCompleted;
 
-    @Column(name = "created_at", updatable = false)
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
 
     // 생성자: 매개변수 4개 이상이므로 @Builder 패턴 사용
     @Builder
