@@ -36,7 +36,7 @@ public class StreamerService {
 	public StreamerLoginResponseDto streamerLogin(StreamerLoginRequestDto loginRequestDto) {
 		Streamer streamer = findStreamerByEmail(loginRequestDto);
 
-		if(!PasswordEncoder.maches(loginRequestDto.getPassword(), streamer.getPassword())){
+		if(!PasswordEncoder.matches(loginRequestDto.getPassword(), streamer.getPassword())){
 			throw new RuntimeException(); /*TODO: 예외처리 수정하기*/
 		}
 
