@@ -27,7 +27,7 @@ public class Item {
 	@JoinColumn(name = "store_id")
 	private Store store;
 
-	@Column(name = "item_name", nullable = false)
+	@Column(name = "item_name", nullable = false, length = 50)
 	private String itemName;
 
 	private String explanation;
