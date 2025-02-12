@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -37,7 +38,12 @@ public class Store extends BaseEntity {
 	@Column(name = "is_deleted")
 	private boolean isDeleted;
 
-	public Store(String address, String storeName, String registrationNumber) {
+	@Builder
+	public Store(Streamer streamer,
+				 String address,
+				 String storeName,
+				 String registrationNumber) {
+		this.streamer = streamer;
 		this.address = address;
 		this.registrationNumber = registrationNumber;
 		this.storeName = storeName;
