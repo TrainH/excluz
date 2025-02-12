@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "streamers")
 @NoArgsConstructor
-public class Streamer {
+public class Streamer extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,10 +45,10 @@ public class Streamer {
 
 	@Builder
 	public Streamer(String name,
-		String nickName,
-		String phoneNumber,
-		String email,
-		String password) {
+					String nickName,
+					String phoneNumber,
+					String email,
+					String password) {
 		this.name = name;
 		this.nickName = nickName;
 		this.phoneNumber = phoneNumber;
