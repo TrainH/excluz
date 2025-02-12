@@ -27,4 +27,7 @@ public class StreamerSignupRequestDto {
 	@NotBlank(message = "비밀번호는 필수 입력값 입니다.")
 	@Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{10,30}$", message = "비밀번호는 영문,숫자,특수문자를 포함하여 10자 이상 30자 이내로 작성해 주세요.")
 	private final String password;
+
+	@NotBlank(message = "비밀번호를 다시 한 번 입력해주세요.")
+	private final String reEnterPassword;
 }
