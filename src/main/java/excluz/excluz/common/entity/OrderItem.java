@@ -16,7 +16,7 @@ public class OrderItem {
     private Item item;
 
     @Column(nullable = false)
-    private int item_quantity;
+    private Integer item_quantity;
 
 
     public OrderItem(Order order, Item item, Integer itemQuantity) {
