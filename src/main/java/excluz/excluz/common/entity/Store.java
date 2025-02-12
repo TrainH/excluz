@@ -25,13 +25,13 @@ public class Store extends BaseEntity {
 	@JoinColumn(name = "streamer_id")
 	private Streamer streamer;
 
-	@Column(length = 100)
+	@Column(length = 100, nullable = false)
 	private String address;
 
-	@Column(length = 30, unique = true)
+	@Column(length = 30, unique = true, nullable = false)
 	private String storeName;
 
-	@Column(length = 30, unique = true)
+	@Column(length = 30, unique = true, nullable = false)
 	private String registrationNumber;
 
 	@Column(name = "is_deleted")
