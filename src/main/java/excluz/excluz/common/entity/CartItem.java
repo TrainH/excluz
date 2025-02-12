@@ -22,7 +22,7 @@ public class CartItem {
 	// CartItem 식별자
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private Integer id;
 
 	// 유저 식별자(외래키)
 	@ManyToOne(
