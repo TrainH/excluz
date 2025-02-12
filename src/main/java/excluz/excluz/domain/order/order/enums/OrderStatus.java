@@ -11,11 +11,11 @@ public enum OrderStatus {
     DELIVERED("CUSTOMER"),        // 손님이 주문 완료
     CANCELED("CUSTOMER", "STREAMER"); // 손님 또는 가게가 주문 취소
 
-    private final String[] actors;
+    private final String[] actorList;
 
     // 가변 인자(Varargs) 사용
-    OrderStatus(String... actors) {
-        this.actors = actors;
+    OrderStatus(String... actorList) {
+        this.actorList = actorList;
     }
 
     // 문자열로 OrderStatus 변환 (잘못된 값이면 예외 발생)
@@ -27,13 +27,13 @@ public enum OrderStatus {
     }
 
     // 특정 actor가 포함된 상태 목록 반환
-    public static List<OrderStatus> getStatusesByActor(String actor) {
+    public static List<OrderStatus> getStatusListByActor(String actor) {
         return Arrays.stream(OrderStatus.values())
-                .filter(status -> Arrays.asList(status.actors).contains(actor.toUpperCase()))
+                .filter(status -> Arrays.asList(status.actorList).contains(actor.toUpperCase()))
                 .collect(Collectors.toList());
     }
 
-    public String[] getActors() {
-        return actors;
+    public String[] getActorList() {
+        return actorList;
     }
 }
