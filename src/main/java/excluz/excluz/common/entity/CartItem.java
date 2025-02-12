@@ -48,10 +48,10 @@ public class CartItem extends BaseEntity{
 
 	// 개수
 	@Column(name = "quantity", nullable = false)
-	private int quantity;
+	private Integer quantity;
 
 	// 매개변수 4개 미만일 때는 직접 생성자 추가
-	public CartItem(User user, Item item, int quantity) {
+	public CartItem(User user, Item item, Integer quantity) {
 		this.user = user;
 		this.item = item;
 		this.quantity = quantity;
