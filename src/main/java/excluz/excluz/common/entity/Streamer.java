@@ -58,7 +58,7 @@ public class Streamer extends BaseEntity {
 		this.isDeleted = false;
 	}
 
-	public void updateIsDeleted(boolean isDeleted) {
+	public void updateStreamerStatus(boolean isDeleted) {
 		this.isDeleted = isDeleted;
 	}
 }
