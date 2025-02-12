@@ -21,6 +21,7 @@ public class Order extends BaseEntity {
     private String address;
 
     public Order(User user, OrderStatus orderStatus, String address) {
+        this.user = user;
         this.orderStatus = orderStatus;
         this.address = address;
     }
