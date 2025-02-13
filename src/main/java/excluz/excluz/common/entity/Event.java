@@ -3,6 +3,7 @@ package excluz.excluz.common.entity;
 import excluz.excluz.domain.event.event.enums.ParticipantCondition;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @Getter
 @Entity
 @Table(name = "events")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Event extends BaseEntity  {
 
     @Id
@@ -23,30 +24,30 @@ public class Event extends BaseEntity  {
 
     // StreamerStore 엔티티와의 Many-to-One 관계 매핑 (_id로 끝나는 컬럼 처리)
     @ManyToOne
-    @JoinColumn(name = "streamer_store_id") // 컬럼 이름은 snake_case
+    @JoinColumn(name = "streamer_store_id",  nullable = false) // 컬럼 이름은 snake_case
     private Store store;
 
-    @Column(name = "number_of_winners")
+    @Column(name = "number_of_winners", nullable = false)
     private Integer numberOfWinners;
 
-    @Column(name = "generated_code", length = 30, unique = true)
+    @Column(name = "generated_code", length = 30, unique = true,  nullable = false)
     private String generatedCode;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "participant_condition")
+    @Column(name = "participant_condition", nullable = false)
     private ParticipantCondition participantCondition;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "selection_method")
+    @Column(name = "selection_method", nullable = false)
     private SelectionMethod selectionMethod;
 
-    @Column(name = "start_datetime")
+    @Column(name = "start_datetime", nullable = false)
     private LocalDateTime startDatetime;
 
-    @Column(name = "end_datetime")
+    @Column(name = "end_datetime",  nullable = false)
     private LocalDateTime endDatetime;
 
-    @Column(name = "is_completed")
+    @Column(name = "is_completed",  nullable = false)
     private Boolean isCompleted;
 
 
