@@ -41,7 +41,9 @@ public class StreamerService {
 	}
 
 	public StreamerLoginResponseDto streamerLogin(StreamerLoginRequestDto loginRequestDto) {
-		Streamer streamer = findStreamerByEmail(loginRequestDto);
+		Streamer streamer = streamerRepository.findByEmail(loginRequestDto.getEmail()).orElseThrow(
+			() -> new NotFoundException(ErrorCode.UNAUTHORIZED_USER)
+		);
 
 		if(!passwordEncoder.matches(loginRequestDto.getPassword(), streamer.getPassword())){
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
@@ -67,12 +69,6 @@ public class StreamerService {
 	}
 
 	/* 기타 메서드 */
-	private Streamer findStreamerByEmail(StreamerLoginRequestDto loginRequestDto) {
-		return streamerRepository.findByEmail(loginRequestDto.getEmail()).orElseThrow(
-			() -> new NotFoundException(ErrorCode.UNAUTHORIZED_USER)
-		);
-	}
-
 	private Streamer findStreamerById(Integer streamerId) {
 		return streamerRepository.findById(streamerId).orElseThrow(
 			() -> new NotFoundException(ErrorCode.UNAUTHORIZED_USER)
