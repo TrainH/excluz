@@ -8,6 +8,7 @@ import excluz.excluz.common.entity.User;
 import excluz.excluz.domain.cartItem.dto.request.CreateCartItemRequestDto;
 import excluz.excluz.domain.cartItem.dto.response.CreateCartItemResponseDto;
 import excluz.excluz.domain.cartItem.repository.CartItemRepository;
+import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class CartItemService {
 	private final CartItemRepository cartItemRepository;
 	private final UserRepository userRepository;
+	private final ItemRepository itemRepository;
 
 	// 물품 추가
 	@Transactional
