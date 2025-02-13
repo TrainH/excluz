@@ -1,32 +1,36 @@
 package excluz.excluz.domain.event.event.service;
 
-
+import excluz.excluz.common.entity.EventItem;
+import excluz.excluz.domain.event.eventItem.repository.EventItemRepository;
+import excluz.excluz.domain.store.store.repository.StoreRepository;
 import excluz.excluz.common.entity.Event;
 import excluz.excluz.common.entity.Store;
 import excluz.excluz.domain.event.event.dto.EventRequestDto;
-import excluz.excluz.domain.event.event.dto.EventResponseDto;
 import excluz.excluz.domain.event.event.enums.ParticipantCondition;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
 import excluz.excluz.domain.event.event.repository.EventRepository;
+import excluz.excluz.domain.event.event.dto.EventResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class EventService {
 
+    private final StoreRepository storeRepository;
     private final EventRepository eventRepository;
+    private final EventItemRepository eventItemRepository;
 
 
     public EventResponseDto createEvent(EventRequestDto eventRequestDto) {
         // 이벤트 생성 비즈니스 로직 구현
-        // 예를 들어, Event 엔티티로 변환 후 저장하고, 저장된 엔티티를 EventResponseDto로 변환하여 반환
-
-        // Store 조회 (예시)
-        Store store = storeRepository.findById(eventRequestDto.getStreamerStoreId())
+        Store store = storeRepository.findById(eventRequestDto.getStoreId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 스토어를 찾을 수 없습니다."));
 
         // Event 엔티티 생성
@@ -44,8 +48,34 @@ public class EventService {
         // 이벤트 저장
         Event savedEvent = eventRepository.save(event);
 
+        // todo: EventItems 관련 로직 추가 필요 (생략된 경우 null로 처리)
+        List<EventItem> eventItems = null; // 생성 시 현재는 null로 처리
+
         // EventResponseDto로 변환하여 반환
-        return EventResponseDto.from(savedEvent, /* EventItems 리스트 */);
+        return EventResponseDto.from(savedEvent, eventItems);
+    }
+
+
+    // 이벤트 전체 조회 서비스 로직
+    public List<EventResponseDto> getAllEvents() {
+        // 이벤트 전체 조회
+        List<Event> events = eventRepository.findAll();
+
+        return events.stream()
+                .map(EventResponseDto::fromWithoutItems)
+                .collect(Collectors.toList());
+    }
+
+    // 이벤트 단건 조회 서비스 로직
+    public EventResponseDto getEvent(Integer eventId) {
+        // 이벤트 단건 조회
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 이벤트를 찾을 수 없습니다. ID: " + eventId));
+
+        // EventResponseDto로 변환하여 반환
+        List<EventItem> eventItems = eventItemRepository.findByEvent(event);
+
+        return EventResponseDto.from(event, eventItems);
     }
 
     private String generateUniqueCode() {

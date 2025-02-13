@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class EventRequestDto {
-    private Integer streamerStoreId;
+    private Integer storeId;
     private Integer numberOfWinners;
     private String participantCondition;
     private String selectionMethod;
@@ -27,7 +27,7 @@ public class EventRequestDto {
                            LocalDateTime startDatetime,
                            LocalDateTime endDatetime,
                            List<EventItemRequestDto> eventItems) {
-        this.streamerStoreId = streamerStoreId;
+        this.storeId = streamerStoreId;
         this.numberOfWinners = numberOfWinners;
         this.participantCondition = participantCondition;
         this.selectionMethod = selectionMethod;
