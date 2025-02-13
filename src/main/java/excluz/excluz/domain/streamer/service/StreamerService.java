@@ -16,7 +16,7 @@ public class StreamerService {
 	private final StreamerRepository streamerRepository;
 
 	public void streamerSignup(StreamerSignupRequestDto signupRequestDto) {
-		if(signupRequestDto.getPassword().equals(signupRequestDto.getReEnterPassword())){
+		if(!signupRequestDto.getPassword().equals(signupRequestDto.getReEnterPassword())){
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
