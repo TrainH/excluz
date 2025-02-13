@@ -57,6 +57,10 @@ public class ItemService {
 		return ItemResponseDto.from(item);
 	}
 
+	@Transactional(readOnly = true)
+	public ItemResponseDto getItemById(Integer itemsId) {
+		return ItemResponseDto.from(findItemById(itemsId));
+	}
 
 	private Item findItemById(Integer itemsId) {
 		return itemRepository.findById(itemsId).orElseThrow(
