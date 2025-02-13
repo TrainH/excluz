@@ -48,7 +48,7 @@ public class User extends BaseEntity{
 	private String email;
 
 	@Comment("유저 비밀번호")
-	@Column(length = 30, nullable = false)
+	@Column(length = 60, nullable = false)
 	private String password;
 
 	@Comment("유저 타입")
@@ -57,7 +57,7 @@ public class User extends BaseEntity{
 
 	@Comment("유저 탈퇴 여부")
 	@Column(name = "is_deleted", columnDefinition = "TINYINT")
-	private Boolean isDeleted = false;
+	private Boolean isDeleted;
 
 	@Builder // 매개변수가 4개이상은 빌더 패턴을 사용.
 	public User(
@@ -73,6 +73,8 @@ public class User extends BaseEntity{
 		this.address = address;
 		this.email = email;
 		this.password = password;
+		this.userRole = UserRole.CUSTOMER;
+		this.isDeleted = false;
 	}
 
 	// 회원 탈퇴 시 변경될 유저 상태
