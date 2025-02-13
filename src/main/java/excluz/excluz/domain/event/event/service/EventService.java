@@ -79,10 +79,11 @@ public class EventService {
 
             // EventItems 저장
             eventItemRepository.saveAll(eventItems);
+            return EventResponseDto.fromWithItems(savedEvent, eventItems);
+        } else {
+            return EventResponseDto.fromWithoutItems(savedEvent);
         }
 
-        // EventResponseDto로 변환하여 반환
-        return EventResponseDto.fromWithItems(savedEvent, eventItems);
     }
 
 
