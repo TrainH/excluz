@@ -3,6 +3,7 @@ package excluz.excluz.common.entity;
 
 import excluz.excluz.domain.event.eventApplicant.enums.ApplicantStatus;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @Getter
 @Entity
 @Table(name = "event_applicants")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EventApplicant extends BaseEntity  {
 
     @Id
@@ -22,23 +23,23 @@ public class EventApplicant extends BaseEntity  {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "event_id")
+    @JoinColumn(name = "event_id", nullable = false)
     private Event event;
 
-    @Column(name = "applicant_name", length = 10)
+    @Column(name = "applicant_name", length = 10, nullable = false)
     private String applicantName;
 
-    @Column(name = "email", length = 50, unique = true)
+    @Column(name = "email", length = 50, unique = true, nullable = false)
     private String email;
 
-    @Column(name = "applicant_password", length = 30)
+    @Column(name = "applicant_password", length = 30, nullable = false)
     private String applicantPassword;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "applicant_status")
+    @Column(name = "applicant_status", nullable = false)
     private ApplicantStatus applicantStatus;
 
-    @Column(name = "delivery_address", length = 100)
+    @Column(name = "delivery_address", length = 100, nullable = false)
     private String deliveryAddress;
 
 
