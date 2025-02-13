@@ -55,7 +55,7 @@ public class EventResponseDto {
     }
 
     // Event 엔티티와 EventItem 리스트를 받아서 EventResponseDto로 변환하는 정적 메서드
-    public static EventResponseDto from(Event event, List<EventItem> eventItems) {
+    public static EventResponseDto fromWithItems(Event event, List<EventItem> eventItems) {
         List<EventItemDto> eventItemDtos = null;
         if (eventItems != null) {
             eventItemDtos = eventItems.stream()

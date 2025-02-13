@@ -20,14 +20,14 @@ public class EventRequestDto {
     private List<EventItemRequestDto> eventItems;
 
     @Builder
-    public EventRequestDto(Integer streamerStoreId,
+    public EventRequestDto(Integer storeId,
                            Integer numberOfWinners,
                            String participantCondition,
                            String selectionMethod,
                            LocalDateTime startDatetime,
                            LocalDateTime endDatetime,
                            List<EventItemRequestDto> eventItems) {
-        this.storeId = streamerStoreId;
+        this.storeId = storeId;
         this.numberOfWinners = numberOfWinners;
         this.participantCondition = participantCondition;
         this.selectionMethod = selectionMethod;
