@@ -3,6 +3,8 @@ package excluz.excluz.domain.streamer.service;
 import org.springframework.stereotype.Service;
 
 import excluz.excluz.common.entity.Streamer;
+import excluz.excluz.common.exception.BadRequestException;
+import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.streamer.dto.request.StreamerLoginRequestDto;
 import excluz.excluz.domain.streamer.dto.request.StreamerSignupRequestDto;
 import excluz.excluz.domain.streamer.dto.response.StreamerLoginResponseDto;
@@ -17,7 +19,7 @@ public class StreamerService {
 
 	public void streamerSignup(StreamerSignupRequestDto signupRequestDto) {
 		if(signupRequestDto.getPassword().equals(signupRequestDto.getReEnterPassword())){
-			throw new RuntimeException(); /*TODO: 예외처리 수정하기*/
+			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
 		String encodedPassword = PasswordEncoder.encode(signupRequestDto.getPassword());
