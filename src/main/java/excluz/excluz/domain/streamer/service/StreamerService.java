@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.common.exception.BadRequestException;
+import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.streamer.dto.request.StreamerLoginRequestDto;
 import excluz.excluz.domain.streamer.dto.request.StreamerSignupRequestDto;
@@ -39,7 +40,7 @@ public class StreamerService {
 		Streamer streamer = findStreamerByEmail(loginRequestDto);
 
 		if(!PasswordEncoder.matches(loginRequestDto.getPassword(), streamer.getPassword())){
-			throw new RuntimeException(); /*TODO: 예외처리 수정하기*/
+			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
 		/*TODO: JWT 토큰 양식에 맞게 수정하기*/
@@ -51,7 +52,7 @@ public class StreamerService {
 	/* 기타 메서드 */
 	private Streamer findStreamerByEmail(StreamerLoginRequestDto loginRequestDto) {
 		return streamerRepository.findByEmail(loginRequestDto.getEmail()).orElseThrow(
-			() -> new RuntimeException() /*TODO 예외처리 수정*/
+			() -> new NotFoundException(ErrorCode.UNAUTHORIZED_USER)
 		);
 	}
 }
