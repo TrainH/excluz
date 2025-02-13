@@ -3,6 +3,7 @@ package excluz.excluz.domain.streamer.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import excluz.excluz.auth.util.PasswordEncoder;
 import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.NotFoundException;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class StreamerService {
 
 	private final StreamerRepository streamerRepository;
+	private final PasswordEncoder passwordEncoder;
 
 	@Transactional
 	public void streamerSignup(StreamerSignupRequestDto signupRequestDto) {
@@ -25,7 +27,7 @@ public class StreamerService {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
-		String encodedPassword = PasswordEncoder.encode(signupRequestDto.getPassword());
+		String encodedPassword = passwordEncoder.encode(signupRequestDto.getPassword());
 
 		Streamer streamer = Streamer.builder()
 			.name(signupRequestDto.getName())
