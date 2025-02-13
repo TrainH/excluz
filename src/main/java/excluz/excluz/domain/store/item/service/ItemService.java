@@ -9,7 +9,7 @@ import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.store.item.dto.request.ItemCreateRequestDto;
 import excluz.excluz.domain.store.item.dto.request.ItemUpdateRequestDto;
-import excluz.excluz.domain.store.item.dto.response.ItemUpdateResponseDto;
+import excluz.excluz.domain.store.item.dto.response.ItemResponseDto;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
 import lombok.AllArgsConstructor;
@@ -46,7 +46,7 @@ public class ItemService {
 	}
 
 	@Transactional
-	public ItemUpdateResponseDto updateItemInfo(ItemUpdateRequestDto itemUpdateRequestDto, Integer itemsId) {
+	public ItemResponseDto updateItemInfo(ItemUpdateRequestDto itemUpdateRequestDto, Integer itemsId) {
 		Item item = findItemById(itemsId);
 
 		item.updateItem(itemUpdateRequestDto.getItemName(),
@@ -54,7 +54,7 @@ public class ItemService {
 			itemUpdateRequestDto.getPrice(),
 			itemUpdateRequestDto.getRemainingQuantity());
 
-		return ItemUpdateResponseDto.from(item);
+		return ItemResponseDto.from(item);
 	}
 
 

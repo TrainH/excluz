@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import excluz.excluz.domain.store.item.dto.request.ItemCreateRequestDto;
 import excluz.excluz.domain.store.item.dto.request.ItemUpdateRequestDto;
-import excluz.excluz.domain.store.item.dto.response.ItemUpdateResponseDto;
+import excluz.excluz.domain.store.item.dto.response.ItemResponseDto;
 import excluz.excluz.domain.store.item.service.ItemService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -47,12 +47,12 @@ public class ItemV1Controller {
 	}
 
 	@PatchMapping("/{itemsId}")
-	public ResponseEntity<ItemUpdateResponseDto> updateItemInfo(
+	public ResponseEntity<ItemResponseDto> updateItemInfo(
 		@PathVariable Integer itemsId,
 		@RequestBody(required = false) ItemUpdateRequestDto itemUpdateRequestDto
 	) {
 
-		ItemUpdateResponseDto responseDto = itemService.updateItemInfo(itemUpdateRequestDto, itemsId);
+		ItemResponseDto responseDto = itemService.updateItemInfo(itemUpdateRequestDto, itemsId);
 
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
