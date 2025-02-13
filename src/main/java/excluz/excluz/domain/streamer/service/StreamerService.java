@@ -43,7 +43,7 @@ public class StreamerService {
 	public StreamerLoginResponseDto streamerLogin(StreamerLoginRequestDto loginRequestDto) {
 		Streamer streamer = findStreamerByEmail(loginRequestDto);
 
-		if (!PasswordEncoder.matches(loginRequestDto.getPassword(), streamer.getPassword())) {
+		if(!passwordEncoder.matches(loginRequestDto.getPassword(), streamer.getPassword())){
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
