@@ -41,4 +41,12 @@ public class Point {
         this.userOrStreamerId = userOrStreamerId;
         this.amount = amount;
     }
+
+    public void chargeAmount(Integer amount) {
+        this.amount += amount;
+    }
+
+    public void disChargeAmount(Integer amount) {
+        this.amount -= amount;
+    }
 }
