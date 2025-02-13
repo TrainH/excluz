@@ -1,7 +1,15 @@
 package excluz.excluz.common.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Table(name = "order_items")
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
 public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
