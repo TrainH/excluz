@@ -15,6 +15,7 @@ public enum ErrorCode {
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "조회되는 회원 정보가 없습니다."),
 	UNAUTHORIZED_USER(HttpStatus.UNAUTHORIZED, "가입되지 않은 회원입니다."),
 	INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "잘못된 비밀번호 혹은 기존과 동일한 비밀번호입니다."),
+	PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "입력한 비밀번호와 확인용 비밀번호가 일치하지 않습니다."),
 
 	// 아이템 관련 예외 코드
 	ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "조회되는 아이템 정보가 없습니다.");
