@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import excluz.excluz.common.entity.CartItem;
 import excluz.excluz.common.entity.Item;
 import excluz.excluz.common.entity.User;
+import excluz.excluz.common.exception.NotFoundException;
+import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.cartItem.dto.request.CreateCartItemRequestDto;
 import excluz.excluz.domain.cartItem.dto.response.CreateCartItemResponseDto;
 import excluz.excluz.domain.cartItem.repository.CartItemRepository;
@@ -24,9 +26,9 @@ public class CartItemService {
 	@Transactional
 	public CreateCartItemResponseDto addItemToCart(Integer userId, CreateCartItemRequestDto requestDto) {
 		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
+			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 		Item item = itemRepository.findById(requestDto.getItemId())
-			.orElseThrow(() -> new IllegalArgumentException("해당 아이템이 존재하지 않습니다."));
+			.orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
 
 		CartItem cartItem = new CartItem(user, item, requestDto.getQuantity());
 		cartItemRepository.save(cartItem);
