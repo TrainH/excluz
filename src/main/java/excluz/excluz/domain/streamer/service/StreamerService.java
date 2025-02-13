@@ -1,6 +1,7 @@
 package excluz.excluz.domain.streamer.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.common.exception.BadRequestException;
@@ -15,6 +16,7 @@ public class StreamerService {
 
 	private final StreamerRepository streamerRepository;
 
+	@Transactional
 	public void streamerSignup(StreamerSignupRequestDto signupRequestDto) {
 		if(!signupRequestDto.getPassword().equals(signupRequestDto.getReEnterPassword())){
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
