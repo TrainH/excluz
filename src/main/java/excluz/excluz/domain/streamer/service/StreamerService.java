@@ -20,13 +20,13 @@ public class StreamerService {
 	private final StreamerRepository streamerRepository;
 
 	public void streamerSignup(StreamerSignupRequestDto signupRequestDto) {
-		if(signupRequestDto.getPassword().equals(signupRequestDto.getReEnterPassword())){
+		if (signupRequestDto.getPassword().equals(signupRequestDto.getReEnterPassword())) {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
 		String encodedPassword = PasswordEncoder.encode(signupRequestDto.getPassword());
 
-		Streamer streamer= Streamer.builder()
+		Streamer streamer = Streamer.builder()
 			.name(signupRequestDto.getName())
 			.nickName(signupRequestDto.getNickName())
 			.phoneNumber(signupRequestDto.getPhoneNumber())
@@ -40,12 +40,13 @@ public class StreamerService {
 	public StreamerLoginResponseDto streamerLogin(StreamerLoginRequestDto loginRequestDto) {
 		Streamer streamer = findStreamerByEmail(loginRequestDto);
 
-		if(!PasswordEncoder.matches(loginRequestDto.getPassword(), streamer.getPassword())){
+		if (!PasswordEncoder.matches(loginRequestDto.getPassword(), streamer.getPassword())) {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
 		/*TODO: JWT 토큰 양식에 맞게 수정하기*/
-		String bearerToken = jwtUtil.createToken(streamer.getId(), streamer.getEmail(), streamer.getNickName(), streamer.getUserRole());
+		String bearerToken = jwtUtil.createToken(streamer.getId(), streamer.getEmail(), streamer.getNickName(),
+			streamer.getUserRole());
 
 		return StreamerLoginResponseDto.from(bearerToken);
 	}
@@ -54,8 +55,8 @@ public class StreamerService {
 	public void deleteStreamer(Integer streamerId, String password) {
 		Streamer streamer = findStreamerById(streamerId);
 
-		if(!PasswordEncoder.matches(password, streamer.getPassword())){
-			throw new RuntimeException(); /*TODO: 예외처리 수정하기*/
+		if (!PasswordEncoder.matches(password, streamer.getPassword())) {
+			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
 		// 소프트 딜리트
@@ -71,7 +72,7 @@ public class StreamerService {
 
 	private Streamer findStreamerById(Integer streamerId) {
 		return streamerRepository.findById(streamerId).orElseThrow(
-			() -> new RuntimeException() /*TODO 예외처리 수정*/
+			() -> new NotFoundException(ErrorCode.UNAUTHORIZED_USER)
 		);
 	}
 }
