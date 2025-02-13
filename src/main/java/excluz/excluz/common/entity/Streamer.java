@@ -1,5 +1,6 @@
 package excluz.excluz.common.entity;
 
+import excluz.excluz.domain.user.enums.UserRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
