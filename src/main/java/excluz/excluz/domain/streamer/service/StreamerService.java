@@ -58,7 +58,7 @@ public class StreamerService {
 	public void deleteStreamer(Integer streamerId, String password) {
 		Streamer streamer = findStreamerById(streamerId);
 
-		if (!PasswordEncoder.matches(password, streamer.getPassword())) {
+		if (!passwordEncoder.matches(password, streamer.getPassword())) {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
