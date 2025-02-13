@@ -1,5 +1,8 @@
 package excluz.excluz.common.exception;
 
+import java.util.stream.Collectors;
+
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -26,8 +29,11 @@ public class GlobalExceptionHandler {
 	// 유효성 검사(validation) 통과하지 못할시 발생
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	protected ResponseEntity<ErrorResponseDto> handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
-		ErrorResponseDto response =
-			new ErrorResponseDto(HttpStatus.BAD_REQUEST, e.getBindingResult().getAllErrors().get(0).getDefaultMessage());
+		String errorMessages = e.getBindingResult().getAllErrors()
+			.stream()
+			.map(DefaultMessageSourceResolvable::getDefaultMessage)
+			.collect(Collectors.joining("; "));
+		ErrorResponseDto response = new ErrorResponseDto(HttpStatus.BAD_REQUEST, errorMessages);
 		return createResponseEntity(response);
 	}
 
