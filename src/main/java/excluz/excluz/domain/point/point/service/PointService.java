@@ -32,35 +32,33 @@ public class PointService {
     @Transactional
     public void chargePoint(PointChargeRequestDto requestDto) {
 
-        Integer userId = 1; // 이후 user 완성되면 수정
-        UserRole userRole = UserRole.valueOf("CUSTOMER"); // 이후 user 완성되면 수정
+        Integer userOrStreamerId = 1; // 이후 user 와 streamer 로그인에서 id 완성되면 수정
+        UserRole userRole = UserRole.valueOf("CUSTOMER"); // 이후 user 와 streamer 로그인 완성되면 수정
 
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
-
-
-        // CUSTOMER 인 경우만 충전
+        // CUSTOMER 인 경우만 충전 (Streamer이면 충전 못함)
         if (!userRole.equals(UserRole.CUSTOMER)) {
             throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
         }
 
+        User user = userRepository.findById(userOrStreamerId).orElseThrow(
+                () -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
+        // user의 point가 없는 경우 생성해서 0원 넣기 (초기화)
+        Point point = pointRepository.findByUserOrStreamerId(userOrStreamerId)
+                .orElseGet(() -> new Point(UserRole.CUSTOMER, userOrStreamerId, 0));
+
+        // 충전 금액
         Integer amount = requestDto.amount();
-
-
-        // user의 point가 없는 경우 생성해서 0원 넣기
-        Point point = pointRepository.findByUserOrStreamerId(userId)
-                .orElseGet(() -> new Point(UserRole.CUSTOMER, userId, 0));
 
         // 포인트 금액 추가
         point.chargeAmount(amount);
+        pointRepository.save(point);
 
-        // 충전이기에 order와 store은 null
+        
+        // 거래내역 : 충전이기에 order와 store은 null이고 충전
         PointTransaction pointTransaction = new PointTransaction(null, user, null, TransactionType.CHARGE, amount);
-
         pointTransactionRepository.save(pointTransaction);
 
-        pointRepository.save(point);
     }
 
 }
