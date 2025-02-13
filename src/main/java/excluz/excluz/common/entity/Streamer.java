@@ -1,5 +1,6 @@
 package excluz.excluz.common.entity;
 
+import excluz.excluz.domain.user.enums.UserRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -34,7 +35,7 @@ public class Streamer extends BaseEntity {
 	@Column(nullable = false, unique = true, length = 50)
 	private String email;
 
-	@Column(nullable = false, length = 30)
+	@Column(nullable = false, length = 60)
 	private String password;
 
 	@Enumerated(EnumType.STRING)
