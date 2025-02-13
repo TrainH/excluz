@@ -5,8 +5,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import excluz.excluz.common.entity.Store;
 import excluz.excluz.common.entity.Streamer;
+import excluz.excluz.common.exception.BadRequestException;
+import excluz.excluz.common.exception.error.ErrorCode;
+import excluz.excluz.domain.store.store.dto.request.StoreDeleteRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreRequestDto;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -27,5 +31,16 @@ public class StoreService {
 			.build();
 
 		storeRepository.save(store);
+	}
+
+	@Transactional
+	public void deleteStore(@Valid StoreDeleteRequestDto deleteRequestDto, Integer streamerId) {
+		Streamer streamer = findStreamerById(streamerId);
+
+		if(!PasswordEncoder.matches(deleteRequestDto.getPassword(), streamer.getPassword())) {
+			throw new BadRequestException(ErrorCode.INVALID_PASSWORD); /*TODO 추후에 수정 예정*/
+		}
+
+		streamer.updateStreamerStatus(true);
 	}
 }
