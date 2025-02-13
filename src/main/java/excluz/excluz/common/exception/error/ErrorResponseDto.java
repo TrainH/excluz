@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
+@AllArgsConstructor
 @RequiredArgsConstructor
 public class ErrorResponseDto {
 	private final HttpStatus httpStatus;
