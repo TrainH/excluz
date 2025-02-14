@@ -44,10 +44,11 @@ public class StoreV1Controller {
 	@DeleteMapping("/{storeId}")
 	public ResponseEntity<Void> deleteStore(
 		@AuthenticationPrincipal User user,
+		@PathVariable Integer storeId,
 		@Valid @RequestBody StoreDeleteRequestDto deleteRequestDto
 	) {
 		Integer streamerId = Integer.valueOf(user.getUsername());
-		storeService.deleteStore(deleteRequestDto, streamerId);
+		storeService.deleteStore(deleteRequestDto, streamerId, storeId);
 
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
