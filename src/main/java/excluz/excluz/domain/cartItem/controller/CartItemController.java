@@ -41,7 +41,7 @@ public class CartItemController {
 		CreateCartItemResponseDto response = cartItemService.addItemToCart(userId, requestDto);
 
 		// HTTP 상태 코드 201(create)와 함께 CreateCartItemResponseDto 응답
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
+		return ResponseEntity.status(201).body(response);
 	}
 
 	// 물품 다건 조회
