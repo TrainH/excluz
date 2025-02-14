@@ -51,6 +51,10 @@ public class StoreService {
 			() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND)
 		);
 
+		if (store.isDeleted()) {
+			throw new NotFoundException(ErrorCode.STORE_NOT_FOUND);
+		}
+
 		store.updateIsDeleted(true);
 	}
 
