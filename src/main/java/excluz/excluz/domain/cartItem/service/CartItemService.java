@@ -1,5 +1,8 @@
 package excluz.excluz.domain.cartItem.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 
 import excluz.excluz.common.entity.CartItem;
@@ -8,7 +11,9 @@ import excluz.excluz.common.entity.User;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.cartItem.dto.request.CreateCartItemRequestDto;
+import excluz.excluz.domain.cartItem.dto.response.CartItemListResponseDto;
 import excluz.excluz.domain.cartItem.dto.response.CreateCartItemResponseDto;
+import excluz.excluz.domain.cartItem.dto.response.GetCartItemResponseDto;
 import excluz.excluz.domain.cartItem.repository.CartItemRepository;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.user.repository.UserRepository;
@@ -25,6 +30,7 @@ public class CartItemService {
 	// 물품 추가
 	@Transactional
 	public CreateCartItemResponseDto addItemToCart(Integer userId, CreateCartItemRequestDto requestDto) {
+		// todo 추후 의논할 것: CartitemService에서 다른 엔티티의 Repository를 의존하는 구조가 좋은 설계인지 추후에 다같이 고민해보면 좋을 것 같습니다!
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 		Item item = itemRepository.findById(requestDto.getItemId())
@@ -34,6 +40,22 @@ public class CartItemService {
 		cartItemRepository.save(cartItem);
 
 		return new CreateCartItemResponseDto();
+	}
+
+	// 물품 다건 조회
+	public CartItemListResponseDto getCartItemList(Integer userId) {
+		List<CartItem> cartItems = cartItemRepository.findByUserId(userId);
+
+		List<GetCartItemResponseDto> cartItemList = cartItems.stream()
+			.map(item -> GetCartItemResponseDto.builder()
+				.cartItemId(item.getId())
+				.quantity(item.getQuantity())
+				.itemPrice(item.getItem().getPrice())
+				.build()
+			)
+			.collect(Collectors.toList());
+
+		return new CartItemListResponseDto(cartItemList);
 	}
 
 }
