@@ -1,5 +1,8 @@
 package excluz.excluz.domain.store.item.controller;
 
+import java.util.List;
+
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -9,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import excluz.excluz.domain.store.item.dto.request.ItemCreateRequestDto;
@@ -64,5 +68,19 @@ public class ItemV1Controller {
 		ItemResponseDto responseDto = itemService.getItemById(itemsId);
 
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
+
+	@GetMapping()
+	public ResponseEntity<Page<ItemResponseDto>> getItemList(
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "10") int size,
+		@RequestParam(required = false, defaultValue = "0") Integer minPrice,
+		@RequestParam(required = false, defaultValue = "-1") Integer maxPrice,
+		@RequestParam(required = false) String itemName
+	) {
+
+		Page<ItemResponseDto> itemResponseDtoList = itemService.getItemList(page, size, minPrice, maxPrice, itemName);
+
+		return new ResponseEntity<>(itemResponseDtoList, HttpStatus.OK);
 	}
 }
