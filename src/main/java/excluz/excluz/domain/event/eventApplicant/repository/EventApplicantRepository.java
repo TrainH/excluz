@@ -4,8 +4,11 @@ import excluz.excluz.common.entity.EventApplicant;
 import excluz.excluz.common.entity.Event;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface EventApplicantRepository extends JpaRepository<EventApplicant, Integer> {
     Optional<EventApplicant> findByEventAndEmailAndApplicantPassword(Event event, String email, String applicantPassword);
+    List<EventApplicant> findByEvent(Event event);
+
 }

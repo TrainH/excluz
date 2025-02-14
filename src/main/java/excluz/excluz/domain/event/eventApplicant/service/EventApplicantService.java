@@ -47,4 +47,26 @@ public class EventApplicantService {
 
         return EventApplicantResponseDto.from(eventApplicant);
     }
+
+    public EventApplicantResponseDto confirmReceipt(Integer eventApplicantId, EventApplicantRequestDto requestDto) {
+        EventApplicant eventApplicant = eventApplicantRepository.findById(eventApplicantId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 응모 정보를 찾을 수 없습니다."));
+
+        if (eventApplicant.getApplicantStatus() != ApplicantStatus.WINNER) {
+            throw new IllegalArgumentException("당첨(WINNER) 상태가 아닌 유저의 수령 확정은 불가능합니다.");
+        }
+
+        if (requestDto.getApplicantName() != null) {
+            eventApplicant.setApplicantName(requestDto.getApplicantName());
+        }
+        if (requestDto.getDeliveryAddress() != null) {
+            eventApplicant.updateDeliveryAddress(requestDto.getDeliveryAddress());
+        }
+
+        eventApplicant.updateApplicantStatus(ApplicantStatus.CONFIRMED);
+
+        EventApplicant updatedApplicant = eventApplicantRepository.save(eventApplicant);
+
+        return EventApplicantResponseDto.from(updatedApplicant);
+    }
 }
