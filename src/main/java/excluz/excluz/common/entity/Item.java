@@ -59,6 +59,7 @@ public class Item {
 		this.isDeleted = isDeleted;
 	}
 
+	public void updateRemainingQuantity(Integer remainingQuantity) { this.remainingQuantity = remainingQuantity; }
 
   public void addRemainingQuantity(Integer amount) {
     if (amount <= 0) {
