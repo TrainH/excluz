@@ -58,4 +58,16 @@ public class Item {
 	public void updateIsDeleted(boolean isDeleted) {
 		this.isDeleted = isDeleted;
 	}
+
+	public void updateItem(
+		String itemName,
+		String explanation,
+		Integer price,
+		Integer remainingQuantity
+	) {
+		if(itemName!=null) this.itemName=itemName;
+		if(explanation!=null) this.explanation=explanation;
+		if(price!=null && price>=0) this.price=price;
+		if(remainingQuantity!=null && remainingQuantity>=0) this.remainingQuantity=remainingQuantity;
+	}
 }
