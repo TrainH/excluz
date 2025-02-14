@@ -2,10 +2,7 @@ package excluz.excluz.domain.event.event.dto;
 
 import excluz.excluz.domain.event.eventItem.dto.EventItemRequestDto;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,8 +33,9 @@ public class EventRequestDto {
     private LocalDateTime endDatetime;
 
     @NotNull(message = "이벤트에 사용될 아이템이 지정되어야 합니다..")
+    @NotEmpty
     @Valid
-    private List<EventItemRequestDto> eventItems;
+    private List<EventItemRequestDto> eventItemList;
 
     @Builder
     public EventRequestDto(Integer storeId,
@@ -46,13 +44,13 @@ public class EventRequestDto {
                            String selectionMethod,
                            LocalDateTime startDatetime,
                            LocalDateTime endDatetime,
-                           List<EventItemRequestDto> eventItems) {
+                           List<EventItemRequestDto> eventItemList) {
         this.storeId = storeId;
         this.numberOfWinners = numberOfWinners;
         this.participantCondition = participantCondition;
         this.selectionMethod = selectionMethod;
         this.startDatetime = startDatetime;
         this.endDatetime = endDatetime;
-        this.eventItems = eventItems;
+        this.eventItemList = eventItemList;
     }
 }
