@@ -1,5 +1,8 @@
 package excluz.excluz.domain.store.store.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +15,7 @@ import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.domain.store.store.dto.request.StoreDeleteRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreUpdateRequestDto;
+import excluz.excluz.domain.store.store.dto.response.StoreResponseDto;
 import excluz.excluz.domain.store.store.dto.response.StoreUpdateResponseDto;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
 import excluz.excluz.domain.streamer.service.StreamerService;
@@ -74,6 +78,15 @@ public class StoreService {
 			requestDto.getRegistrationNumber());
 
 		return StoreUpdateResponseDto.from(store);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<StoreResponseDto> getStoreList(String storeName, int page, int size) {
+		Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
+
+		Page<Store> stores = storeRepository.findByStoreName(pageable, storeName);
+
+		return stores.map(store -> new StoreResponseDto(store.getStoreName()));
 	}
 
 	// 삭제 되지 않은 유저만 반환
