@@ -52,11 +52,7 @@ public class EventService {
 
         Event savedEvent = eventRepository.save(event);
 
-        List<EventItem> eventItems = null; // 생성 시 현재는 null로 처리
-        Integer numberOfWinners = eventRequestDto.getNumberOfWinners();
-        // todo: eventItem이 비어있는 경우 인 경우를 로직에서 제외하기 [  ]
-
-        eventItems = new ArrayList<>();
+        List<EventItem> eventItemList = new ArrayList<>();
 
         for (EventItemRequestDto eventItemRequestDto : eventRequestDto.getEventItemList()) {
             Integer itemId = eventItemRequestDto.getItemId();
@@ -68,22 +64,15 @@ public class EventService {
                 throw new IllegalArgumentException("아이템 ID " + itemId + "은(는) 현재 스토어에 소속되어 있지 않습니다.");
             }
 
-            Integer requestQuantity = eventItemRequestDto.getQuantity();
-            Integer remainingQuantity = item.getRemainingQuantity();
-            if (requestQuantity > remainingQuantity) {
-                throw new IllegalArgumentException("아이템 ID " + itemId + "의 요청 수량 " + requestQuantity +
-                        "는 현재 남은 수량 " + remainingQuantity + "보다 많습니다.");
-            }
-            item.updateRemainingQuantity(remainingQuantity - requestQuantity);
+            Integer requestedItemQuantity = eventItemRequestDto.getQuantity();
+            item.removeRemainingQuantity(requestedItemQuantity * eventRequestDto.getNumberOfWinners());
+            EventItem eventItem = new EventItem(savedEvent, item, requestedItemQuantity);
 
-            EventItem eventItem = new EventItem(savedEvent, item, requestQuantity);
-            eventItems.add(eventItem);
-
-
+            eventItemList.add(eventItem);
         }
 
-        eventItemRepository.saveAll(eventItems);
-        return EventResponseDto.fromWithItems(savedEvent, eventItems);
+        eventItemRepository.saveAll(eventItemList);
+        return EventResponseDto.fromWithItems(savedEvent, eventItemList);
     }
 
 

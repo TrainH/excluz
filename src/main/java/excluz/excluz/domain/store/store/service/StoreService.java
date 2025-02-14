@@ -1,9 +1,9 @@
 package excluz.excluz.domain.store.store.service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import excluz.excluz.auth.util.PasswordEncoder;
 import excluz.excluz.common.entity.Store;
 import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.common.exception.NotFoundException;

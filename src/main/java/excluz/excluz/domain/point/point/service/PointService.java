@@ -7,6 +7,7 @@ import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.point.point.dto.request.PointChargeRequestDto;
+import excluz.excluz.domain.point.point.dto.response.PointResponseDto;
 import excluz.excluz.domain.point.point.repository.PointRepository;
 import excluz.excluz.domain.point.pointTransaction.enums.TransactionType;
 import excluz.excluz.domain.point.pointTransaction.repository.PointTransactionRepository;
@@ -61,4 +62,10 @@ public class PointService {
 
     }
 
+    public PointResponseDto getPoint(Integer pointId) {
+        Point point = pointRepository.findById(pointId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND)); // 나중에 예외처리 변경
+
+        return PointResponseDto.from(point);
+    }
 }
