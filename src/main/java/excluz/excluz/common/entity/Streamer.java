@@ -35,7 +35,7 @@ public class Streamer extends BaseEntity {
 	@Column(nullable = false, unique = true, length = 50)
 	private String email;
 
-	@Column(nullable = false, length = 30)
+	@Column(nullable = false, length = 60)
 	private String password;
 
 	@Enumerated(EnumType.STRING)
