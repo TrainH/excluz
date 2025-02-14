@@ -57,7 +57,9 @@ public class EventApplicantService {
         }
 
         if (requestDto.getApplicantName() != null) {
-            // eventApplicant.setApplicantName(requestDto.getApplicantName());
+          
+            eventApplicant.updateApplicantName(requestDto.getApplicantName());
+
         }
         if (requestDto.getDeliveryAddress() != null) {
             eventApplicant.updateDeliveryAddress(requestDto.getDeliveryAddress());

@@ -81,7 +81,6 @@ public class EventRepositoryTest {
                 .selectionMethod(SelectionMethod.FIRST_COME_FIRST_SERVED)
                 .startDatetime(LocalDateTime.now())
                 .endDatetime(LocalDateTime.now().plusDays(7))
-                .isCompleted(false)
                 .build();
         eventRepository.save(event); // EventRepository를 사용하여 저장
 
