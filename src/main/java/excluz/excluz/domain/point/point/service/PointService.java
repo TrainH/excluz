@@ -44,7 +44,7 @@ public class PointService {
                 () -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         // user의 point가 없는 경우 생성해서 0원 넣기 (초기화)
-        Point point = pointRepository.findByUserOrStreamerId(userOrStreamerId)
+        Point point = pointRepository.findByUserRoleAndUserOrStreamerId(UserRole.CUSTOMER, userOrStreamerId)
                 .orElseGet(() -> new Point(UserRole.CUSTOMER, userOrStreamerId, 0));
 
         // 충전 금액
