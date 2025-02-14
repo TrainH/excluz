@@ -4,6 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import excluz.excluz.auth.util.JwtUtil;
 import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.NotFoundException;
@@ -20,6 +21,7 @@ public class StreamerService {
 
 	private final StreamerRepository streamerRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final JwtUtil jwtUtil;
 
 	@Transactional
 	public void streamerSignup(StreamerSignupRequestDto signupRequestDto) {
@@ -50,7 +52,7 @@ public class StreamerService {
 		}
 
 		/*TODO: JWT 토큰 양식에 맞게 수정하기*/
-		String bearerToken = "jwtUtil.createToken(streamer.getId(), streamer.getEmail(), streamer.getNickName(),streamer.getUserRole())";
+		String bearerToken = jwtUtil.createToken(streamer.getEmail(), streamer.getId(), streamer.getUserRole());
 
 		return StreamerLoginResponseDto.from(bearerToken);
 	}
