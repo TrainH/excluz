@@ -1,6 +1,11 @@
 package excluz.excluz.domain.event.event.dto;
 
 import excluz.excluz.domain.event.eventItem.dto.EventItemRequestDto;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,12 +16,27 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class EventRequestDto {
+    @NotNull(message = "스토어 ID는 필수입니다.")
     private Integer storeId;
+
+    @NotNull(message = "당첨자 수는 필수입니다.")
+    @Positive(message = "당첨자 수는 최소 1명 이상이어야 합니다.")
     private Integer numberOfWinners;
+
+    @NotBlank(message = "참가 조건은 비어있을 수 없습니다.")
     private String participantCondition;
+
+    @NotBlank(message = "당첨자 선별 방식은 비어있을 수 없습니다.")
     private String selectionMethod;
+
+    @NotNull(message = "이벤트 시작일시는 필수입니다.")
     private LocalDateTime startDatetime;
+
+    @NotNull(message = "이벤트 종료일시는 필수입니다.")
     private LocalDateTime endDatetime;
+
+    @NotNull(message = "이벤트에 사용될 아이템이 지정되어야 합니다..")
+    @Valid
     private List<EventItemRequestDto> eventItems;
 
     @Builder

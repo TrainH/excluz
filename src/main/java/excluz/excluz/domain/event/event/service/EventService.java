@@ -67,7 +67,9 @@ public class EventService {
                 // Item 존재 여부 확인
                 Item item = itemRepository.findById(itemId)
                         .orElseThrow(() -> new IllegalArgumentException("ID가 " + itemId + "인 아이템을 찾을 수 없습니다."));
-
+//                todo: 검증로직 추가
+//                Item이 store에 속해 있는지
+//
                 // 수량 검증
                 Integer quantity = eventItemRequestDto.getQuantity();
                 if (quantity == null || quantity <= 0) {
