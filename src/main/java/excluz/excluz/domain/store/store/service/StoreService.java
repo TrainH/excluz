@@ -11,6 +11,8 @@ import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.domain.store.store.dto.request.StoreDeleteRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreRequestDto;
+import excluz.excluz.domain.store.store.dto.request.StoreUpdateRequestDto;
+import excluz.excluz.domain.store.store.dto.response.StoreUpdateResponseDto;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
 import excluz.excluz.domain.streamer.service.StreamerService;
 import lombok.RequiredArgsConstructor;
@@ -41,11 +43,29 @@ public class StoreService {
 	public void deleteStore(StoreDeleteRequestDto deleteRequestDto, Integer streamerId) {
 		Streamer streamer = getStreamerByIdAndNotDeleted(streamerId);
 
-		if(!passwordEncoder.matches(deleteRequestDto.getPassword(), streamer.getPassword())) {
+		if (!passwordEncoder.matches(deleteRequestDto.getPassword(), streamer.getPassword())) {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
 		streamer.updateStreamerStatus(true);
+	}
+
+	@Transactional
+	public StoreUpdateResponseDto updateStore(Integer storeId, StoreUpdateRequestDto requestDto) {
+		Store store = storeRepository.findById(storeId).orElseThrow(
+			() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND)
+		);
+
+		// 삭제된 스토어는 업데이트 불가
+		if (store.isDeleted()) {
+			throw new NotFoundException(ErrorCode.STORE_NOT_FOUND);
+		}
+
+		store.updateStore(requestDto.getAddress(),
+			requestDto.getStoreName(),
+			requestDto.getRegistrationNumber());
+
+		return StoreUpdateResponseDto.from(store);
 	}
 
 	// 삭제 되지 않은 유저만 반환
