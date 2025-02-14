@@ -39,11 +39,12 @@ public class JwtUtil {
 
 	public String createToken(String email, Integer id, UserRole userRole) {
 		Date date = new Date();
+		// String temp = String.valueOf(id);
 
 		return BEARER_PREFIX +
 			Jwts.builder()
 				.setSubject(email)
-				.claim("userId", id) // userId
+				.claim("userId", String.valueOf(id)) // userId
 				.claim("userRole", userRole) // 사용자 권한 (역할)
 				.setExpiration(new Date(date.getTime() + TOKEN_TIME)) // 만료 시간 설정
 				.setIssuedAt(date) // 발급 시간 설정
@@ -60,10 +61,12 @@ public class JwtUtil {
 	}
 
 	public String extractRoles(String token) {
-		return extractAllClaims(token).get("auth", String.class);
+		return extractAllClaims(token).get("userRole", String.class);
 	}
 
 	public String extractUserId(String token) {
+		// Claims temp = extractAllClaims(token);
+		// return"test";
 		return extractAllClaims(token).get("userId", String.class);
 	}
 
