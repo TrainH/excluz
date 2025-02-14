@@ -11,4 +11,6 @@ public interface CartItemRepository extends JpaRepository<CartItem, Integer> {
 	// 특정 유저의 모든 장바구니 아이템 조회(다건 조회)
 	List<CartItem> findByUserId(Integer userId);
 
+	// 특정 유저의 특정 장바구니 아이템 조회(단건 조회)
+	Optional<CartItem> findByIdAndUserId(Integer cartItemId, Integer userId);
 }

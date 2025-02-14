@@ -58,4 +58,12 @@ public class CartItemService {
 		return new CartItemListResponseDto(cartItemList);
 	}
 
+	// 물품 삭제(단건)
+	@Transactional
+	public void removeCartItem(Integer userId, Integer cartItemId) {
+		CartItem cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
+
+		cartItemRepository.delete(cartItem);
+	}
 }

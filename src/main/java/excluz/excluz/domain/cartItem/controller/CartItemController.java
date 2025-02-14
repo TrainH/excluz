@@ -57,4 +57,20 @@ public class CartItemController {
 		return ResponseEntity.ok(response);
 	}
 
+	// 물품 삭제(단건)
+	@DeleteMapping("/v1/cart-items/{cartItemId}")
+	public ResponseEntity<Void> removeCartItem(
+		/* TODO JWT 어노테이션 활용으로 수정 예정 */
+		HttpServletRequest request,
+		@PathVariable(name = "cartItemId") Integer cartItemId
+	) {
+		/* TODO JWT 토큰에서의 정보 추출 방식 추후 수정 예정 */
+		Integer userId = (Integer) request.getAttribute("userId");
+
+		// cartItemId를 서비스 단으로 넘겨서 검증 및 삭제 진행
+		cartItemService.removeCartItem(userId, cartItemId);
+
+		// HTTP 상태 코드 204(No Content) 반환
+		return ResponseEntity.noContent().build();
+	}
 }
