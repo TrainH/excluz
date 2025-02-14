@@ -60,6 +60,24 @@ public class Item {
 	}
 
 	public void updateRemainingQuantity(Integer remainingQuantity) { this.remainingQuantity = remainingQuantity; }
+
+  public void addRemainingQuantity(Integer amount) {
+    if (amount <= 0) {
+        throw new IllegalArgumentException("추가 수량은 0보다 커야 합니다."); // 임시 예외처리
+    }
+        this.remainingQuantity += amount;
+  }
+
+
+  public void removeRemainingQuantity(Integer amount) {
+    if (amount <= 0) {
+        throw new IllegalArgumentException("차감 수량은 0보다 커야 합니다.");// 임시 예외처리
+    }
+    if (this.remainingQuantity < amount) {
+        throw new IllegalArgumentException("잔여 수량이 부족합니다."); // 임시 예외처리
+    }
+      this.remainingQuantity -= amount;
+  }
                                                                   
 	public void updateItem(
 		String itemName,
