@@ -91,8 +91,8 @@ public class CartItemService {
 		// 장바구니에 담긴 상품의 정보 가져오기
 		Item item = cartItem.getItem();
 
-		// 재고 체크 (요청된 개수가 재고보다 많은 경우 예외 발생)
-		if (requestDto.getQuantity() > item.getRemainingQuantity()) {
+		// 재고 체크 (요청된 개수(기존 장바구니 개수 + 새로 요청한 개수)가 재고보다 많은 경우 예외 발생)
+		if (cartItem.getQuantity() + requestDto.getQuantity() > item.getRemainingQuantity()) {
 			throw new BadRequestException(ErrorCode.OUT_OF_STOCK);
 		}
 
