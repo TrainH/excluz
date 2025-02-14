@@ -11,7 +11,9 @@ import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Setter // todo: (최원준 02-13) 유닛 테스트를 위한 임시 세팅. 추후 지울 것
 @Getter
 @Entity
 @Table(name = "stores")
