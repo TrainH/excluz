@@ -40,14 +40,18 @@ public class StoreService {
 	}
 
 	@Transactional
-	public void deleteStore(StoreDeleteRequestDto deleteRequestDto, Integer streamerId) {
+	public void deleteStore(StoreDeleteRequestDto deleteRequestDto, Integer streamerId, Integer storeId) {
 		Streamer streamer = getStreamerByIdAndNotDeleted(streamerId);
 
 		if (!passwordEncoder.matches(deleteRequestDto.getPassword(), streamer.getPassword())) {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
-		streamer.updateStreamerStatus(true);
+		Store store = storeRepository.findById(storeId).orElseThrow(
+			() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND)
+		);
+
+		store.updateIsDeleted(true);
 	}
 
 	@Transactional
