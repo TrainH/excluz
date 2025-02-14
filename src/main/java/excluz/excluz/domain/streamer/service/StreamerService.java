@@ -69,7 +69,7 @@ public class StreamerService {
 	}
 
 	/* 기타 메서드 */
-	private Streamer findStreamerById(Integer streamerId) {
+	public Streamer findStreamerById(Integer streamerId) {
 		return streamerRepository.findById(streamerId).orElseThrow(
 			() -> new NotFoundException(ErrorCode.UNAUTHORIZED_USER)
 		);
