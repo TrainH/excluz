@@ -56,4 +56,35 @@ class CartItemServiceTest {
 			))
 			.isInstanceOf(BadRequestException.class);
 	}
+
+	@Test
+	@DisplayName("요청된 개수가 재고보다 적은 경우에는 예외가 발생하지 않는다")
+	void updateCartItemQuantity2() {
+		// given
+		Item item = new Item(
+			null,
+			"itemName",
+			"test",
+			100,
+			11
+		);
+		CartItem cartItem = new CartItem(
+			null,
+			item,
+			10
+		);
+
+		Mockito.when(cartItemRepository.findByIdAndUserId(Mockito.any(), Mockito.any()))
+			.thenReturn(Optional.of(cartItem));
+
+		UpdateCartItemQuantityRequestDto cartItemQuantityRequestDto = new UpdateCartItemQuantityRequestDto(1);
+
+		// when, then
+		Assertions.assertThatCode(() -> cartItemService.updateCartItemQuantity(
+				1,
+				1,
+				cartItemQuantityRequestDto
+			))
+			.doesNotThrowAnyException();
+	}
 }
