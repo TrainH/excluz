@@ -60,5 +60,16 @@ public class Item {
 	}
 
 	public void updateRemainingQuantity(Integer remainingQuantity) { this.remainingQuantity = remainingQuantity;
+                                                                  
+	public void updateItem(
+		String itemName,
+		String explanation,
+		Integer price,
+		Integer remainingQuantity
+	) {
+		if(itemName!=null) this.itemName=itemName;
+		if(explanation!=null) this.explanation=explanation;
+		if(price!=null && price>=0) this.price=price;
+		if(remainingQuantity!=null && remainingQuantity>=0) this.remainingQuantity=remainingQuantity;
 	}
 }

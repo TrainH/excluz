@@ -50,8 +50,7 @@ public class StreamerService {
 		}
 
 		/*TODO: JWT 토큰 양식에 맞게 수정하기*/
-		String bearerToken = jwtUtil.createToken(streamer.getId(), streamer.getEmail(), streamer.getNickName(),
-			streamer.getUserRole());
+		String bearerToken = "jwtUtil.createToken(streamer.getId(), streamer.getEmail(), streamer.getNickName(),streamer.getUserRole())";
 
 		return StreamerLoginResponseDto.from(bearerToken);
 	}

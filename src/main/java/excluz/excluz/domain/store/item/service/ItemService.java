@@ -1,7 +1,5 @@
 package excluz.excluz.domain.store.item.service;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,6 +8,8 @@ import excluz.excluz.common.entity.Store;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.store.item.dto.request.ItemCreateRequestDto;
+import excluz.excluz.domain.store.item.dto.request.ItemUpdateRequestDto;
+import excluz.excluz.domain.store.item.dto.response.ItemResponseDto;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
 import lombok.AllArgsConstructor;
@@ -36,5 +36,31 @@ public class ItemService {
 			.build();
 
 		itemRepository.save(item);
+	}
+
+	@Transactional
+	public void deleteItem(Integer itemsId) {
+		Item item = findItemById(itemsId);
+
+		item.updateIsDeleted(true);
+	}
+
+	@Transactional
+	public ItemResponseDto updateItemInfo(ItemUpdateRequestDto itemUpdateRequestDto, Integer itemsId) {
+		Item item = findItemById(itemsId);
+
+		item.updateItem(itemUpdateRequestDto.getItemName(),
+			itemUpdateRequestDto.getExplanation(),
+			itemUpdateRequestDto.getPrice(),
+			itemUpdateRequestDto.getRemainingQuantity());
+
+		return ItemResponseDto.from(item);
+	}
+
+
+	private Item findItemById(Integer itemsId) {
+		return itemRepository.findById(itemsId).orElseThrow(
+			() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND)
+		);
 	}
 }
