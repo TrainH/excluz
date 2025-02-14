@@ -68,11 +68,11 @@ public class OrderItemService {
         ).orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         // 3. 요청시에 모든 주문의 배달장소는 1개로 동일해야함
-        Set<String> AddressList = requestList.stream()
+        Set<String> AddressSet = requestList.stream()
                 .map(OrderItemRequestDto::address)
                 .collect(Collectors.toSet());
 
-        if (AddressList.size() != 1) {
+        if (AddressSet.size() != 1) {
             throw new BadRequestException(ErrorCode.ITEM_NOT_FOUND); // 나중에 예외처리 코드 수정 필요
         }
 
