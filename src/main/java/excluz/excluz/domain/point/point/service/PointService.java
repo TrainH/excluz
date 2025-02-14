@@ -48,7 +48,7 @@ public class PointService {
                 .orElseGet(() -> new Point(UserRole.CUSTOMER, userOrStreamerId, 0));
 
         // 충전 금액
-        Integer amount = requestDto.amount();
+        Integer amount = requestDto.getAmount();
 
         // 포인트 금액 추가
         point.chargeAmount(amount);

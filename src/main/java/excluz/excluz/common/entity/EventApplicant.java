@@ -65,6 +65,8 @@ public class EventApplicant extends BaseEntity  {
         this.deliveryAddress = deliveryAddress;
     }
 
+    public void updateApplicantName(String applicantName) { this.applicantName = applicantName; }
+
     // 필요에 따라 비밀번호를 변경하는 메서드 생성 (보안 고려)
     public void changePassword(String newPassword) {
         this.applicantPassword = newPassword;

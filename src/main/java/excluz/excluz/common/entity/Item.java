@@ -59,6 +59,8 @@ public class Item {
 		this.isDeleted = isDeleted;
 	}
 
+	public void updateRemainingQuantity(Integer remainingQuantity) { this.remainingQuantity = remainingQuantity;
+                                                                  
 	public void updateItem(
 		String itemName,
 		String explanation,

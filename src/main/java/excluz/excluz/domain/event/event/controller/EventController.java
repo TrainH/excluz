@@ -5,6 +5,7 @@ import excluz.excluz.domain.event.event.dto.EventClosingResponseDto;
 import excluz.excluz.domain.event.event.dto.EventRequestDto;
 import excluz.excluz.domain.event.event.dto.EventResponseDto;
 import excluz.excluz.domain.event.event.service.EventService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class EventController {
     private final EventService eventService;
 
     @PostMapping()
-    public ResponseEntity<EventResponseDto> createEvent(@RequestBody EventRequestDto eventRequestDto) {
+    public ResponseEntity<EventResponseDto> createEvent(@Valid @RequestBody EventRequestDto eventRequestDto) {
 //        todo: 유저인증로직
         EventResponseDto eventResponseDto = eventService.createEvent(eventRequestDto);
         return ResponseEntity.status(201).body(eventResponseDto);
