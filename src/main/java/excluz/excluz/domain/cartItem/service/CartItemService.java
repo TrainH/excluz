@@ -38,6 +38,11 @@ public class CartItemService {
 		Item item = itemRepository.findById(requestDto.getItemId())
 			.orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
 
+		// 재고 체크 (요청된 개수가 재고보다 많은 경우 예외 발생)
+		if (requestDto.getQuantity() > item.getRemainingQuantity()) {
+			throw new BadRequestException(ErrorCode.OUT_OF_STOCK);
+		}
+
 		CartItem cartItem = new CartItem(user, item, requestDto.getQuantity());
 		cartItemRepository.save(cartItem);
 
