@@ -1,6 +1,7 @@
 package excluz.excluz.domain.cartItem.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -32,7 +33,6 @@ public class CartItemService {
 	// 물품 추가
 	@Transactional
 	public CreateCartItemResponseDto addItemToCart(Integer userId, CreateCartItemRequestDto requestDto) {
-		// todo 추후 의논할 것: CartitemService에서 다른 엔티티의 Repository를 의존하는 구조가 좋은 설계인지 추후에 다같이 고민해보면 좋을 것 같습니다!
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 		Item item = itemRepository.findById(requestDto.getItemId())
@@ -43,8 +43,24 @@ public class CartItemService {
 			throw new BadRequestException(ErrorCode.OUT_OF_STOCK);
 		}
 
-		CartItem cartItem = new CartItem(user, item, requestDto.getQuantity());
-		cartItemRepository.save(cartItem);
+		// 기존 장바구니에서 동일한 상품이 있는지 확인
+		Optional<CartItem> optionalCartItem = cartItemRepository.findByUserIdAndItemId(userId, requestDto.getItemId());
+
+		if (optionalCartItem.isPresent()) {
+			// 이미 장바구니에 있는 경우: 수량 증가
+			CartItem cartItem = optionalCartItem.get();
+			Integer newQuantity = cartItem.getQuantity() + requestDto.getQuantity();
+
+			if (newQuantity > item.getRemainingQuantity()) {
+				throw new BadRequestException(ErrorCode.OUT_OF_STOCK);
+			}
+
+			cartItem.updateQuantity(newQuantity);
+		} else {
+			// 장바구니에 없는 경우: 새로 추가
+			CartItem newCartItem = new CartItem(user, item, requestDto.getQuantity());
+			cartItemRepository.save(newCartItem);
+		}
 
 		return new CreateCartItemResponseDto();
 	}
