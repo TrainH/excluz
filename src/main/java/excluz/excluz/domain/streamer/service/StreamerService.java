@@ -51,7 +51,6 @@ public class StreamerService {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
-		/*TODO: JWT 토큰 양식에 맞게 수정하기*/
 		String bearerToken = jwtUtil.createToken(streamer.getEmail(), streamer.getId(), streamer.getUserRole());
 
 		return StreamerLoginResponseDto.from(bearerToken);
