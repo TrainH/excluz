@@ -42,6 +42,18 @@ public class CartItemService {
 		return new CreateCartItemResponseDto();
 	}
 
+	// 물품 단건 조회
+	public GetCartItemResponseDto getCartItem(Integer userId, Integer cartItemId) {
+		CartItem cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
+
+		return GetCartItemResponseDto.builder()
+			.cartItemId(cartItem.getId())
+			.quantity(cartItem.getQuantity())
+			.itemPrice(cartItem.getItem().getPrice())
+			.build();
+	}
+
 	// 물품 다건 조회
 	public CartItemListResponseDto getCartItemList(Integer userId) {
 		List<CartItem> cartItems = cartItemRepository.findByUserId(userId);

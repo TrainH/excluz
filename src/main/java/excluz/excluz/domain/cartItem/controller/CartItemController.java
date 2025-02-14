@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import excluz.excluz.domain.cartItem.dto.request.CreateCartItemRequestDto;
 import excluz.excluz.domain.cartItem.dto.response.CartItemListResponseDto;
 import excluz.excluz.domain.cartItem.dto.response.CreateCartItemResponseDto;
+import excluz.excluz.domain.cartItem.dto.response.GetCartItemResponseDto;
 import excluz.excluz.domain.cartItem.service.CartItemService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -38,6 +39,20 @@ public class CartItemController {
 
 		// HTTP 상태 코드 201(create)와 함께 CreateCartItemResponseDto 응답
 		return ResponseEntity.status(201).body(response);
+	}
+
+	// 물품 단건 조회
+	@GetMapping("/v1/cart-items/{cartItemId}")
+	public ResponseEntity<GetCartItemResponseDto> getCartItem(
+		/* TODO JWT 어노테이션 활용으로 수정 예정 */
+		HttpServletRequest request,
+		@PathVariable(name = "cartItemId") Integer cartItemId
+	) {
+		/* TODO JWT 토큰에서의 정보 추출 방식 추후 수정 예정 */
+		Integer userId = (Integer) request.getAttribute("userId");
+
+		GetCartItemResponseDto response = cartItemService.getCartItem(userId, cartItemId);
+		return ResponseEntity.ok(response);
 	}
 
 	// 물품 다건 조회
