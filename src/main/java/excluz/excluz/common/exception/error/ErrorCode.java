@@ -18,7 +18,14 @@ public enum ErrorCode {
 	PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
 
 	// 아이템 관련 예외 코드
-	ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "조회되는 아이템 정보가 없습니다.");
+	ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "조회되는 아이템 정보가 없습니다."),
+	OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "해당 아이템의 재고가 부족합니다."),
+
+	// 장바구니 아이템 관련 예외 코드
+	CART_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니에 해당 아이템이 존재하지 않습니다."),
+
+	//스토어 관련 예외 코드
+	STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "스토어 정보를 찾을 수 없습니다.");
 
 	// 하단에 에러코드 추가하여 사용
 
