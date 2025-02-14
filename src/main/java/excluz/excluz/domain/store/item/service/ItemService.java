@@ -1,5 +1,10 @@
 package excluz.excluz.domain.store.item.service;
 
+import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +65,27 @@ public class ItemService {
 	@Transactional(readOnly = true)
 	public ItemResponseDto getItemById(Integer itemsId) {
 		return ItemResponseDto.from(findItemById(itemsId));
+	}
+
+	@Transactional(readOnly = true)
+	public Page<ItemResponseDto> getItemList(int page, int size, Integer minPrice, Integer maxPrice, String itemName) {
+
+		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
+		int newMinPrice=minPrice, newMaxPrice=maxPrice;
+		Optional<Integer> highestPrice = itemRepository.findHighestItemPrice();
+
+		// 유효 가격 범위로 값 재설정
+		if (minPrice == Integer.MAX_VALUE) {
+			newMinPrice = highestPrice.orElse(0);
+			newMaxPrice = Integer.MAX_VALUE;
+		}
+		if (maxPrice <= minPrice) {
+			newMaxPrice = highestPrice.orElse(minPrice + 1);
+		}
+
+		Page<Item> items = itemRepository.findByPriceWithItemName(pageable, newMinPrice, newMaxPrice, itemName);
+
+		return items.map(ItemResponseDto::from);
 	}
 
 	private Item findItemById(Integer itemsId) {
