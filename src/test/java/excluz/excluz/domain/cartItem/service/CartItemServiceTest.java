@@ -31,16 +31,16 @@ class CartItemServiceTest {
 	void updateCartItemQuantity() {
 		// given
 		Item item = new Item(
-			null,
-			"itemName",
-			"test",
-			100,
-			10
+			null,         // store: null (스토어 정보 없음)
+			"itemName",   // itemName: "itemName" (상품명)
+			"test",       // explanation: "test" (설명)
+			100,          // price: 100 (상품 가격)
+			10            // remainingQuantity: 10 (재고 개수)
 		);
 		CartItem cartItem = new CartItem(
-			null,
-			item,
-			10
+			null,  // user: null (사용자 정보 없음)
+			item,  // item: 위에서 생성한 Item 객체
+			10     // quantity: 10 (현재 장바구니에 담긴 수량)
 		);
 
 		Mockito.when(cartItemRepository.findByIdAndUserId(Mockito.any(), Mockito.any()))
@@ -50,9 +50,9 @@ class CartItemServiceTest {
 
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.updateCartItemQuantity(
-				null,
-				null,
-				cartItemQuantityRequestDto
+				null,   // user: null (사용자 정보 없음)
+				null,   // cartItem: null (장바구니 아이템 정보 없음)
+				cartItemQuantityRequestDto // 업데이트할 장바구니 아이템 정보
 			))
 			.isInstanceOf(BadRequestException.class);
 	}
@@ -62,16 +62,16 @@ class CartItemServiceTest {
 	void updateCartItemQuantity2() {
 		// given
 		Item item = new Item(
-			null,
-			"itemName",
-			"test",
-			100,
-			11
+			null,         // store: null (스토어 정보 없음)
+			"itemName",   // itemName: "itemName" (상품명)
+			"test",       // explanation: "test" (설명)
+			100,          // price: 100 (상품 가격)
+			11            // remainingQuantity: 11 (재고 개수)
 		);
 		CartItem cartItem = new CartItem(
-			null,
-			item,
-			10
+			null,  // user: null (사용자 정보 없음)
+			item,  // item: 위에서 생성한 Item 객체
+			10     // quantity: 10 (현재 장바구니에 담긴 수량)
 		);
 
 		Mockito.when(cartItemRepository.findByIdAndUserId(Mockito.any(), Mockito.any()))
@@ -81,9 +81,9 @@ class CartItemServiceTest {
 
 		// when, then
 		Assertions.assertThatCode(() -> cartItemService.updateCartItemQuantity(
-				1,
-				1,
-				cartItemQuantityRequestDto
+				null,   // user: null (사용자 정보 없음)
+				null,   // cartItem: null (장바구니 아이템 정보 없음)
+				cartItemQuantityRequestDto // 업데이트할 장바구니 아이템 정보
 			))
 			.doesNotThrowAnyException();
 	}
