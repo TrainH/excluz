@@ -8,9 +8,11 @@ import org.springframework.stereotype.Service;
 import excluz.excluz.common.entity.CartItem;
 import excluz.excluz.common.entity.Item;
 import excluz.excluz.common.entity.User;
+import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.cartItem.dto.request.CreateCartItemRequestDto;
+import excluz.excluz.domain.cartItem.dto.request.UpdateCartItemQuantityRequestDto;
 import excluz.excluz.domain.cartItem.dto.response.CartItemListResponseDto;
 import excluz.excluz.domain.cartItem.dto.response.CreateCartItemResponseDto;
 import excluz.excluz.domain.cartItem.dto.response.GetCartItemResponseDto;
@@ -68,6 +70,35 @@ public class CartItemService {
 			.collect(Collectors.toList());
 
 		return new CartItemListResponseDto(cartItemList);
+	}
+
+	// 물품 개수 수정
+	@Transactional
+	public GetCartItemResponseDto updateCartItemQuantity(
+		Integer userId,
+		Integer cartItemId,
+		UpdateCartItemQuantityRequestDto requestDto
+	) {
+		// 장바구니에서 해당 아이템 찾기
+		CartItem cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.CART_ITEM_NOT_FOUND));
+
+		// 장바구니에 담긴 상품의 정보 가져오기
+		Item item = cartItem.getItem();
+
+		// 재고 체크 (요청된 개수가 재고보다 많은 경우 예외 발생)
+		if (requestDto.getQuantity() > item.getRemainingQuantity()) {
+			throw new BadRequestException(ErrorCode.OUT_OF_STOCK);
+		}
+
+		// 개수 업데이트
+		cartItem.updateQuantity(requestDto.getQuantity());
+
+		return GetCartItemResponseDto.builder()
+			.cartItemId(cartItem.getId())
+			.quantity(cartItem.getQuantity())
+			.itemPrice(cartItem.getItem().getPrice())
+			.build();
 	}
 
 	// 물품 삭제(단건)
