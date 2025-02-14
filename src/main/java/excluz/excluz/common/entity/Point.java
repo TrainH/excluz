@@ -43,10 +43,19 @@ public class Point {
     }
 
     public void chargeAmount(Integer amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("충전 금액은 0보다 커야 합니다."); // 임시 예외처리
+        }
         this.amount += amount;
     }
 
     public void disChargeAmount(Integer amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("차감 금액은 0보다 커야 합니다.");// 임시 예외처리
+        }
+        if (this.amount < amount) {
+            throw new IllegalArgumentException("포인트가 부족합니다."); // 임시 예외처리
+        }
         this.amount -= amount;
     }
 }
