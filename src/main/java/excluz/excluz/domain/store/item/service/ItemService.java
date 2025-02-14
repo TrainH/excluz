@@ -45,14 +45,13 @@ public class ItemService {
 
 	@Transactional
 	public void deleteItem(Integer itemsId) {
-		Item item = findItemById(itemsId);
-
+		Item item = findItemByIdAndNotDeleted(itemsId);
 		item.updateIsDeleted(true);
 	}
 
 	@Transactional
 	public ItemResponseDto updateItemInfo(ItemUpdateRequestDto itemUpdateRequestDto, Integer itemsId) {
-		Item item = findItemById(itemsId);
+		Item item = findItemByIdAndNotDeleted(itemsId);
 
 		item.updateItem(itemUpdateRequestDto.getItemName(),
 			itemUpdateRequestDto.getExplanation(),
@@ -64,7 +63,7 @@ public class ItemService {
 
 	@Transactional(readOnly = true)
 	public ItemResponseDto getItemById(Integer itemsId) {
-		return ItemResponseDto.from(findItemById(itemsId));
+		return ItemResponseDto.from(findItemByIdAndNotDeleted(itemsId));
 	}
 
 	@Transactional(readOnly = true)
@@ -88,8 +87,9 @@ public class ItemService {
 		return items.map(ItemResponseDto::from);
 	}
 
-	private Item findItemById(Integer itemsId) {
-		return itemRepository.findById(itemsId).orElseThrow(
+	// 삭제 되지 않은 아이템만 조회하는 메서드
+	private Item findItemByIdAndNotDeleted(Integer itemsId) {
+		return itemRepository.findItemByIdAndNotDeleted(itemsId).orElseThrow(
 			() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND)
 		);
 	}

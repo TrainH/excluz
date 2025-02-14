@@ -19,10 +19,16 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 		"WHERE (i.itemName LIKE CONCAT('%', :itemName, '%') OR :itemName IS NULL) " +
 		"AND (i.price >= :minPrice) " +
 		"AND (i.price <= :maxPrice) " +
+		"AND (i.isDeleted = FALSE ) " +
 		"ORDER BY i.id DESC")
 	Page<Item> findByPriceWithItemName(
 		Pageable pageable,
 		@Param("minPrice") Integer newMinPrice,
 		@Param("maxPrice") Integer newMaxPrice,
 		@Param("itemName") String itemName);
+
+	@Query("SELECT i FROM Item i " +
+		"WHERE (i.id = :itemsId)" +
+		"AND (i.isDeleted = FALSE)")
+	Optional<Item> findItemByIdAndNotDeleted(@Param("itemsId") Integer itemsId);
 }
