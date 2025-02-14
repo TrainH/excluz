@@ -110,7 +110,7 @@ public class CartItemService {
 	@Transactional
 	public void removeCartItem(Integer userId, Integer cartItemId) {
 		CartItem cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
-			.orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
+			.orElseThrow(() -> new NotFoundException(ErrorCode.CART_ITEM_NOT_FOUND));
 
 		cartItemRepository.delete(cartItem);
 	}
