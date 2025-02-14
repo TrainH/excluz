@@ -39,7 +39,8 @@ public class SecurityConfig {
 					"/api/v1/users/login", // 일반 유저 로그인
 					"/api/v1/streamers/login", // 판매자 로그인
 					"/api/v1/users/signup", // 일반 유저 회원가입
-					"/api/v1/streamers/signup" // 판매자 회원가입
+					"/api/v1/streamers/signup", // 판매자 회원가입
+					"/api/v1/events/applicants" // 이벤트 응모 및 조회(단, @RequestParam 코드가 맞을 때)
 					).permitAll()
 				.requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // 관리자
 				.requestMatchers("/api/v1/users/**").hasRole("CUSTOMER") // 일반 회원

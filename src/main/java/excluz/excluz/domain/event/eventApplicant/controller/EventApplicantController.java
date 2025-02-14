@@ -21,14 +21,12 @@ public class EventApplicantController {
     @PostMapping
     public EventApplicantResponseDto applyForEvent(@RequestParam("code") String code,
                                                    @Valid  @RequestBody EventApplicantRequestDto requestDto) {
-        // todo: 유저인증로직
         return eventApplicantService.applyForEvent(code, requestDto);
     }
 
     @GetMapping
     public EventApplicantResponseDto getEventApplication(@RequestParam("code") String code,
                                                          @Valid @RequestBody EventApplicantRequestDto requestDto) {
-        // todo: 유저인증로직
         return eventApplicantService.getEventApplication(code, requestDto.getEmail(), requestDto.getApplicantPassword());
     }
 
