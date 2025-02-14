@@ -22,6 +22,6 @@ public class PointController {
         @Valid @RequestBody PointChargeRequestDto requestDto
     ) {
         pointService.chargePoint(requestDto);
-        return ResponseEntity.ok("충전되었습니다. ");
+        return ResponseEntity.ok("충전되었습니다.");
     }
 }
