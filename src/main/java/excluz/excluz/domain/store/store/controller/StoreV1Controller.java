@@ -1,10 +1,12 @@
 package excluz.excluz.domain.store.store.controller;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import excluz.excluz.domain.store.store.dto.request.StoreDeleteRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreUpdateRequestDto;
+import excluz.excluz.domain.store.store.dto.response.StoreResponseDto;
 import excluz.excluz.domain.store.store.dto.response.StoreUpdateResponseDto;
 import excluz.excluz.domain.store.store.service.StoreService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -60,5 +63,17 @@ public class StoreV1Controller {
 	) {
 		StoreUpdateResponseDto responseDto = storeService.updateStore(storeId, requestDto);
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
+
+	@GetMapping()
+	public ResponseEntity<Page<StoreResponseDto>> getStoreList(
+		@RequestParam(required = false) String storeName,
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "10") int size
+	) {
+
+		Page<StoreResponseDto> responseDtoList = storeService.getStoreList(storeName, page, size);
+
+		return new ResponseEntity<>(responseDtoList, HttpStatus.OK);
 	}
 }
