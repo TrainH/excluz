@@ -1,6 +1,8 @@
 package excluz.excluz.domain.cartItem.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -16,7 +18,6 @@ import excluz.excluz.domain.cartItem.dto.response.CartItemListResponseDto;
 import excluz.excluz.domain.cartItem.dto.response.CreateCartItemResponseDto;
 import excluz.excluz.domain.cartItem.dto.response.GetCartItemResponseDto;
 import excluz.excluz.domain.cartItem.service.CartItemService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -29,12 +30,11 @@ public class CartItemController {
 	// 물품 추가
 	@PostMapping("/v1/cart-items")
 	public ResponseEntity<CreateCartItemResponseDto> addItemToCart(
-		/* TODO JWT 어노테이션 활용으로 수정 예정 */
-		HttpServletRequest request,
+		@AuthenticationPrincipal User user,
 		@Valid @RequestBody CreateCartItemRequestDto requestDto
 	) {
-		/* TODO JWT 토큰에서의 정보 추출 방식 추후 수정 예정 */
-		Integer userId = (Integer) request.getAttribute("userId");
+		// `user.getUsername()`을 사용하여 userId 가져오기
+		Integer userId = Integer.parseInt(user.getUsername());
 
 		// 서비스단으로 userId와 리퀘스트 정보 넘기기
 		CreateCartItemResponseDto response = cartItemService.addItemToCart(userId, requestDto);
@@ -46,12 +46,11 @@ public class CartItemController {
 	// 물품 단건 조회
 	@GetMapping("/v1/cart-items/{cartItemId}")
 	public ResponseEntity<GetCartItemResponseDto> getCartItem(
-		/* TODO JWT 어노테이션 활용으로 수정 예정 */
-		HttpServletRequest request,
+		@AuthenticationPrincipal User user,
 		@PathVariable(name = "cartItemId") Integer cartItemId
 	) {
-		/* TODO JWT 토큰에서의 정보 추출 방식 추후 수정 예정 */
-		Integer userId = (Integer) request.getAttribute("userId");
+		// `user.getUsername()`을 사용하여 userId 가져오기
+		Integer userId = Integer.parseInt(user.getUsername());
 
 		GetCartItemResponseDto response = cartItemService.getCartItem(userId, cartItemId);
 		return ResponseEntity.ok(response);
@@ -60,11 +59,10 @@ public class CartItemController {
 	// 물품 다건 조회
 	@GetMapping("/v1/cart-items")
 	public ResponseEntity<CartItemListResponseDto> getCartItemList(
-		/* TODO JWT 어노테이션 활용으로 수정 예정 */
-		HttpServletRequest request
+		@AuthenticationPrincipal User user
 	) {
-		/* TODO JWT 토큰에서의 정보 추출 방식 추후 수정 예정 */
-		Integer userId = (Integer) request.getAttribute("userId");
+		// `user.getUsername()`을 사용하여 userId 가져오기
+		Integer userId = Integer.parseInt(user.getUsername());
 
 		CartItemListResponseDto response = cartItemService.getCartItemList(userId);
 		return ResponseEntity.ok(response);
@@ -73,13 +71,12 @@ public class CartItemController {
 	// 물품 개수 수정
 	@PatchMapping("/v1/cart-items/{cartItemId}")
 	public ResponseEntity<GetCartItemResponseDto> updateCartItemQuantity(
-		/* TODO JWT 어노테이션 활용으로 수정 예정 */
-		HttpServletRequest request,
+		@AuthenticationPrincipal User user,
 		@PathVariable(name = "cartItemId") Integer cartItemId,
 		@Valid @RequestBody UpdateCartItemQuantityRequestDto requestDto
 	) {
-		/* TODO JWT 토큰에서의 정보 추출 방식 추후 수정 예정 */
-		Integer userId = (Integer) request.getAttribute("userId");
+		// `user.getUsername()`을 사용하여 userId 가져오기
+		Integer userId = Integer.parseInt(user.getUsername());
 
 		GetCartItemResponseDto response = cartItemService.updateCartItemQuantity(userId, cartItemId, requestDto);
 		return ResponseEntity.ok(response);
@@ -88,12 +85,11 @@ public class CartItemController {
 	// 물품 삭제(단건)
 	@DeleteMapping("/v1/cart-items/{cartItemId}")
 	public ResponseEntity<Void> removeCartItem(
-		/* TODO JWT 어노테이션 활용으로 수정 예정 */
-		HttpServletRequest request,
+		@AuthenticationPrincipal User user,
 		@PathVariable(name = "cartItemId") Integer cartItemId
 	) {
-		/* TODO JWT 토큰에서의 정보 추출 방식 추후 수정 예정 */
-		Integer userId = (Integer) request.getAttribute("userId");
+		// `user.getUsername()`을 사용하여 userId 가져오기
+		Integer userId = Integer.parseInt(user.getUsername());
 
 		// cartItemId를 서비스 단으로 넘겨서 검증 및 삭제 진행
 		cartItemService.removeCartItem(userId, cartItemId);
