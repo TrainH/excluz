@@ -69,19 +69,19 @@ public class OrderItemService {
 
         // 3. 요청시에 모든 주문의 배달장소는 1개로 동일해야함
         Set<String> AddressSet = requestList.stream()
-                .map(OrderItemRequestDto::address)
+                .map(OrderItemRequestDto::getAddress)
                 .collect(Collectors.toSet());
 
         if (AddressSet.size() != 1) {
             throw new BadRequestException(ErrorCode.ITEM_NOT_FOUND); // 나중에 예외처리 코드 수정 필요
         }
 
-        String address = requestList.get(0).address();
+        String address = requestList.get(0).getAddress();
 
 
         // 4. 요청 주문 아이템 id 갯수와 실제 주문 아이템 갯수가 일치하는지 확인
         List<Integer> itemIdList = requestList.stream()
-                .map(OrderItemRequestDto::itemId)
+                .map(OrderItemRequestDto::getItemId)
                 .toList();
 
         List<Item> itemList = itemRepository.findAllById(itemIdList);
@@ -116,15 +116,15 @@ public class OrderItemService {
 
         for (OrderItemRequestDto dto : requestList) {
             Item item = itemList.stream()
-                    .filter(i -> i.getId().equals(dto.itemId()))
+                    .filter(i -> i.getId().equals(dto.getItemId()))
                     .findFirst()
                     .orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
 
             // 가격 합산
-            totalAmount += item.getPrice() * dto.itemQuantity();
+            totalAmount += item.getPrice() * dto.getItemQuantity();
 
             // 주문 아이템 추가
-            orderItemList.add(new OrderItem(order, item, dto.itemQuantity()));
+            orderItemList.add(new OrderItem(order, item, dto.getItemQuantity()));
         }
 
         // 포인트 거래 생성
