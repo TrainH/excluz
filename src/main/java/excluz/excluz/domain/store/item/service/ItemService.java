@@ -1,7 +1,5 @@
 package excluz.excluz.domain.store.item.service;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,5 +34,14 @@ public class ItemService {
 			.build();
 
 		itemRepository.save(item);
+	}
+
+	@Transactional
+	public void deleteItem(Integer itemsId) {
+		Item item = itemRepository.findById(itemsId).orElseThrow(
+			() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND)
+		);
+
+		item.updateIsDeleted(true);
 	}
 }
