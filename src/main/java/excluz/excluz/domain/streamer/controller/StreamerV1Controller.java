@@ -57,4 +57,17 @@ public class StreamerV1Controller {
 
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
+
+	// 스트리머 본인 조회
+	@GetMapping("/my-page")
+	@PreAuthorize("hasRole('STREAMER')")
+	public ResponseEntity<StreamerResponseDto> getPersonalInfo(
+		@AuthenticationPrincipal User user
+	) {
+		Integer streamerId = Integer.valueOf(user.getUsername());
+
+		StreamerResponseDto responseDto = streamerService.getPersonalInfo(streamerId);
+
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
 }
