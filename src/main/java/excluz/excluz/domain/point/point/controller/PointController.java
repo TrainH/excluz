@@ -1,14 +1,12 @@
 package excluz.excluz.domain.point.point.controller;
 
 import excluz.excluz.domain.point.point.dto.request.PointChargeRequestDto;
+import excluz.excluz.domain.point.point.dto.response.PointResponseDto;
 import excluz.excluz.domain.point.point.service.PointService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,5 +21,10 @@ public class PointController {
     ) {
         pointService.chargePoint(requestDto);
         return ResponseEntity.ok("충전되었습니다.");
+    }
+
+    @GetMapping("/points/{pointId}")
+    public ResponseEntity<PointResponseDto> getPoint(@PathVariable Integer pointId){
+        return ResponseEntity.ok(pointService.getPoint(pointId));
     }
 }

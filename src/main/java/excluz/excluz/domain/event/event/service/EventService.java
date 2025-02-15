@@ -24,8 +24,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class EventService {
 
@@ -35,13 +35,11 @@ public class EventService {
     private final ItemRepository itemRepository;
     private final EventApplicantRepository eventApplicantRepository;
 
-    //todo: 추후 temp 수정
+    @Transactional
     public EventResponseDto createEvent(EventRequestDto eventRequestDto) {
-        // 이벤트 생성 비즈니스 로직 구현
         Store store = storeRepository.findById(eventRequestDto.getStoreId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 스토어를 찾을 수 없습니다."));
 
-        // Event 엔티티 생성
         Event event = Event.builder()
                 .store(store)
                 .numberOfWinners(eventRequestDto.getNumberOfWinners())
@@ -49,43 +47,32 @@ public class EventService {
                 .selectionMethod(SelectionMethod.valueOf(eventRequestDto.getSelectionMethod()))
                 .startDatetime(eventRequestDto.getStartDatetime())
                 .endDatetime(eventRequestDto.getEndDatetime())
-                .generatedCode(generateUniqueCode()) // 고유 코드 생성 로직 필요
+                .generatedCode(generateUniqueCode())
                 .build();
 
-        // 이벤트 저장
         Event savedEvent = eventRepository.save(event);
 
-        // todo: EventItems 관련 로직 정비중..
-        List<EventItem> eventItems = null; // 생성 시 현재는 null로 처리
+        List<EventItem> eventItemList = new ArrayList<>();
 
-        if (eventRequestDto.getEventItems() != null && !eventRequestDto.getEventItems().isEmpty()) {
-            eventItems = new ArrayList<>();
+        for (EventItemRequestDto eventItemRequestDto : eventRequestDto.getEventItemList()) {
+            Integer itemId = eventItemRequestDto.getItemId();
 
-            for (EventItemRequestDto eventItemRequestDto : eventRequestDto.getEventItems()) {
-                Integer itemId = eventItemRequestDto.getItemId();
+            Item item = itemRepository.findById(itemId)
+                    .orElseThrow(() -> new IllegalArgumentException("ID가 " + itemId + "인 아이템을 찾을 수 없습니다."));
 
-                // Item 존재 여부 확인
-                Item item = itemRepository.findById(itemId)
-                        .orElseThrow(() -> new IllegalArgumentException("ID가 " + itemId + "인 아이템을 찾을 수 없습니다."));
-
-                // 수량 검증
-                Integer quantity = eventItemRequestDto.getQuantity();
-                if (quantity == null || quantity <= 0) {
-                    throw new IllegalArgumentException("아이템 ID " + itemId + "의 수량은 0보다 커야 합니다.");
-                }
-
-                // EventItem 생성
-                EventItem eventItem = new EventItem(savedEvent, item, quantity);
-                eventItems.add(eventItem);
+            if (item.getStore() == null || !item.getStore().getId().equals(store.getId())) {
+                throw new IllegalArgumentException("아이템 ID " + itemId + "은(는) 현재 스토어에 소속되어 있지 않습니다.");
             }
 
-            // EventItems 저장
-            eventItemRepository.saveAll(eventItems);
-            return EventResponseDto.fromWithItems(savedEvent, eventItems);
-        } else {
-            return EventResponseDto.fromWithoutItems(savedEvent);
+            Integer requestedItemQuantity = eventItemRequestDto.getQuantity();
+            item.removeRemainingQuantity(requestedItemQuantity * eventRequestDto.getNumberOfWinners());
+            EventItem eventItem = new EventItem(savedEvent, item, requestedItemQuantity);
+
+            eventItemList.add(eventItem);
         }
 
+        eventItemRepository.saveAll(eventItemList);
+        return EventResponseDto.fromWithItems(savedEvent, eventItemList);
     }
 
 
@@ -176,7 +163,6 @@ public class EventService {
         // 고유 코드 생성 로직 구현
         return "UNIQUE_CODE" + eventRepository.count();
     }
-
 
 
 }

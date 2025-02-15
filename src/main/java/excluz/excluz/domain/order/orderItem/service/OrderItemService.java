@@ -1,0 +1,156 @@
+package excluz.excluz.domain.order.orderItem.service;
+
+import excluz.excluz.common.entity.*;
+import excluz.excluz.common.exception.BadRequestException;
+import excluz.excluz.common.exception.ForbiddenException;
+import excluz.excluz.common.exception.NotFoundException;
+import excluz.excluz.common.exception.error.ErrorCode;
+import excluz.excluz.domain.order.order.enums.OrderStatus;
+import excluz.excluz.domain.order.order.repository.OrderRepository;
+import excluz.excluz.domain.order.orderItem.dto.request.OrderItemRequestDto;
+import excluz.excluz.domain.order.orderItem.dto.response.OrderItemResponseDto;
+import excluz.excluz.domain.order.orderItem.repository.OrderItemRepository;
+import excluz.excluz.domain.point.point.repository.PointRepository;
+import excluz.excluz.domain.point.pointTransaction.enums.TransactionType;
+import excluz.excluz.domain.point.pointTransaction.repository.PointTransactionRepository;
+import excluz.excluz.domain.store.item.repository.ItemRepository;
+import excluz.excluz.domain.store.store.repository.StoreRepository;
+import excluz.excluz.domain.streamer.repository.StreamerRepository;
+import excluz.excluz.domain.user.enums.UserRole;
+import excluz.excluz.domain.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class OrderItemService {
+
+    private final UserRepository userRepository;
+    private final StreamerRepository streamerRepository;
+    private final StoreRepository storeRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final OrderRepository orderRepository;
+    private final PointRepository pointRepository;
+    private final PointTransactionRepository pointTransactionRepository;
+    private final ItemRepository itemRepository;
+
+    @Transactional
+    public void createOrderItemList(List<OrderItemRequestDto> requestList) {
+        /**
+         * [주문 조건]
+         * 1. 주문은 CUSTOMER만 가능
+         * 2. CUSTOMER의 point가 없는 경우 충전해야한다고 에러 발생
+         * 3. 요청시에 모든 주문의 배달장소는 1개로 동일해야함
+         * 4. 요청 주문 아이템 id 갯수와 실제 주문 아이템 갯수가 일치하는지 확인
+         * 5. 요청한 아이템들의 Store가 동일한지 확인
+         */
+
+        Integer userId = 1; // 이후 user 와 streamer 로그인에서 id 완성되면 수정
+        UserRole userRole = UserRole.valueOf("CUSTOMER"); // 이후 user 와 streamer 로그인 완성되면 수정
+
+        // 1. 주문은 CUSTOMER만 가능
+        if (!userRole.equals(UserRole.CUSTOMER)) {
+            throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+        }
+
+        // 2. CUSTOMER의 point가 없는 경우 충전해야한다고 에러 발생
+        Point userPoint = pointRepository.findByUserRoleAndUserOrStreamerId(
+                UserRole.CUSTOMER, userId
+        ).orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+
+        // 3. 요청시에 모든 주문의 배달장소는 1개로 동일해야함
+        Set<String> AddressSet = requestList.stream()
+                .map(OrderItemRequestDto::getAddress)
+                .collect(Collectors.toSet());
+
+        if (AddressSet.size() != 1) {
+            throw new BadRequestException(ErrorCode.ITEM_NOT_FOUND); // 나중에 예외처리 코드 수정 필요
+        }
+
+        String address = requestList.get(0).getAddress();
+
+
+        // 4. 요청 주문 아이템 id 갯수와 실제 주문 아이템 갯수가 일치하는지 확인
+        List<Integer> itemIdList = requestList.stream()
+                .map(OrderItemRequestDto::getItemId)
+                .toList();
+
+        List<Item> itemList = itemRepository.findAllById(itemIdList);
+
+        if (itemList.size() != itemIdList.size()) {
+            throw new NotFoundException(ErrorCode.ITEM_NOT_FOUND);
+        }
+
+
+        // 5. 모든 아이템의 Store가 동일한지 확인
+        Set<Store> storeSet = itemList.stream()
+                .map(Item::getStore)
+                .collect(Collectors.toSet());
+
+        if (storeSet.size() != 1) {
+            throw new BadRequestException(ErrorCode.ITEM_NOT_FOUND); // 나중에 예외처리 코드 수정 필요
+        }
+
+        Store store = storeSet.iterator().next();
+
+
+
+        // 주문 아이템 생성 및 총 금액 계산
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+
+        Order order = new Order(user, OrderStatus.ORDERED, address);
+
+        List<OrderItem> orderItemList = new ArrayList<>();
+
+        int totalAmount = 0;
+
+        for (OrderItemRequestDto dto : requestList) {
+            Item item = itemList.stream()
+                    .filter(i -> i.getId().equals(dto.getItemId()))
+                    .findFirst()
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
+
+            // 가격 합산
+            totalAmount += item.getPrice() * dto.getItemQuantity();
+
+            // 주문 아이템 추가
+            orderItemList.add(new OrderItem(order, item, dto.getItemQuantity()));
+        }
+
+        // 포인트 거래 생성
+        PointTransaction pointTransaction = PointTransaction.builder()
+                .order(order)
+                .user(user)
+                .store(store)
+                .transactionType(TransactionType.PURCHASE)
+                .amount(totalAmount)
+                .build();
+
+        // Streamer의 포인트 조회 또는 초기화
+        Point streamerPoint = pointRepository.findByUserRoleAndUserOrStreamerId(
+                store.getStreamer().getUserRole(), store.getStreamer().getId()
+        ).orElseGet(() -> new Point(store.getStreamer().getUserRole(), store.getStreamer().getId(), 0));
+
+
+        // 포인트 추가
+        userPoint.disChargeAmount(totalAmount);
+        streamerPoint.chargeAmount(totalAmount);
+
+        // 데이터 저장
+        orderRepository.save(order);
+        pointRepository.save(streamerPoint);
+        orderItemRepository.saveAll(orderItemList);
+        pointTransactionRepository.save(pointTransaction);
+
+    }
+}
