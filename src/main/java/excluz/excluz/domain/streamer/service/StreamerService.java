@@ -13,7 +13,7 @@ import excluz.excluz.domain.streamer.dto.request.StreamerLoginRequestDto;
 import excluz.excluz.domain.streamer.dto.request.StreamerSignupRequestDto;
 import excluz.excluz.domain.streamer.dto.request.StreamerUpdateRequestDto;
 import excluz.excluz.domain.streamer.dto.response.StreamerLoginResponseDto;
-import excluz.excluz.domain.streamer.dto.response.StreamerUpdateResponseDto;
+import excluz.excluz.domain.streamer.dto.response.StreamerResponseDto;
 import excluz.excluz.domain.streamer.repository.StreamerRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -71,7 +71,7 @@ public class StreamerService {
 	}
 
 	@Transactional
-	public StreamerUpdateResponseDto updateStreamer(Integer streamerId, StreamerUpdateRequestDto requestDto) {
+	public StreamerResponseDto updateStreamer(Integer streamerId, StreamerUpdateRequestDto requestDto) {
 		Streamer streamer = findStreamerById(streamerId);
 
 		if (streamer.isDeleted()) {
@@ -84,7 +84,7 @@ public class StreamerService {
 			requestDto.getPhoneNumber(),
 			requestDto.getEmail());
 
-		return StreamerUpdateResponseDto.from(streamer);
+		return StreamerResponseDto.from(streamer);
 	}
 
 	/* 기타 메서드 */

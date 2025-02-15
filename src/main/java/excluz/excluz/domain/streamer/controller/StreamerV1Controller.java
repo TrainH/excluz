@@ -47,13 +47,13 @@ public class StreamerV1Controller {
 
 	@PatchMapping()
 	@PreAuthorize("hasRole('STREAMER')")
-	public ResponseEntity<StreamerUpdateResponseDto> updateStreamer(
+	public ResponseEntity<StreamerResponseDto> updateStreamer(
 		@AuthenticationPrincipal User user,
 		@RequestBody StreamerUpdateRequestDto requestDto
 	) {
 		Integer streamerId = Integer.valueOf(user.getUsername());
 
-		StreamerUpdateResponseDto responseDto = streamerService.updateStreamer(streamerId, requestDto);
+		StreamerResponseDto responseDto = streamerService.updateStreamer(streamerId, requestDto);
 
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}

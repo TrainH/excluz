@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class StreamerUpdateResponseDto {
+public class StreamerResponseDto {
 
 	private String name;
 	private String nickName;
@@ -15,7 +15,7 @@ public class StreamerUpdateResponseDto {
 	private String email;
 
 	@Builder
-	public StreamerUpdateResponseDto(
+	public StreamerResponseDto(
 		String name,
 		String nickName,
 		String phoneNumber,
@@ -27,8 +27,8 @@ public class StreamerUpdateResponseDto {
 		this.email=email;
 	}
 
-	public static StreamerUpdateResponseDto from(Streamer streamer) {
-		return StreamerUpdateResponseDto.builder()
+	public static StreamerResponseDto from(Streamer streamer) {
+		return StreamerResponseDto.builder()
 			.name(streamer.getName())
 			.nickName(streamer.getNickName())
 			.phoneNumber(streamer.getPhoneNumber())
