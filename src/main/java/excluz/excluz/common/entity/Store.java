@@ -40,9 +40,9 @@ public class Store extends BaseEntity {
 
 	@Builder
 	public Store(Streamer streamer,
-				 String address,
-				 String storeName,
-				 String registrationNumber) {
+		String address,
+		String storeName,
+		String registrationNumber) {
 		this.streamer = streamer;
 		this.address = address;
 		this.registrationNumber = registrationNumber;
@@ -52,5 +52,15 @@ public class Store extends BaseEntity {
 
 	public void updateIsDeleted(boolean isDeleted) {
 		this.isDeleted = isDeleted;
+	}
+
+	public void updateStore(
+		String address,
+		String storeName,
+		String registrationNumber
+	) {
+		if (address != null) this.address = address;
+		if (storeName != null) this.storeName = storeName;
+		if (registrationNumber != null) this.registrationNumber = registrationNumber;
 	}
 }
