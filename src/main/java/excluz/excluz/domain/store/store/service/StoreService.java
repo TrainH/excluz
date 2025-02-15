@@ -7,14 +7,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import excluz.excluz.common.entity.Item;
 import excluz.excluz.common.entity.Store;
 import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.common.exception.BadRequestException;
+import excluz.excluz.domain.store.item.dto.response.ItemResponseDto;
+import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.store.store.dto.request.StoreDeleteRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreUpdateRequestDto;
+import excluz.excluz.domain.store.store.dto.response.StoreDetailResponseDto;
 import excluz.excluz.domain.store.store.dto.response.StoreResponseDto;
 import excluz.excluz.domain.store.store.dto.response.StoreUpdateResponseDto;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
@@ -26,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 public class StoreService {
 
 	private final StoreRepository storeRepository;
+	private final ItemRepository itemRepository;
 	private final StreamerService streamerService;
 	private final PasswordEncoder passwordEncoder;
 
@@ -64,14 +69,7 @@ public class StoreService {
 
 	@Transactional
 	public StoreUpdateResponseDto updateStore(Integer storeId, StoreUpdateRequestDto requestDto) {
-		Store store = storeRepository.findById(storeId).orElseThrow(
-			() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND)
-		);
-
-		// 삭제된 스토어는 업데이트 불가
-		if (store.isDeleted()) {
-			throw new NotFoundException(ErrorCode.STORE_NOT_FOUND);
-		}
+		Store store = getStoreByIdAndNotDeleted(storeId);
 
 		store.updateStore(requestDto.getAddress(),
 			requestDto.getStoreName(),
@@ -84,9 +82,23 @@ public class StoreService {
 	public Page<StoreResponseDto> getStoreList(String storeName, int page, int size) {
 		Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
 
-		Page<Store> stores = storeRepository.findByStoreName(pageable, storeName);
+		Page<Store> storeList = storeRepository.findByStoreName(pageable, storeName);
 
-		return stores.map(store -> new StoreResponseDto(store.getStoreName()));
+		return storeList.map(store -> new StoreResponseDto(store.getStoreName()));
+	}
+
+	@Transactional(readOnly = true)
+	public StoreDetailResponseDto getStoreById(Integer storeId, int page, int size) {
+		Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
+		Streamer streamer = storeRepository.findStreamerWithStore(storeId).orElseThrow(
+			() -> new NotFoundException(ErrorCode.USER_NOT_FOUND)
+		);
+
+		Store store = getStoreByIdAndNotDeleted(storeId);
+
+		Page<Item> itemList = itemRepository.findByStoreId(storeId,pageable);
+
+		return StoreDetailResponseDto.of(streamer.getNickName(), store, itemList.map(item -> new ItemResponseDto()));
 	}
 
 	// 삭제 되지 않은 유저만 반환
@@ -97,5 +109,17 @@ public class StoreService {
 			throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
 		}
 		return streamer;
+	}
+
+
+	private Store getStoreByIdAndNotDeleted(Integer storeId) {
+		Store store = storeRepository.findById(storeId).orElseThrow(
+			() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND)
+		);
+
+		if (store.isDeleted()) {
+			throw new NotFoundException(ErrorCode.STORE_NOT_FOUND);
+		}
+		return store;
 	}
 }
