@@ -1,5 +1,6 @@
 package excluz.excluz.domain.streamer.controller;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -69,5 +70,16 @@ public class StreamerV1Controller {
 		StreamerResponseDto responseDto = streamerService.getPersonalInfo(streamerId);
 
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
+
+	@GetMapping()
+	public ResponseEntity<Page<StreamerSummaryResponseDto>> getStreamerList(
+		@RequestParam(required = false) String nickName,
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "10") int size
+	) {
+		Page<StreamerSummaryResponseDto> responseDtoList = streamerService.getStreamerList(page, size, nickName);
+
+		return new ResponseEntity<>(responseDtoList, HttpStatus.OK);
 	}
 }
