@@ -92,4 +92,17 @@ public class StoreV1Controller {
 
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
+
+	@GetMapping("/my-store")
+	public ResponseEntity<StoreDetailResponseDto> getOwnedStore(
+		@AuthenticationPrincipal User user,
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "10") int size
+	) {
+		Integer streamerId = Integer.valueOf(user.getUsername());
+
+		StoreDetailResponseDto responseDto = storeService.getOwnedStoreById(streamerId, page, size);
+
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
 }
