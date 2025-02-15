@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import excluz.excluz.common.entity.Store;
 import excluz.excluz.common.entity.Streamer;
+import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.common.exception.BadRequestException;
@@ -51,7 +52,7 @@ public class StoreService {
 	}
 
 	@Transactional
-	public StoreUpdateResponseDto updateStore(Integer storeId, StoreUpdateRequestDto requestDto) {
+	public StoreUpdateResponseDto updateStore(Integer userId, Integer storeId, StoreUpdateRequestDto requestDto) {
 		Store store = storeRepository.findById(storeId).orElseThrow(
 			() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND)
 		);
@@ -59,6 +60,11 @@ public class StoreService {
 		// 삭제된 스토어는 업데이트 불가
 		if (store.isDeleted()) {
 			throw new NotFoundException(ErrorCode.STORE_NOT_FOUND);
+		}
+
+		// 스토어 주인 검증 로직
+		if (!store.getStreamer().getId().equals(userId)) {
+			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
 		}
 
 		store.updateStore(requestDto.getAddress(),
