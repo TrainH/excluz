@@ -87,6 +87,17 @@ public class StreamerService {
 		return StreamerResponseDto.from(streamer);
 	}
 
+	@Transactional(readOnly = true)
+	public StreamerResponseDto getPersonalInfo(Integer streamerId) {
+		Streamer streamer =findStreamerById(streamerId);
+
+		if (streamer.isDeleted()) {
+			throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
+		}
+
+		return StreamerResponseDto.from(streamer);
+	}
+
 	/* 기타 메서드 */
 	public Streamer findStreamerById(Integer streamerId) {
 		return streamerRepository.findById(streamerId).orElseThrow(
