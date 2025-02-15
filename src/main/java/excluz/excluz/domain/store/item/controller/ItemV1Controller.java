@@ -3,6 +3,7 @@ package excluz.excluz.domain.store.item.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ public class ItemV1Controller {
 	private final ItemService itemService;
 
 	@PostMapping()
+	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<Void> createItem(
 		@AuthenticationPrincipal User user,
 		@Valid @RequestBody ItemCreateRequestDto createRequestDto
@@ -35,6 +37,7 @@ public class ItemV1Controller {
 	}
 
 	@PatchMapping("/{itemsId}/disable")
+	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<Void> deleteItem(@PathVariable Integer itemsId) {
 
 		itemService.deleteItem(itemsId);
@@ -43,12 +46,16 @@ public class ItemV1Controller {
 	}
 
 	@PatchMapping("/{itemsId}")
+	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<ItemResponseDto> updateItemInfo(
+		@AuthenticationPrincipal User user,
 		@PathVariable Integer itemsId,
 		@RequestBody(required = false) ItemUpdateRequestDto itemUpdateRequestDto
 	) {
 
-		ItemResponseDto responseDto = itemService.updateItemInfo(itemUpdateRequestDto, itemsId);
+		Integer userId = Integer.valueOf(user.getUsername());
+
+		ItemResponseDto responseDto = itemService.updateItemInfo(itemUpdateRequestDto, itemsId, userId);
 
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
