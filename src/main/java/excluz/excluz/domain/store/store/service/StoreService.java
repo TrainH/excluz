@@ -96,12 +96,32 @@ public class StoreService {
 
 		Store store = getStoreByIdAndNotDeleted(storeId);
 
-		Page<Item> itemList = itemRepository.findByStoreId(storeId,pageable);
+		Page<Item> itemList = itemRepository.findByStoreId(storeId, pageable);
 
 		return StoreDetailResponseDto.of(streamer.getNickName(), store, itemList.map(item -> new ItemResponseDto()));
 	}
 
-	// 삭제 되지 않은 유저만 반환
+	@Transactional(readOnly = true)
+	public StoreDetailResponseDto getOwnedStoreById(Integer streamerId, int page, int size) {
+		Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
+		// 스트리머 삭제 회원 여부 확인
+		Streamer streamer = getStreamerByIdAndNotDeleted(streamerId);
+
+		// 스트리머 본인 스토어 조회
+		Store store = storeRepository.findStoreWithStreamer(streamerId).orElseThrow(
+			() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND)
+		);
+
+		if (store.isDeleted()) {
+			throw new NotFoundException(ErrorCode.STORE_NOT_FOUND);
+		}
+
+		Page<Item> itemList = itemRepository.findByStoreId(store.getId(), pageable);
+
+		return StoreDetailResponseDto.of(streamer.getNickName(), store, itemList.map(item -> new ItemResponseDto()));
+	}
+
+	// 탈퇴하지 않은 스트리머만 반환
 	private Streamer getStreamerByIdAndNotDeleted(Integer streamerId) {
 		Streamer streamer = streamerService.findStreamerById(streamerId);
 
@@ -111,7 +131,7 @@ public class StoreService {
 		return streamer;
 	}
 
-
+	// 삭제되지 않은 스토어만 반환
 	private Store getStoreByIdAndNotDeleted(Integer storeId) {
 		Store store = storeRepository.findById(storeId).orElseThrow(
 			() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND)
