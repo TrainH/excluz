@@ -3,6 +3,7 @@ package excluz.excluz.domain.store.item.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,7 +36,7 @@ public class ItemV1Controller {
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
-	@DeleteMapping("/{itemsId}")
+	@PatchMapping("/{itemsId}/disable")
 	public ResponseEntity<Void> deleteItem(@PathVariable Integer itemsId) {
 
 		itemService.deleteItem(itemsId);
