@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import excluz.excluz.domain.store.store.dto.request.StoreDeleteRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreUpdateRequestDto;
+import excluz.excluz.domain.store.store.dto.response.StoreDetailResponseDto;
 import excluz.excluz.domain.store.store.dto.response.StoreResponseDto;
 import excluz.excluz.domain.store.store.dto.response.StoreUpdateResponseDto;
 import excluz.excluz.domain.store.store.service.StoreService;
@@ -39,6 +40,7 @@ public class StoreV1Controller {
 	) {
 
 		Integer streamerId = Integer.valueOf(user.getUsername());
+
 		storeService.createStore(storeRequestDto, streamerId);
 
 		return new ResponseEntity<>(HttpStatus.CREATED);
@@ -50,7 +52,9 @@ public class StoreV1Controller {
 		@PathVariable Integer storeId,
 		@Valid @RequestBody StoreDeleteRequestDto deleteRequestDto
 	) {
+
 		Integer streamerId = Integer.valueOf(user.getUsername());
+
 		storeService.deleteStore(deleteRequestDto, streamerId, storeId);
 
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -75,5 +79,17 @@ public class StoreV1Controller {
 		Page<StoreResponseDto> responseDtoList = storeService.getStoreList(storeName, page, size);
 
 		return new ResponseEntity<>(responseDtoList, HttpStatus.OK);
+	}
+
+	@GetMapping("/{storeId}")
+	public ResponseEntity<StoreDetailResponseDto> getStoreById(
+		@PathVariable Integer storeId,
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "10") int size
+	) {
+
+		StoreDetailResponseDto responseDto = storeService.getStoreById(storeId, page, size);
+
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 }
