@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import excluz.excluz.common.entity.Item;
 import excluz.excluz.common.entity.Store;
 import excluz.excluz.common.entity.Streamer;
+import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.common.exception.BadRequestException;
@@ -70,6 +71,11 @@ public class StoreService {
 	@Transactional
 	public StoreUpdateResponseDto updateStore(Integer storeId, StoreUpdateRequestDto requestDto) {
 		Store store = getStoreByIdAndNotDeleted(storeId);
+
+		// 스토어 주인 검증 로직
+		if (!store.getStreamer().getId().equals(userId)) {
+			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+		}
 
 		store.updateStore(requestDto.getAddress(),
 			requestDto.getStoreName(),

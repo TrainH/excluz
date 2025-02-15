@@ -38,7 +38,6 @@ public class StoreV1Controller {
 		@AuthenticationPrincipal User user,
 		@Valid @RequestBody StoreRequestDto storeRequestDto
 	) {
-
 		Integer streamerId = Integer.valueOf(user.getUsername());
 
 		storeService.createStore(storeRequestDto, streamerId);
@@ -62,10 +61,14 @@ public class StoreV1Controller {
 
 	@PatchMapping("/{storeId}")
 	public ResponseEntity<StoreUpdateResponseDto> updateStore(
+		@AuthenticationPrincipal User user,
 		@PathVariable Integer storeId,
 		@RequestBody StoreUpdateRequestDto requestDto
 	) {
-		StoreUpdateResponseDto responseDto = storeService.updateStore(storeId, requestDto);
+		Integer userId = Integer.valueOf(user.getUsername());
+
+		StoreUpdateResponseDto responseDto = storeService.updateStore(userId, storeId, requestDto);
+
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 
