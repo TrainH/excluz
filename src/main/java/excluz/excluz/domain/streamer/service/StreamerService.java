@@ -111,6 +111,19 @@ public class StreamerService {
 		return streamerList.map(StreamerSummaryResponseDto::from);
 	}
 
+	@Transactional(readOnly = true)
+	public StreamerSummaryResponseDto getStreamer(Integer streamerId) {
+		Streamer streamer = streamerRepository.findById(streamerId).orElseThrow(
+			() -> new NotFoundException(ErrorCode.USER_NOT_FOUND)
+		);
+
+		if (streamer.isDeleted()) {
+			throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
+		}
+
+		return StreamerSummaryResponseDto.from(streamer);
+	}
+
 	/* 기타 메서드 */
 	public Streamer findStreamerById(Integer streamerId) {
 		return streamerRepository.findById(streamerId).orElseThrow(
