@@ -41,14 +41,15 @@ public class StoreV1Controller {
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
-	@DeleteMapping("/{storeId}")
+	@PatchMapping("/{storeId}/disable")
 	public ResponseEntity<Void> deleteStore(
 		@AuthenticationPrincipal User user,
+		@PathVariable Integer storeId,
 		@Valid @RequestBody StoreDeleteRequestDto deleteRequestDto
 	) {
 		Integer streamerId = Integer.valueOf(user.getUsername());
 
-		storeService.deleteStore(deleteRequestDto, streamerId);
+		storeService.deleteStore(deleteRequestDto, streamerId, storeId);
 
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
