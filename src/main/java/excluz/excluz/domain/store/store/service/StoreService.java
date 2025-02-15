@@ -69,7 +69,7 @@ public class StoreService {
 	}
 
 	@Transactional
-	public StoreUpdateResponseDto updateStore(Integer storeId, StoreUpdateRequestDto requestDto) {
+	public StoreUpdateResponseDto updateStore(Integer userId, Integer storeId, StoreUpdateRequestDto requestDto) {
 		Store store = getStoreByIdAndNotDeleted(storeId);
 
 		// 스토어 주인 검증 로직
