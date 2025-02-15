@@ -22,16 +22,18 @@ public class StreamerV1Controller {
 	private final StreamerService streamerService;
 
 	@PostMapping("/signup")
-	public ResponseEntity<Void> streamerSignup(@Valid @RequestBody StreamerSignupRequestDto signupRequestDto) {
-
+	public ResponseEntity<Void> streamerSignup(
+		@Valid @RequestBody StreamerSignupRequestDto signupRequestDto
+	) {
 		streamerService.streamerSignup(signupRequestDto);
 
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<StreamerLoginResponseDto> streamerLogin(@Valid @RequestBody StreamerLoginRequestDto loginRequestDto) {
-
+	public ResponseEntity<StreamerLoginResponseDto> streamerLogin(
+		@Valid @RequestBody StreamerLoginRequestDto loginRequestDto
+	) {
 		return new ResponseEntity<>(streamerService.streamerLogin(loginRequestDto), HttpStatus.OK);
 	}
 
@@ -79,6 +81,15 @@ public class StreamerV1Controller {
 		@RequestParam(defaultValue = "10") int size
 	) {
 		Page<StreamerSummaryResponseDto> responseDtoList = streamerService.getStreamerList(page, size, nickName);
+
+		return new ResponseEntity<>(responseDtoList, HttpStatus.OK);
+	}
+
+	@GetMapping("/{streamerId}")
+	public ResponseEntity<StreamerSummaryResponseDto> getStreamer(
+		@PathVariable Integer streamerId
+	) {
+		StreamerSummaryResponseDto responseDtoList = streamerService.getStreamer(streamerId);
 
 		return new ResponseEntity<>(responseDtoList, HttpStatus.OK);
 	}
