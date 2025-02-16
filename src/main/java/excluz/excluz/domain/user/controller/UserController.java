@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import excluz.excluz.domain.user.dto.request.UserLoginRequestDto;
 import excluz.excluz.domain.user.dto.request.UserSignupRequestDto;
 import excluz.excluz.domain.user.dto.request.UserWithdrawRequestDto;
+import excluz.excluz.domain.user.dto.response.MyProfileResponseDto;
 import excluz.excluz.domain.user.dto.response.UserLoginResponseDto;
 import excluz.excluz.domain.user.dto.response.UserProfileResponseDto;
 import excluz.excluz.domain.user.dto.response.UserSignupResponseDto;
@@ -69,5 +70,15 @@ public class UserController {
 		UserProfileResponseDto profileResponseDto = userService.getProfile(userId);
 
 		return ResponseEntity.ok(profileResponseDto);
+	}
+
+	@GetMapping("/profile")
+	public ResponseEntity<MyProfileResponseDto> myPageGetAPI(@AuthenticationPrincipal User user) {
+
+		Integer userId = Integer.parseInt(user.getUsername());
+
+		MyProfileResponseDto myProfileResponse = userService.getMyProfile(userId);
+
+		return ResponseEntity.ok(myProfileResponse);
 	}
 }

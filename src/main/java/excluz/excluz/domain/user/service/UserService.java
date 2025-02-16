@@ -14,6 +14,7 @@ import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.user.dto.request.UserLoginRequestDto;
 import excluz.excluz.domain.user.dto.request.UserSignupRequestDto;
 import excluz.excluz.domain.user.dto.request.UserWithdrawRequestDto;
+import excluz.excluz.domain.user.dto.response.MyProfileResponseDto;
 import excluz.excluz.domain.user.dto.response.UserLoginResponseDto;
 import excluz.excluz.domain.user.dto.response.UserProfileResponseDto;
 import excluz.excluz.domain.user.dto.response.UserSignupResponseDto;
@@ -120,4 +121,13 @@ public class UserService {
 		return new UserProfileResponseDto(user);
 	}
 
+	// 마이페이지
+	@Transactional(readOnly = true)
+	public MyProfileResponseDto getMyProfile(Integer userId) {
+
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+
+		return new MyProfileResponseDto(user);
+	}
 }
