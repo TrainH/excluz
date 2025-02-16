@@ -11,10 +11,12 @@ import excluz.excluz.common.entity.User;
 import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
+import excluz.excluz.domain.user.dto.request.UpdateMyProfileRequestDto;
 import excluz.excluz.domain.user.dto.request.UserLoginRequestDto;
 import excluz.excluz.domain.user.dto.request.UserSignupRequestDto;
 import excluz.excluz.domain.user.dto.request.UserWithdrawRequestDto;
 import excluz.excluz.domain.user.dto.response.MyProfileResponseDto;
+import excluz.excluz.domain.user.dto.response.UpdateMyProfileResponseDto;
 import excluz.excluz.domain.user.dto.response.UserLoginResponseDto;
 import excluz.excluz.domain.user.dto.response.UserProfileResponseDto;
 import excluz.excluz.domain.user.dto.response.UserSignupResponseDto;
@@ -84,19 +86,19 @@ public class UserService {
 	// 회원탈퇴
 	@Transactional
 	public UserWithdrawResponseDto userWithdraw(
-		Integer userId, UserWithdrawRequestDto userWithdrawRequestDto) {
+		Integer userId, UserWithdrawRequestDto userWithdrawRequest) {
 
 		// 유저 정보를 userId 로 조회
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
 		// 리퀘스트 요청에 들어온 비밀번호와 재확인 비밀번호가 일치 하지 않을 시 예외
-		if (!userWithdrawRequestDto.getPassword().equals(userWithdrawRequestDto.getReEnterPassword())) {
+		if (!userWithdrawRequest.getPassword().equals(userWithdrawRequest.getReEnterPassword())) {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
 		// 비밀번호 검증 로직
-		if(!passwordEncoder.matches(userWithdrawRequestDto.getPassword(), user.getPassword())) {
+		if(!passwordEncoder.matches(userWithdrawRequest.getPassword(), user.getPassword())) {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
@@ -108,7 +110,7 @@ public class UserService {
 
 	// 유저 조회
 	@Transactional(readOnly = true)
-	public UserProfileResponseDto getProfile(Integer userId) {
+	public UserProfileResponseDto userGetProfile(Integer userId) {
 
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
@@ -123,11 +125,33 @@ public class UserService {
 
 	// 마이페이지
 	@Transactional(readOnly = true)
-	public MyProfileResponseDto getMyProfile(Integer userId) {
+	public MyProfileResponseDto userGetMyProfile(Integer userId) {
 
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
 		return new MyProfileResponseDto(user);
+	}
+
+	// 내정보 수정
+	@Transactional
+	public UpdateMyProfileResponseDto userUpdateMyProfile(Integer userId, UpdateMyProfileRequestDto updateMyProfileRequest) {
+
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+
+		// 비밀번호 검증로직
+		if(!passwordEncoder.matches(updateMyProfileRequest.getPassword(), user.getPassword())) {
+			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
+		}
+
+		user.updateUserProfile(
+			updateMyProfileRequest.getNickName(),
+			updateMyProfileRequest.getPhoneNumber(),
+			updateMyProfileRequest.getAddress(),
+			updateMyProfileRequest.getEmail()
+			);
+
+		return new UpdateMyProfileResponseDto("회원 정보가 수정되었습니다.");
 	}
 }

@@ -11,10 +11,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import excluz.excluz.domain.user.dto.request.UpdateMyProfileRequestDto;
 import excluz.excluz.domain.user.dto.request.UserLoginRequestDto;
 import excluz.excluz.domain.user.dto.request.UserSignupRequestDto;
 import excluz.excluz.domain.user.dto.request.UserWithdrawRequestDto;
 import excluz.excluz.domain.user.dto.response.MyProfileResponseDto;
+import excluz.excluz.domain.user.dto.response.UpdateMyProfileResponseDto;
 import excluz.excluz.domain.user.dto.response.UserLoginResponseDto;
 import excluz.excluz.domain.user.dto.response.UserProfileResponseDto;
 import excluz.excluz.domain.user.dto.response.UserSignupResponseDto;
@@ -67,7 +69,7 @@ public class UserController {
 	public ResponseEntity<UserProfileResponseDto> userProfileFindAPI(
 		@PathVariable(name = "userId") Integer userId){
 
-		UserProfileResponseDto profileResponseDto = userService.getProfile(userId);
+		UserProfileResponseDto profileResponseDto = userService.userGetProfile(userId);
 
 		return ResponseEntity.ok(profileResponseDto);
 	}
@@ -77,8 +79,20 @@ public class UserController {
 
 		Integer userId = Integer.parseInt(user.getUsername());
 
-		MyProfileResponseDto myProfileResponse = userService.getMyProfile(userId);
+		MyProfileResponseDto myProfileResponse = userService.userGetMyProfile(userId);
 
 		return ResponseEntity.ok(myProfileResponse);
+	}
+
+	@PatchMapping("/profile")
+	public ResponseEntity<UpdateMyProfileResponseDto> userProfileUpdate(
+		@AuthenticationPrincipal User user,
+		@RequestBody UpdateMyProfileRequestDto updateMyProfileRequest) {
+
+		Integer userId = Integer.parseInt(user.getUsername());
+
+		UpdateMyProfileResponseDto updateMyProfileResponse = userService.userUpdateMyProfile(userId, updateMyProfileRequest);
+
+		return ResponseEntity.ok(updateMyProfileResponse);
 	}
 }
