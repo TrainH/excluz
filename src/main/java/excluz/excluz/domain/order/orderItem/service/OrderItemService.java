@@ -153,4 +153,17 @@ public class OrderItemService {
         pointTransactionRepository.save(pointTransaction);
 
     }
+
+    @Transactional(readOnly = true)
+    public Page<OrderItemResponseDto> getOrderItemList(Pageable pageable) {
+        return orderItemRepository.findAll(pageable).map(OrderItemResponseDto::from);
+    }
+
+    @Transactional(readOnly = true)
+    public OrderItemResponseDto getOrderItem(Integer orderItemId) {
+        OrderItem orderItem = orderItemRepository.findById(orderItemId).orElseThrow(
+                ()-> new RuntimeException("OrderItem Not Found")
+        );
+        return OrderItemResponseDto.from(orderItem);
+    }
 }
