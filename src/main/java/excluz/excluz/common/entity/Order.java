@@ -1,5 +1,6 @@
 package excluz.excluz.common.entity;
 
+import excluz.excluz.domain.order.order.dto.request.OrderUpdateRequestDto;
 import excluz.excluz.domain.order.order.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -32,5 +33,10 @@ public class Order extends BaseEntity {
         this.user = user;
         this.orderStatus = orderStatus;
         this.address = address;
+    }
+
+    public void updateWith(OrderUpdateRequestDto requestDto){
+        this.orderStatus = requestDto.orderStatus();
+        this.address = requestDto.address();
     }
 }
