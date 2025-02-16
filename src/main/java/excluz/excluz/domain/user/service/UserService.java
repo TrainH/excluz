@@ -15,6 +15,7 @@ import excluz.excluz.domain.user.dto.request.UserLoginRequestDto;
 import excluz.excluz.domain.user.dto.request.UserSignupRequestDto;
 import excluz.excluz.domain.user.dto.request.UserWithdrawRequestDto;
 import excluz.excluz.domain.user.dto.response.UserLoginResponseDto;
+import excluz.excluz.domain.user.dto.response.UserProfileResponseDto;
 import excluz.excluz.domain.user.dto.response.UserSignupResponseDto;
 import excluz.excluz.domain.user.dto.response.UserWithdrawResponseDto;
 import excluz.excluz.domain.user.repository.UserRepository;
@@ -98,8 +99,25 @@ public class UserService {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
+		// 유저의 isDelete의 상태가 true 가 됨
 		user.updateUserStatus(true);
 
 		return new UserWithdrawResponseDto("회원탈퇴가 완료되었습니다 저희 서비스를 이용해주셔서 감사합니다.");
 	}
+
+	// 유저 조회
+	@Transactional(readOnly = true)
+	public UserProfileResponseDto getProfile(Integer userId) {
+
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+
+		// 탈퇴한 회원 조회시 예외처리
+		if (user.getIsDeleted()) {
+			throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
+		}
+
+		return new UserProfileResponseDto(user);
+	}
+
 }
