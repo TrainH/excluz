@@ -11,12 +11,14 @@ import excluz.excluz.common.entity.User;
 import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
+import excluz.excluz.domain.user.dto.UpdatePasswordRequestDto;
 import excluz.excluz.domain.user.dto.request.UpdateMyProfileRequestDto;
 import excluz.excluz.domain.user.dto.request.UserLoginRequestDto;
 import excluz.excluz.domain.user.dto.request.UserSignupRequestDto;
 import excluz.excluz.domain.user.dto.request.UserWithdrawRequestDto;
 import excluz.excluz.domain.user.dto.response.MyProfileResponseDto;
 import excluz.excluz.domain.user.dto.response.UpdateMyProfileResponseDto;
+import excluz.excluz.domain.user.dto.response.UpdatePasswordResponseDto;
 import excluz.excluz.domain.user.dto.response.UserLoginResponseDto;
 import excluz.excluz.domain.user.dto.response.UserProfileResponseDto;
 import excluz.excluz.domain.user.dto.response.UserSignupResponseDto;
@@ -45,7 +47,7 @@ public class UserService {
 
 		// 리퀘스트 요청에 들어온 비밀번호와 재확인 비밀번호가 일치 하지 않을 시 예외
 		if (!signupRequest.getPassword().equals(signupRequest.getReEnterPassword())) {
-			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
+			throw new BadRequestException(ErrorCode.PASSWORD_RE_ENTER_PASSWORD_MISMATCH);
 		}
 
 		// 비밀번호 해싱 처리
@@ -94,7 +96,7 @@ public class UserService {
 
 		// 리퀘스트 요청에 들어온 비밀번호와 재확인 비밀번호가 일치 하지 않을 시 예외
 		if (!userWithdrawRequest.getPassword().equals(userWithdrawRequest.getReEnterPassword())) {
-			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
+			throw new BadRequestException(ErrorCode.PASSWORD_RE_ENTER_PASSWORD_MISMATCH);
 		}
 
 		// 비밀번호 검증 로직
@@ -152,6 +154,31 @@ public class UserService {
 			updateMyProfileRequest.getEmail()
 			);
 
-		return new UpdateMyProfileResponseDto("회원 정보가 수정되었습니다.");
+		return new UpdateMyProfileResponseDto("회원 정보가 수정되었습니다.", user);
+	}
+
+	// 비밀번호 변경 로직
+	@Transactional
+	public UpdatePasswordResponseDto userUpdatePassword(Integer userId, UpdatePasswordRequestDto updatePasswordRequest) {
+
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+
+		// 비밀번호 검증 로직
+		if(!passwordEncoder.matches(updatePasswordRequest.getOldPassword(), user.getPassword())) {
+			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
+		}
+
+		// 새로운 비밀번호와 재입력 비밀번호 검증 로직
+		if(!updatePasswordRequest.getNewPassword().equals(updatePasswordRequest.getReEnterPassword())) {
+			throw new BadRequestException(ErrorCode.PASSWORD_RE_ENTER_PASSWORD_MISMATCH);
+		}
+
+		// 새로운 비밀번호 해싱처리
+		String bcryptPassword = passwordEncoder.encode(updatePasswordRequest.getNewPassword());
+
+		user.updatePassword(bcryptPassword);
+
+		return new UpdatePasswordResponseDto("비밀번호가 업데이트 되었습니다.", user);
 	}
 }

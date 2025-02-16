@@ -82,6 +82,10 @@ public class User extends BaseEntity{
 		this.isDeleted = isDeleted;
 	}
 
+	public void updatePassword(String password) {
+		this.password = password;
+	}
+
 	public void updateUserProfile(
 			String nickName,
 			String phoneNumber,
