@@ -38,7 +38,7 @@ public class OrderService {
         }
 
         if (userRole.equals(UserRole.STREAMER.getRole())) {
-            return orderRepository.findByStreamerId(userOrStreamerId, pageable).map(OrderResponseDto::from);
+            return orderRepository.findByStreamerId(userOrStreamerId, pageable);
         }
 
         throw new IllegalArgumentException("not found") ;
