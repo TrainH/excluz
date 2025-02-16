@@ -36,7 +36,7 @@ public class Order extends BaseEntity {
     }
 
     public void updateWith(OrderUpdateRequestDto requestDto){
-        this.orderStatus = requestDto.orderStatus();
-        this.address = requestDto.address();
+        this.orderStatus = requestDto.getOrderStatus();
+        this.address = requestDto.getAddress();
     }
 }
