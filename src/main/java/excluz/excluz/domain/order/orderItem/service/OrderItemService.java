@@ -5,6 +5,7 @@ import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
+import excluz.excluz.domain.order.order.dto.response.OrderResponseDto;
 import excluz.excluz.domain.order.order.enums.OrderStatus;
 import excluz.excluz.domain.order.order.repository.OrderRepository;
 import excluz.excluz.domain.order.orderItem.dto.request.OrderItemRequestDto;
@@ -44,7 +45,7 @@ public class OrderItemService {
     private final ItemRepository itemRepository;
 
     @Transactional
-    public void createOrderItemList(List<OrderItemRequestDto> requestList) {
+    public void createOrderItemList(Integer userOrStreamerId, String userRole, List<OrderItemRequestDto> requestList) {
         /**
          * [주문 조건]
          * 1. 주문은 CUSTOMER만 가능
@@ -54,17 +55,14 @@ public class OrderItemService {
          * 5. 요청한 아이템들의 Store가 동일한지 확인
          */
 
-        Integer userId = 1; // 이후 user 와 streamer 로그인에서 id 완성되면 수정
-        UserRole userRole = UserRole.valueOf("CUSTOMER"); // 이후 user 와 streamer 로그인 완성되면 수정
-
-        // 1. 주문은 CUSTOMER만 가능
-        if (!userRole.equals(UserRole.CUSTOMER)) {
+        //  1. 주문은 CUSTOMER만 가능
+        if (!userRole.equals(UserRole.CUSTOMER.getRole())) {
             throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
         }
 
         // 2. CUSTOMER의 point가 없는 경우 충전해야한다고 에러 발생
         Point userPoint = pointRepository.findByUserRoleAndUserOrStreamerId(
-                UserRole.CUSTOMER, userId
+                UserRole.CUSTOMER, userOrStreamerId
         ).orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         // 3. 요청시에 모든 주문의 배달장소는 1개로 동일해야함
@@ -105,7 +103,7 @@ public class OrderItemService {
 
 
         // 주문 아이템 생성 및 총 금액 계산
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(userOrStreamerId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         Order order = new Order(user, OrderStatus.ORDERED, address);
@@ -155,15 +153,35 @@ public class OrderItemService {
     }
 
     @Transactional(readOnly = true)
-    public Page<OrderItemResponseDto> getOrderItemList(Pageable pageable) {
-        return orderItemRepository.findAll(pageable).map(OrderItemResponseDto::from);
+    public Page<OrderItemResponseDto> getOrderItemList(Integer userOrStreamerId, String userRole, Pageable pageable) {
+
+        if (userRole.equals(UserRole.CUSTOMER.getRole())) {
+            return orderItemRepository.findByUserId(userOrStreamerId, pageable).map(OrderItemResponseDto::from);
+        }
+
+        if (userRole.equals(UserRole.STREAMER.getRole())) {
+            return orderItemRepository.findByStreamerId(userOrStreamerId, pageable).map(OrderItemResponseDto::from);
+        }
+        throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
     }
 
     @Transactional(readOnly = true)
-    public OrderItemResponseDto getOrderItem(Integer orderItemId) {
-        OrderItem orderItem = orderItemRepository.findById(orderItemId).orElseThrow(
-                ()-> new RuntimeException("OrderItem Not Found")
-        );
-        return OrderItemResponseDto.from(orderItem);
+    public OrderItemResponseDto getOrderItem(Integer userOrStreamerId, String userRole, Integer orderItemId) {
+        if (userRole.equals(UserRole.CUSTOMER.getRole())) {
+            return orderItemRepository
+                    .getByIdAndUserId(orderItemId, userOrStreamerId)
+                    . map(OrderItemResponseDto::from).orElseThrow(
+                            () -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND)
+                    );
+        }
+
+        if (userRole.equals(UserRole.STREAMER.getRole())) {
+            return orderItemRepository
+                    .getByIdAndStreamerId(orderItemId, userOrStreamerId)
+                    .map(OrderItemResponseDto::from).orElseThrow(
+                            () -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND)
+                    );
+        }
+        throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
     }
 }
