@@ -23,4 +23,18 @@ public class OrderItemController {
         orderItemService.createOrderItemList(requestList);
         return ResponseEntity.ok("주문이 완료 되었습니다.");
     }
+
+    @GetMapping("/order-items")
+    public ResponseEntity<Page<OrderItemResponseDto>> getOrderItemList(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int size){
+        Pageable pageable = PageRequest.of(page -1 ,size);
+
+        return ResponseEntity.ok(orderItemService.getOrderItemList(pageable));
+    }
+
+    @GetMapping("/order-items/{orderItemId}")
+    public ResponseEntity<OrderItemResponseDto> getOrderItem(@PathVariable Integer orderItemId){
+        return ResponseEntity.ok(orderItemService.getOrderItem(orderItemId));
+    }
 }
