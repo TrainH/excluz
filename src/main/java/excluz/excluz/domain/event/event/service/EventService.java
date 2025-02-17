@@ -66,8 +66,8 @@ public class EventService {
 
             Integer requestedItemQuantity = eventItemRequestDto.getQuantity();
             item.removeRemainingQuantity(requestedItemQuantity * eventRequestDto.getNumberOfWinners());
-            EventItem eventItem = new EventItem(savedEvent, item, requestedItemQuantity);
 
+            EventItem eventItem = new EventItem(savedEvent, item, requestedItemQuantity);
             eventItemList.add(eventItem);
         }
 
@@ -98,10 +98,39 @@ public class EventService {
         return EventResponseDto.fromWithItems(event, eventItems);
     }
 
+    // 이벤트 취소 시 재고 복구 및 이벤트 상태 변경 (예: 이벤트 취소 플래그 추가 등으로 확장 가능)
+    @Transactional
+    public void cancelEvent(Integer eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 이벤트를 찾을 수 없습니다. ID: " + eventId));
+
+        if (event.getIsCompleted()) {
+            throw new IllegalStateException("이미 마감된 이벤트는 취소할 수 없습니다.");
+        }
+
+        if (event.getIsDeleted()) {
+            return;
+        }
+
+        // 이벤트의 종료 여부를 endDatetime과 현재 시간으로 재확인 (종료, 취소시에도 재고 복구)
+        List<EventItem> eventItems = eventItemRepository.findByEvent(event);
+        for (EventItem eventItem : eventItems) {
+            Item item = eventItem.getItem();
+            item.addRemainingQuantity(eventItem.getQuantity() * event.getNumberOfWinners());
+        }
+
+        event.updateIsDeleted(true);
+        eventRepository.save(event);
+    }
+
     // 이벤트 마감 메서드 추가
     public EventClosingResponseDto closeEvent(Integer eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 이벤트를 찾을 수 없습니다. ID: " + eventId));
+
+        if (event.getIsDeleted()) {
+            throw new IllegalStateException("취소된 이벤트입니다.");
+        }
 
         if (event.getIsCompleted()) {
             throw new IllegalStateException("이미 마감된 이벤트입니다.");
@@ -109,7 +138,6 @@ public class EventService {
 
         // 이벤트 응모자 조회
         List<EventApplicant> applicantList = eventApplicantRepository.findByEvent(event);
-
         if (applicantList.isEmpty()) {
             throw new IllegalStateException("해당 이벤트에 응모자가 없습니다.");
         }
@@ -129,28 +157,23 @@ public class EventService {
                 }
             }
         } else if (event.getSelectionMethod() == SelectionMethod.FIRST_COME_FIRST_SERVED) {
-            
+//      응모시에 이미 WINNER/LOSER 구분 완료
         } else {
             throw new UnsupportedOperationException("지원되지 않는 선정 방식입니다.");
         }
 
         event.completeEvent();
 
-        // 변경사항 저장
         eventRepository.save(event);
         eventApplicantRepository.saveAll(applicantList);
 
-        // EventItems 조회
         List<EventItem> eventItems = eventItemRepository.findByEvent(event);
 
-        // 응답 DTO 생성
-        EventClosingResponseDto eventClosingResponseDto = EventClosingResponseDto.from(event, eventItems, applicantList);
-
-        return eventClosingResponseDto;
+        return EventClosingResponseDto.from(event, eventItems, applicantList);
     }
 
     private String generateUniqueCode() {
-        // 고유 코드 생성 로직 구현
+        // todo: 고유 코드 생성 로직 구현 (예제용 코드)
         return "UNIQUE_CODE" + eventRepository.count();
     }
 
