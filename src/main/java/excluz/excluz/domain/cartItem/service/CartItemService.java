@@ -95,15 +95,18 @@ public class CartItemService {
 		CartItem cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.CART_ITEM_NOT_FOUND));
 
-		// 장바구니에 담긴 상품의 정보 가져오기
+		// 장바구니에 담긴 해당 아이템의 정보 가져오기
 		Item item = cartItem.getItem();
 
-		// 재고 체크 (요청된 개수(기존 장바구니 개수 + 새로 요청한 개수)가 재고보다 많은 경우 예외 발생)
-		if (cartItem.getQuantity() + requestDto.getQuantity() > item.getRemainingQuantity()) {
+		// 사용자가 입력한 개수를 장바구니 속 해당 아이템의 최종 개수로 설정
+		Integer updatedQuantity = requestDto.getQuantity();
+
+		// 재고 체크 (요청된 개수가 재고보다 많은 경우 예외 발생)
+		if (updatedQuantity > item.getRemainingQuantity()) {
 			throw new BadRequestException(ErrorCode.OUT_OF_STOCK);
 		}
 
-		// 개수 업데이트
+		// 개수 업데이트 (기존 개수와 관계없이 사용자가 입력한 개수로 설정)
 		cartItem.updateQuantity(requestDto.getQuantity());
 
 		return GetCartItemResponseDto.builder()
