@@ -3,7 +3,9 @@ package excluz.excluz.domain.user.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,7 +56,7 @@ public class UserController {
 		return ResponseEntity.ok(userLoginResponseDto);
 	}
 
-	@PatchMapping("/withdraw")
+	@DeleteMapping("/soft")
 	public ResponseEntity<UserWithdrawResponseDto> userUnregisterAPI(
 		@AuthenticationPrincipal User user,
 		@RequestBody UserWithdrawRequestDto userWithdrawRequest) {
