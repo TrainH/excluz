@@ -43,7 +43,7 @@ public class ItemV1Controller {
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
-	@DeleteMapping("/{itemsId}")
+	@DeleteMapping("/{itemsId}/soft")
 	public ResponseEntity<Void> deleteItem(@PathVariable Integer itemsId) {
 
 		itemService.deleteItem(itemsId);
