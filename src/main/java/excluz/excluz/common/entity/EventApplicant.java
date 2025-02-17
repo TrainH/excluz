@@ -11,7 +11,8 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "event_applicants")
+@Table(name = "event_applicants",
+        uniqueConstraints = { @UniqueConstraint(columnNames = {"event_id", "email"}) } )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EventApplicant extends BaseEntity  {
 
@@ -23,7 +24,7 @@ public class EventApplicant extends BaseEntity  {
     @JoinColumn(name = "event_id", nullable = false)
     private Event event;
 
-    @Column(name = "email", length = 50, unique = true, nullable = false)
+    @Column(name = "email", length = 50, nullable = false)
     private String email;
 
     @Column(name = "applicant_name", length = 10, nullable = false)
