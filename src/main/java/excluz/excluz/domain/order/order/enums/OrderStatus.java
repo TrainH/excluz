@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public enum OrderStatus {
-    ORDERED("CUSTOMER"),          // 손님이 주문 생성
-    PREPARING("STREAMER"),        // 가게에서 준비 중
-    SHIPPING("STREAMER"),         // 가게에서 배달 시작
-    DELIVERED("CUSTOMER"),        // 손님이 주문 완료
-    CANCELED("CUSTOMER", "STREAMER"); // 손님 또는 가게가 주문 취소
+    ORDERED("ROLE_CUSTOMER"),          // 손님이 주문 생성
+    PREPARING("ROLE_STREAMER"),        // 가게에서 준비 중
+    SHIPPING("ROLE_STREAMER"),         // 가게에서 배달 시작
+    DELIVERED("ROLE_CUSTOMER"),        // 손님이 주문 완료
+    CANCELED("ROLE_CUSTOMER", "ROLE_STREAMER"); // 손님 또는 가게가 주문 취소
 
     private final String[] actorList;
 
@@ -31,6 +31,10 @@ public enum OrderStatus {
         return Arrays.stream(OrderStatus.values())
                 .filter(status -> Arrays.asList(status.actorList).contains(actor.toUpperCase()))
                 .collect(Collectors.toList());
+    }
+
+    public boolean canPerformAction(String actor) {
+        return Arrays.asList(actorList).contains(actor.toUpperCase());
     }
 
     public String[] getActorList() {

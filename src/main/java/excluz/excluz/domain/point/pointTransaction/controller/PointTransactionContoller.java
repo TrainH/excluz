@@ -7,6 +7,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,12 +22,22 @@ public class PointTransactionContoller {
     private final PointTransactionService pointTransactionService;
 
     @GetMapping("/points/transactions")
-    public ResponseEntity<Page<PointTransactionResponseDto>> getPointTransactions(
+    public ResponseEntity<Page<PointTransactionResponseDto>> getPointTransactionList(
+            @AuthenticationPrincipal User user,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "5") int size
     ) {
+        Integer userOrStreamerId = Integer.parseInt(user.getUsername());
+
+        String userRole = user.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse("No role assigned");
+
         Pageable pageable = PageRequest.of(page-1, size);
 
-        return ResponseEntity.ok(pointTransactionService.getPointTransactionList(pageable));
+        return ResponseEntity.ok(
+                pointTransactionService
+                        .getPointTransactionList(userOrStreamerId, userRole, pageable));
     }
 }

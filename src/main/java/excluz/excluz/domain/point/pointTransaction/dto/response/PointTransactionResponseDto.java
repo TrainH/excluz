@@ -33,7 +33,10 @@ public class PointTransactionResponseDto {
     public static PointTransactionResponseDto from(PointTransaction pointTransaction) {
         return PointTransactionResponseDto.builder()
                 .userNickName(pointTransaction.getUser().getNickName())
-                .streamerNickName(pointTransaction.getStore().getStreamer().getNickName())
+                .streamerNickName(pointTransaction.getStore() != null
+                                  && pointTransaction.getStore().getStreamer() != null
+                                    ? pointTransaction.getStore().getStreamer().getNickName()
+                                    : null)
                 .transactionType(pointTransaction.getTransactionType())
                 .amount(pointTransaction.getAmount())
                 .createdAt(pointTransaction.getCreatedAt())

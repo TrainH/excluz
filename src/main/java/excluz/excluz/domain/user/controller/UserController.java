@@ -1,15 +1,31 @@
 package excluz.excluz.domain.user.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import excluz.excluz.auth.util.SecurityContextUtil;
+import excluz.excluz.domain.user.dto.UpdatePasswordRequestDto;
+import excluz.excluz.domain.user.dto.request.UpdateMyProfileRequestDto;
 import excluz.excluz.domain.user.dto.request.UserLoginRequestDto;
 import excluz.excluz.domain.user.dto.request.UserSignupRequestDto;
+import excluz.excluz.domain.user.dto.request.UserWithdrawRequestDto;
+import excluz.excluz.domain.user.dto.response.MyProfileResponseDto;
+import excluz.excluz.domain.user.dto.response.UpdateMyProfileResponseDto;
+import excluz.excluz.domain.user.dto.response.UpdatePasswordResponseDto;
 import excluz.excluz.domain.user.dto.response.UserLoginResponseDto;
+import excluz.excluz.domain.user.dto.response.UserProfileResponseDto;
 import excluz.excluz.domain.user.dto.response.UserSignupResponseDto;
+import excluz.excluz.domain.user.dto.response.UserWithdrawResponseDto;
 import excluz.excluz.domain.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,5 +54,59 @@ public class UserController {
 		UserLoginResponseDto userLoginResponseDto = userService.userLogin(loginRequest);
 
 		return ResponseEntity.ok(userLoginResponseDto);
+	}
+
+	@DeleteMapping("/soft")
+	public ResponseEntity<UserWithdrawResponseDto> userUnregisterAPI(
+		@RequestBody UserWithdrawRequestDto userWithdrawRequest) {
+
+		Integer userId = SecurityContextUtil.getUserId();
+
+		UserWithdrawResponseDto userWithdrawResponseDto = userService.userWithdraw(userId, userWithdrawRequest);
+
+		return ResponseEntity.ok(userWithdrawResponseDto);
+	}
+
+	// 마이페이지가 아닌 다른 유저의 정보 조회
+	@GetMapping("/{userId}")
+	public ResponseEntity<UserProfileResponseDto> userProfileFindAPI(
+		@PathVariable(name = "userId") Integer userId){
+
+		UserProfileResponseDto profileResponseDto = userService.userGetProfile(userId);
+
+		return ResponseEntity.ok(profileResponseDto);
+	}
+
+	@GetMapping("/profile")
+	public ResponseEntity<MyProfileResponseDto> myPageGetAPI() {
+
+		Integer userId = SecurityContextUtil.getUserId();
+
+		MyProfileResponseDto myProfileResponse = userService.userGetMyProfile(userId);
+
+		return ResponseEntity.ok(myProfileResponse);
+	}
+
+	@PatchMapping("/profile")
+	public ResponseEntity<UpdateMyProfileResponseDto> userProfileUpdateAPI(
+		@AuthenticationPrincipal User user,
+		@RequestBody UpdateMyProfileRequestDto updateMyProfileRequest) {
+
+		Integer userId = SecurityContextUtil.getUserId();
+
+		UpdateMyProfileResponseDto updateMyProfileResponse = userService.userUpdateMyProfile(userId, updateMyProfileRequest);
+
+		return ResponseEntity.ok(updateMyProfileResponse);
+	}
+
+	@PutMapping("/password")
+	public ResponseEntity<UpdatePasswordResponseDto> userUpdatePasswordAPU(
+		@RequestBody UpdatePasswordRequestDto updatePasswordRequest) {
+
+		Integer userId = SecurityContextUtil.getUserId();
+
+		UpdatePasswordResponseDto updatePasswordResponse = userService.userUpdatePassword(userId, updatePasswordRequest);
+
+		return ResponseEntity.ok(updatePasswordResponse);
 	}
 }

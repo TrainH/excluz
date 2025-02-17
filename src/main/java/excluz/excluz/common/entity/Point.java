@@ -11,7 +11,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
-@Table(name = "points")
+@Table(name = "points", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"userRole", "userOrStreamerId"}) // 복합키
+})
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor

@@ -4,16 +4,25 @@ import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import excluz.excluz.auth.util.JwtUtil;
 import excluz.excluz.common.entity.User;
 import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
+import excluz.excluz.domain.user.dto.UpdatePasswordRequestDto;
+import excluz.excluz.domain.user.dto.request.UpdateMyProfileRequestDto;
 import excluz.excluz.domain.user.dto.request.UserLoginRequestDto;
 import excluz.excluz.domain.user.dto.request.UserSignupRequestDto;
+import excluz.excluz.domain.user.dto.request.UserWithdrawRequestDto;
+import excluz.excluz.domain.user.dto.response.MyProfileResponseDto;
+import excluz.excluz.domain.user.dto.response.UpdateMyProfileResponseDto;
+import excluz.excluz.domain.user.dto.response.UpdatePasswordResponseDto;
 import excluz.excluz.domain.user.dto.response.UserLoginResponseDto;
+import excluz.excluz.domain.user.dto.response.UserProfileResponseDto;
 import excluz.excluz.domain.user.dto.response.UserSignupResponseDto;
+import excluz.excluz.domain.user.dto.response.UserWithdrawResponseDto;
 import excluz.excluz.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -37,9 +46,7 @@ public class UserService {
 		}
 
 		// 리퀘스트 요청에 들어온 비밀번호와 재확인 비밀번호가 일치 하지 않을 시 예외
-		if (!signupRequest.getPassword().equals(signupRequest.getReEnterPassword())) {
-			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
-		}
+		matchPassword(signupRequest.getPassword(), signupRequest.getReEnterPassword());
 
 		// 비밀번호 해싱 처리
 		String bcryptPassword = passwordEncoder.encode(signupRequest.getPassword());
@@ -65,14 +72,114 @@ public class UserService {
 			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
 		// 비밀번호 검증 로직
-		if(!passwordEncoder.matches(loginRequest.getPassword(),user.getPassword())) {
-			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
-		}
+		validatePassword(loginRequest.getPassword(),user.getPassword());
 
 		// 토큰 생성 로직
 		String token = jwtUtil.createToken(user.getEmail(), user.getId(), user.getUserRole());
 
 		// 로그인 완료 메세지 및 토큰값 발행
 		return new UserLoginResponseDto("로그인 되었습니다.", token);
+	}
+
+	// 회원탈퇴
+	@Transactional
+	public UserWithdrawResponseDto userWithdraw(
+		Integer userId, UserWithdrawRequestDto userWithdrawRequest) {
+
+		// 유저 정보를 userId 로 조회
+		User user = userProfile(userId);
+
+		// 리퀘스트 요청에 들어온 비밀번호와 재확인 비밀번호가 일치 하지 않을 시 예외
+		matchPassword(userWithdrawRequest.getPassword(), userWithdrawRequest.getReEnterPassword());
+
+		// 비밀번호 검증 로직
+		validatePassword(userWithdrawRequest.getPassword(), user.getPassword());
+
+		// 유저의 isDeleted 의 상태가 true 가 됨
+		user.updateUserStatus(true);
+
+		return new UserWithdrawResponseDto("회원탈퇴가 완료되었습니다 저희 서비스를 이용해주셔서 감사합니다.");
+	}
+
+	// 유저 조회
+	@Transactional(readOnly = true)
+	public UserProfileResponseDto userGetProfile(Integer userId) {
+
+		User user = userProfile(userId);
+
+		// 탈퇴한 회원 조회시 예외처리
+		if (user.getIsDeleted()) {
+			throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
+		}
+
+		return new UserProfileResponseDto(user);
+	}
+
+	// 마이페이지
+	@Transactional(readOnly = true)
+	public MyProfileResponseDto userGetMyProfile(Integer userId) {
+
+		User user = userProfile(userId);
+
+		return new MyProfileResponseDto(user);
+	}
+
+	// 내정보 수정
+	@Transactional
+	public UpdateMyProfileResponseDto userUpdateMyProfile(Integer userId, UpdateMyProfileRequestDto updateMyProfileRequest) {
+
+		User user = userProfile(userId);
+
+		// 비밀번호 검증로직
+		validatePassword(updateMyProfileRequest.getPassword(), user.getPassword());
+
+		user.updateUserProfile(
+			updateMyProfileRequest.getNickName(),
+			updateMyProfileRequest.getPhoneNumber(),
+			updateMyProfileRequest.getAddress(),
+			updateMyProfileRequest.getEmail()
+			);
+
+		return new UpdateMyProfileResponseDto("회원 정보가 수정되었습니다.", user);
+	}
+
+	// 비밀번호 변경 로직
+	@Transactional
+	public UpdatePasswordResponseDto userUpdatePassword(Integer userId, UpdatePasswordRequestDto updatePasswordRequest) {
+
+		User user = userProfile(userId);
+
+		// 비밀번호 검증 로직
+		validatePassword(updatePasswordRequest.getOldPassword(), user.getPassword());
+
+		// 새로운 비밀번호와 재입력 비밀번호 검증 로직
+		matchPassword(updatePasswordRequest.getNewPassword(), updatePasswordRequest.getReEnterPassword());
+
+		// 새로운 비밀번호 해싱처리
+		String bcryptPassword = passwordEncoder.encode(updatePasswordRequest.getNewPassword());
+
+		user.updatePassword(bcryptPassword);
+
+		return new UpdatePasswordResponseDto("비밀번호가 업데이트 되었습니다.", user);
+	}
+
+	// 기타 메서드(비밀번호 검증)
+	private void validatePassword(String rawPassword, String encodedPassword) {
+		if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
+			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
+		}
+	}
+
+	// 기타 메서드(비밀번호와 재입력 비밀번호 검증)
+	private void matchPassword(String inputPassword, String reEnterPassword) {
+		if(!inputPassword.equals(reEnterPassword)) {
+			throw new BadRequestException(ErrorCode.PASSWORD_RE_ENTER_PASSWORD_MISMATCH);
+		}
+	}
+
+	// 기타 메서드 (회원 정보 조회)
+	private User userProfile(Integer userId) {
+		return userRepository.findById(userId)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 	}
 }

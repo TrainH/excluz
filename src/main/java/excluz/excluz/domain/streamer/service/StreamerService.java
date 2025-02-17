@@ -1,5 +1,8 @@
 package excluz.excluz.domain.streamer.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,7 +14,10 @@ import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.streamer.dto.request.StreamerLoginRequestDto;
 import excluz.excluz.domain.streamer.dto.request.StreamerSignupRequestDto;
+import excluz.excluz.domain.streamer.dto.request.StreamerUpdateRequestDto;
 import excluz.excluz.domain.streamer.dto.response.StreamerLoginResponseDto;
+import excluz.excluz.domain.streamer.dto.response.StreamerResponseDto;
+import excluz.excluz.domain.streamer.dto.response.StreamerSummaryResponseDto;
 import excluz.excluz.domain.streamer.repository.StreamerRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +31,7 @@ public class StreamerService {
 
 	@Transactional
 	public void streamerSignup(StreamerSignupRequestDto signupRequestDto) {
-		if(!signupRequestDto.getPassword().equals(signupRequestDto.getReEnterPassword())){
+		if (!signupRequestDto.getPassword().equals(signupRequestDto.getReEnterPassword())) {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
@@ -47,7 +53,7 @@ public class StreamerService {
 			() -> new NotFoundException(ErrorCode.UNAUTHORIZED_USER)
 		);
 
-		if(!passwordEncoder.matches(loginRequestDto.getPassword(), streamer.getPassword())){
+		if (!passwordEncoder.matches(loginRequestDto.getPassword(), streamer.getPassword())) {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
@@ -66,6 +72,56 @@ public class StreamerService {
 
 		// 소프트 딜리트
 		streamer.updateStreamerStatus(true);
+	}
+
+	@Transactional
+	public StreamerResponseDto updateStreamer(Integer streamerId, StreamerUpdateRequestDto requestDto) {
+		Streamer streamer = findStreamerById(streamerId);
+
+		if (streamer.isDeleted()) {
+			throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
+		}
+
+		streamer.updateStreamer(
+			requestDto.getName(),
+			requestDto.getNickName(),
+			requestDto.getPhoneNumber(),
+			requestDto.getEmail());
+
+		return StreamerResponseDto.from(streamer);
+	}
+
+	@Transactional(readOnly = true)
+	public StreamerResponseDto getPersonalInfo(Integer streamerId) {
+		Streamer streamer = findStreamerById(streamerId);
+
+		if (streamer.isDeleted()) {
+			throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
+		}
+
+		return StreamerResponseDto.from(streamer);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<StreamerSummaryResponseDto> getStreamerList(int page, int size, String nickName) {
+		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
+
+		Page<Streamer> streamerList = streamerRepository.findByNickName(pageable, nickName);
+
+		return streamerList.map(StreamerSummaryResponseDto::from);
+	}
+
+	@Transactional(readOnly = true)
+	public StreamerSummaryResponseDto getStreamer(Integer streamerId) {
+		Streamer streamer = streamerRepository.findById(streamerId).orElseThrow(
+			() -> new NotFoundException(ErrorCode.USER_NOT_FOUND)
+		);
+
+		if (streamer.isDeleted()) {
+			throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
+		}
+
+		return StreamerSummaryResponseDto.from(streamer);
 	}
 
 	/* 기타 메서드 */

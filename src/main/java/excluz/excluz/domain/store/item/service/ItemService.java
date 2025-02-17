@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import excluz.excluz.common.entity.Item;
 import excluz.excluz.common.entity.Store;
+import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.store.item.dto.request.ItemCreateRequestDto;
@@ -44,14 +45,24 @@ public class ItemService {
 	}
 
 	@Transactional
-	public void deleteItem(Integer itemsId) {
+	public void deleteItem(Integer itemsId, Integer streamerId) {
 		Item item = findItemByIdAndNotDeleted(itemsId);
+
+		if (!item.getStore().getStreamer().getId().equals(streamerId)) {
+			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+		}
+
 		item.updateIsDeleted(true);
 	}
 
 	@Transactional
-	public ItemResponseDto updateItemInfo(ItemUpdateRequestDto itemUpdateRequestDto, Integer itemsId) {
+	public ItemResponseDto updateItemInfo(ItemUpdateRequestDto itemUpdateRequestDto, Integer itemsId, Integer streamerId) {
 		Item item = findItemByIdAndNotDeleted(itemsId);
+
+		// 아이템 수정 권한이 있는 회원인지 확인
+		if (!item.getStore().getStreamer().getId().equals(streamerId)) {
+			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+		}
 
 		item.updateItem(itemUpdateRequestDto.getItemName(),
 			itemUpdateRequestDto.getExplanation(),
