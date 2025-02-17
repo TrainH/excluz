@@ -3,6 +3,7 @@ package excluz.excluz.domain.store.store.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,6 +35,7 @@ public class StoreV1Controller {
 	private final StoreService storeService;
 
 	@PostMapping()
+	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<Void> createStore(
 		@AuthenticationPrincipal User user,
 		@Valid @RequestBody StoreRequestDto storeRequestDto
@@ -45,7 +47,8 @@ public class StoreV1Controller {
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
-	@PatchMapping("/{storeId}/disable")
+	@DeleteMapping("/{storeId}/soft")
+	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<Void> deleteStore(
 		@AuthenticationPrincipal User user,
 		@PathVariable Integer storeId,
@@ -60,6 +63,7 @@ public class StoreV1Controller {
 	}
 
 	@PatchMapping("/{storeId}")
+	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<StoreUpdateResponseDto> updateStore(
 		@AuthenticationPrincipal User user,
 		@PathVariable Integer storeId,

@@ -6,6 +6,9 @@ import excluz.excluz.domain.point.point.service.PointService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,14 +20,32 @@ public class PointController {
 
     @PostMapping("/points")
     public ResponseEntity<String> chargePoint(
-        @Valid @RequestBody PointChargeRequestDto requestDto
+            @AuthenticationPrincipal User user,
+            @Valid @RequestBody PointChargeRequestDto requestDto
     ) {
-        pointService.chargePoint(requestDto);
+        Integer userOrStreamerId = Integer.parseInt(user.getUsername());
+
+        String userRole = user.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse("No role assigned");
+
+        pointService.chargePoint(userOrStreamerId, userRole, requestDto);
+
         return ResponseEntity.ok("충전되었습니다.");
     }
 
-    @GetMapping("/points/{pointId}")
-    public ResponseEntity<PointResponseDto> getPoint(@PathVariable Integer pointId){
-        return ResponseEntity.ok(pointService.getPoint(pointId));
+    @GetMapping("/points/my-point")
+    public ResponseEntity<PointResponseDto> getPoint(
+            @AuthenticationPrincipal User user
+    ){
+        Integer userOrStreamerId = Integer.parseInt(user.getUsername());
+
+        String userRole = user.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse("No role assigned");
+
+        return ResponseEntity.ok(pointService.getPoint(userOrStreamerId, userRole));
     }
 }

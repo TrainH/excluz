@@ -62,4 +62,16 @@ public class Streamer extends BaseEntity {
 	public void updateStreamerStatus(boolean isDeleted) {
 		this.isDeleted = isDeleted;
 	}
+
+	public void updateStreamer(
+		String name,
+		String nickName,
+		String phoneNumber,
+		String email
+	) {
+		if (name != null) this.name = name;
+		if (nickName != null) this.nickName = nickName;
+		if (phoneNumber != null) this.phoneNumber = phoneNumber;
+		if (email != null) this.email = email;
+	}
 }
