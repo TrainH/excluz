@@ -5,6 +5,7 @@ import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
+import excluz.excluz.domain.cartItem.repository.CartItemRepository;
 import excluz.excluz.domain.order.order.dto.response.OrderResponseDto;
 import excluz.excluz.domain.order.order.enums.OrderStatus;
 import excluz.excluz.domain.order.order.repository.OrderRepository;
@@ -36,13 +37,12 @@ import java.util.stream.Collectors;
 public class OrderItemService {
 
     private final UserRepository userRepository;
-    private final StreamerRepository streamerRepository;
-    private final StoreRepository storeRepository;
+    private final ItemRepository itemRepository;
+    private final CartItemRepository cartItemRepository;
     private final OrderItemRepository orderItemRepository;
     private final OrderRepository orderRepository;
     private final PointRepository pointRepository;
     private final PointTransactionRepository pointTransactionRepository;
-    private final ItemRepository itemRepository;
 
     @Transactional
     public void createOrderItemList(Integer userOrStreamerId, String userRole, List<OrderItemRequestDto> requestList) {
@@ -88,6 +88,8 @@ public class OrderItemService {
             throw new NotFoundException(ErrorCode.ITEM_NOT_FOUND);
         }
 
+        List<CartItem> cartItemList = cartItemRepository.findByUserId(userOrStreamerId);
+
 
         // 5. 모든 아이템의 Store가 동일한지 확인
         Set<Store> storeSet = itemList.stream()
@@ -110,19 +112,42 @@ public class OrderItemService {
 
         List<OrderItem> orderItemList = new ArrayList<>();
 
+        List<CartItem> deleteCartItemList = new ArrayList<>(); // 제거해야할 장바구니 아이템 리스트
+
         int totalAmount = 0;
 
         for (OrderItemRequestDto dto : requestList) {
+            Integer orderedItemId = dto.getItemId();
+            Integer orderedItemQuantity = dto.getItemQuantity();
+
             Item item = itemList.stream()
-                    .filter(i -> i.getId().equals(dto.getItemId()))
+                    .filter(i -> i.getId().equals(orderedItemId))
                     .findFirst()
                     .orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
 
-            // 가격 합산
-            totalAmount += item.getPrice() * dto.getItemQuantity();
+
+            CartItem cartItem = cartItemList.stream()
+                    .filter(i -> i.getId().equals(orderedItemId))
+                    .findFirst()
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
+
+            if (!orderedItemQuantity.equals(cartItem.getQuantity())) {
+                throw new BadRequestException(ErrorCode.CART_ITEM_NOT_FOUND);
+            }
+
+            Integer orderedItemPrice = item.getPrice();
+
+            // CartItem 제거
+            deleteCartItemList.add(cartItem);
+
+            // Item 잔여수량 차감
+            item.removeRemainingQuantity(orderedItemQuantity);
 
             // 주문 아이템 추가
-            orderItemList.add(new OrderItem(order, item, dto.getItemQuantity()));
+            orderItemList.add(new OrderItem(order, item, orderedItemQuantity));
+
+            // 가격 합산
+            totalAmount += orderedItemPrice * orderedItemQuantity;
         }
 
         // 포인트 거래 생성
@@ -145,6 +170,7 @@ public class OrderItemService {
         streamerPoint.chargeAmount(totalAmount);
 
         // 데이터 저장
+        cartItemRepository.deleteAllInBatch(deleteCartItemList);
         orderRepository.save(order);
         pointRepository.save(streamerPoint);
         orderItemRepository.saveAll(orderItemList);
