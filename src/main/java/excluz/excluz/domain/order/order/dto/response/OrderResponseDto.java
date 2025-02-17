@@ -3,6 +3,7 @@ package excluz.excluz.domain.order.order.dto.response;
 
 import excluz.excluz.common.entity.Order;
 import excluz.excluz.domain.order.order.enums.OrderStatus;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -17,7 +18,11 @@ public class OrderResponseDto {
     private LocalDateTime updatedAt;
 
     // Constructor
-    public OrderResponseDto(Integer orderId, OrderStatus orderStatus, String address, LocalDateTime updatedAt) {
+    @Builder
+    public OrderResponseDto(Integer orderId,
+                            OrderStatus orderStatus,
+                            String address,
+                            LocalDateTime updatedAt) {
         this.orderId = orderId;
         this.orderStatus = orderStatus;
         this.address = address;
@@ -26,11 +31,11 @@ public class OrderResponseDto {
 
     // from 메서드
     public static OrderResponseDto from(Order order) {
-        return new OrderResponseDto(
-                order.getId(),
-                order.getOrderStatus(),
-                order.getAddress(),
-                order.getUpdatedAt()
-        );
+        return OrderResponseDto.builder()
+                .orderId(order.getId())
+                .orderStatus(order.getOrderStatus())
+                .address(order.getAddress())
+                .updatedAt(order.getUpdatedAt())
+                .build();
     }
 }
