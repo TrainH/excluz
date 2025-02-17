@@ -12,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import excluz.excluz.common.entity.CartItem;
 import excluz.excluz.common.entity.Item;
@@ -77,6 +76,8 @@ class CartItemServiceTest {
 
 		// than
 		Assertions.assertThat(result).isNotNull(); // 반환값이 null이 아닌지 확인
+		Assertions.assertThat(result.getMessage()).isEqualTo("장바구니에 굿즈가 담겼습니다."); // 응답 메시지 동일하게 나오는지 확인
+		verify(cartItemRepository, times(1)).save(any(CartItem.class));  // save()가 1번만 실행되었는지 확인
 	}
 
 	@Test
