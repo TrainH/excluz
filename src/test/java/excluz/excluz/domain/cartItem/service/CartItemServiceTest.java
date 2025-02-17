@@ -27,7 +27,7 @@ class CartItemServiceTest {
 	private CartItemService cartItemService;
 
 	@Test
-	@DisplayName("요청된 개수가 재고보다 많은 경우 예외가 발생한다")
+	@DisplayName("fail: 요청 개수 > 재고 (예외 발생)")
 	void updateCartItemQuantity() {
 		// given
 		Item item = new Item(
@@ -58,7 +58,7 @@ class CartItemServiceTest {
 	}
 
 	@Test
-	@DisplayName("요청된 개수가 재고보다 적은 경우에는 예외가 발생하지 않는다")
+	@DisplayName("success: 요청 개수 < 재고")
 	void updateCartItemQuantity2() {
 		// given
 		Item item = new Item(
