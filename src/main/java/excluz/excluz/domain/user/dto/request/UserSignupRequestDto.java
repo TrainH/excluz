@@ -2,11 +2,11 @@ package excluz.excluz.domain.user.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@Builder
+@AllArgsConstructor
 public class UserSignupRequestDto {
 
 	@NotBlank(message = "이름은 필수 입력값 입니다.")
@@ -30,7 +30,7 @@ public class UserSignupRequestDto {
 	@Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{10,30}$", message = "비밀번호는 영문,숫자,특수문자를 포함하여 10자 이상 30자 이내로 작성해 주세요.")
 	private final String password;
 
-	@NotBlank(message = "비밀번호를 다시한번 입력해 주세요.")
+	@NotBlank(message = "비밀번호를 다시 한 번 입력해 주세요.")
 	private final String reEnterPassword;
 
 }

@@ -1,25 +1,18 @@
 package excluz.excluz.domain.store.item.controller;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.web.bind.annotation.*;
 
 import excluz.excluz.domain.store.item.dto.request.ItemCreateRequestDto;
 import excluz.excluz.domain.store.item.dto.request.ItemUpdateRequestDto;
 import excluz.excluz.domain.store.item.dto.response.ItemResponseDto;
 import excluz.excluz.domain.store.item.service.ItemService;
-import jakarta.servlet.http.HttpServletRequest;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -31,19 +24,20 @@ public class ItemV1Controller {
 	private final ItemService itemService;
 
 	@PostMapping()
+	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<Void> createItem(
-		/* TODO JWT 어노테이션 활용으로 수정 예정 */
-		HttpServletRequest request,
+		@AuthenticationPrincipal User user,
 		@Valid @RequestBody ItemCreateRequestDto createRequestDto
 	) {
+		Integer streamerId = Integer.valueOf(user.getUsername());
 
-		/* TODO JWT 토큰에서의 정보 추출 방식 추후 수정 예정 */
-		itemService.createItem(createRequestDto, (Integer)request.getAttribute("streamerId"));
+		itemService.createItem(createRequestDto, streamerId);
 
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/{itemsId}/soft")
+	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<Void> deleteItem(@PathVariable Integer itemsId) {
 
 		itemService.deleteItem(itemsId);
@@ -52,12 +46,15 @@ public class ItemV1Controller {
 	}
 
 	@PatchMapping("/{itemsId}")
+	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<ItemResponseDto> updateItemInfo(
+		@AuthenticationPrincipal User user,
 		@PathVariable Integer itemsId,
 		@RequestBody(required = false) ItemUpdateRequestDto itemUpdateRequestDto
 	) {
+		Integer userId = Integer.valueOf(user.getUsername());
 
-		ItemResponseDto responseDto = itemService.updateItemInfo(itemUpdateRequestDto, itemsId);
+		ItemResponseDto responseDto = itemService.updateItemInfo(itemUpdateRequestDto, itemsId, userId);
 
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
@@ -78,7 +75,6 @@ public class ItemV1Controller {
 		@RequestParam(required = false, defaultValue = "-1") Integer maxPrice,
 		@RequestParam(required = false) String itemName
 	) {
-
 		Page<ItemResponseDto> itemResponseDtoList = itemService.getItemList(page, size, minPrice, maxPrice, itemName);
 
 		return new ResponseEntity<>(itemResponseDtoList, HttpStatus.OK);
