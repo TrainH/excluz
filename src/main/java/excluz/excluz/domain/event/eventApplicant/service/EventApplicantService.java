@@ -3,6 +3,7 @@ package excluz.excluz.domain.event.eventApplicant.service;
 
 import excluz.excluz.common.entity.Event;
 import excluz.excluz.common.entity.EventApplicant;
+import excluz.excluz.domain.event.event.enums.SelectionMethod;
 import excluz.excluz.domain.event.event.repository.EventRepository;
 import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantRequestDto;
 import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantResponseDto;
@@ -24,14 +25,28 @@ public class EventApplicantService {
         Event event = eventRepository.findByGeneratedCode(code)
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 이벤트 코드입니다."));
 
+        if (event.getIsCompleted()){
+            throw new IllegalArgumentException("이미 마감 된 이벤트입니다.");
+        }
+
         EventApplicant eventApplicant = EventApplicant.builder()
                 .event(event)
                 .applicantName(requestDto.getApplicantName())
                 .email(requestDto.getEmail())
                 .applicantPassword(requestDto.getApplicantPassword())
                 .deliveryAddress(requestDto.getDeliveryAddress())
-                .applicantStatus(ApplicantStatus.WAITING) // 초기 상태는 WAITING
                 .build();
+
+        if (event.getSelectionMethod() == SelectionMethod.FIRST_COME_FIRST_SERVED) {
+            int numberOfCurrentWinners = eventApplicantRepository.countByEventAndApplicantStatus(event, ApplicantStatus.WINNER);
+            if (numberOfCurrentWinners < event.getNumberOfWinners()) {
+                eventApplicant.updateApplicantStatus(ApplicantStatus.WINNER);
+            } else {
+                eventApplicant.updateApplicantStatus(ApplicantStatus.LOSER);
+            }
+        } else {
+            eventApplicant.updateApplicantStatus(ApplicantStatus.WAITING);
+        }
 
         EventApplicant savedApplicant = eventApplicantRepository.save(eventApplicant);
 
