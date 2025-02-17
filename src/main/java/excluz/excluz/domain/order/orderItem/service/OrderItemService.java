@@ -51,8 +51,7 @@ public class OrderItemService {
          * 1. 주문은 CUSTOMER만 가능
          * 2. CUSTOMER의 point가 없는 경우 충전해야한다고 에러 발생
          * 3. 요청시에 모든 주문의 배달장소는 1개로 동일해야함
-         * 4. 요청 주문 아이템 id 갯수와 실제 주문 아이템 갯수가 일치하는지 확인
-         * 5. 요청한 아이템들의 Store가 동일한지 확인
+         * 4. 요청한 아이템들의 Store가 동일한지 확인
          */
 
         //  1. 주문은 CUSTOMER만 가능
@@ -63,7 +62,7 @@ public class OrderItemService {
         // 2. CUSTOMER의 point가 없는 경우 충전해야한다고 에러 발생
         Point userPoint = pointRepository.findByUserRoleAndUserOrStreamerId(
                 UserRole.CUSTOMER, userOrStreamerId
-        ).orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+        ).orElseThrow(() -> new NotFoundException(ErrorCode.POINT_NOT_FOUND));
 
         // 3. 요청시에 모든 주문의 배달장소는 1개로 동일해야함
         Set<String> AddressSet = requestList.stream()
@@ -71,33 +70,28 @@ public class OrderItemService {
                 .collect(Collectors.toSet());
 
         if (AddressSet.size() != 1) {
-            throw new BadRequestException(ErrorCode.ITEM_NOT_FOUND); // 나중에 예외처리 코드 수정 필요
+            throw new BadRequestException(ErrorCode.ORDER_ITEM_ADDRESS_MISMATCH); // 나중에 예외처리 코드 수정 필요
         }
 
         String address = requestList.get(0).getAddress();
 
 
-        // 4. 요청 주문 아이템 id 갯수와 실제 주문 아이템 갯수가 일치하는지 확인
         List<Integer> itemIdList = requestList.stream()
                 .map(OrderItemRequestDto::getItemId)
                 .toList();
 
         List<Item> itemList = itemRepository.findAllById(itemIdList);
 
-        if (itemList.size() != itemIdList.size()) {
-            throw new NotFoundException(ErrorCode.ITEM_NOT_FOUND);
-        }
-
         List<CartItem> cartItemList = cartItemRepository.findByUserId(userOrStreamerId);
 
 
-        // 5. 모든 아이템의 Store가 동일한지 확인
+        // 4. 모든 아이템의 Store가 동일한지 확인
         Set<Store> storeSet = itemList.stream()
                 .map(Item::getStore)
                 .collect(Collectors.toSet());
 
         if (storeSet.size() != 1) {
-            throw new BadRequestException(ErrorCode.ITEM_NOT_FOUND); // 나중에 예외처리 코드 수정 필요
+            throw new BadRequestException(ErrorCode.ITEM_NOT_FOUND);
         }
 
         Store store = storeSet.iterator().next();
@@ -125,14 +119,13 @@ public class OrderItemService {
                     .findFirst()
                     .orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
 
-
             CartItem cartItem = cartItemList.stream()
-                    .filter(i -> i.getId().equals(orderedItemId))
+                    .filter(i -> i.getItem().getId().equals(orderedItemId))
                     .findFirst()
-                    .orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.CART_ITEM_NOT_FOUND));
 
             if (!orderedItemQuantity.equals(cartItem.getQuantity())) {
-                throw new BadRequestException(ErrorCode.CART_ITEM_NOT_FOUND);
+                throw new BadRequestException(ErrorCode.ORDER_ITEM_CART_ITEM_QUANTITIES_MISMATCH);
             }
 
             Integer orderedItemPrice = item.getPrice();
