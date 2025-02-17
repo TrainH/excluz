@@ -10,8 +10,11 @@ import java.util.Optional;
 
 public interface PointRepository extends JpaRepository<Point, Integer> {
 
-    @Query("SELECT p FROM Point p WHERE p.userRole = :userRole AND p.userOrStreamerId = :userOrStreamerId")
-    Optional<Point> findByUserRoleAndUserOrStreamerId(@Param("userRole") UserRole userRole,
-                                                      @Param("userOrStreamerId") Integer userOrStreamerId);
+    @Query("SELECT p " +
+            "FROM Point p " +
+            "WHERE p.userRole = :userRole AND p.userOrStreamerId = :userOrStreamerId")
+    Optional<Point> findByUserRoleAndUserOrStreamerId(
+            @Param("userRole") UserRole userRole,
+           @Param("userOrStreamerId") Integer userOrStreamerId);
 }
 

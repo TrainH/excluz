@@ -31,13 +31,10 @@ public class PointService {
     private final PointTransactionRepository pointTransactionRepository;
 
     @Transactional
-    public void chargePoint(PointChargeRequestDto requestDto) {
+    public void chargePoint(Integer userOrStreamerId, String userRole, PointChargeRequestDto requestDto) {
 
-        Integer userOrStreamerId = 1; // 이후 user 와 streamer 로그인에서 id 완성되면 수정
-        UserRole userRole = UserRole.valueOf("CUSTOMER"); // 이후 user 와 streamer 로그인 완성되면 수정
-
-        // CUSTOMER 인 경우만 충전 (Streamer이면 충전 못함)
-        if (!userRole.equals(UserRole.CUSTOMER)) {
+        //  포인트 충전은 CUSTOMER만 가능
+        if (!userRole.equals(UserRole.CUSTOMER.getRole())) {
             throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
         }
 
@@ -62,8 +59,10 @@ public class PointService {
 
     }
 
-    public PointResponseDto getPoint(Integer pointId) {
-        Point point = pointRepository.findById(pointId)
+    public PointResponseDto getPoint(Integer userOrStreamerId, String userRole) {
+        String roleName = userRole.replace("ROLE_", "").toUpperCase();
+
+        Point point = pointRepository.findByUserRoleAndUserOrStreamerId(UserRole.valueOf(roleName), userOrStreamerId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND)); // 나중에 예외처리 변경
 
         return PointResponseDto.from(point);
