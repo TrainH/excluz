@@ -38,9 +38,13 @@ public class ItemV1Controller {
 
 	@DeleteMapping("/{itemsId}/soft")
 	@PreAuthorize("hasRole('STREAMER')")
-	public ResponseEntity<Void> deleteItem(@PathVariable Integer itemsId) {
+	public ResponseEntity<Void> deleteItem(
+		@PathVariable Integer itemsId,
+		@AuthenticationPrincipal User user
+	) {
+		Integer streamerId = Integer.valueOf(user.getUsername());
 
-		itemService.deleteItem(itemsId);
+		itemService.deleteItem(itemsId, streamerId);
 
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
@@ -52,9 +56,9 @@ public class ItemV1Controller {
 		@PathVariable Integer itemsId,
 		@RequestBody(required = false) ItemUpdateRequestDto itemUpdateRequestDto
 	) {
-		Integer userId = Integer.valueOf(user.getUsername());
+		Integer streamerId = Integer.valueOf(user.getUsername());
 
-		ItemResponseDto responseDto = itemService.updateItemInfo(itemUpdateRequestDto, itemsId, userId);
+		ItemResponseDto responseDto = itemService.updateItemInfo(itemUpdateRequestDto, itemsId, streamerId);
 
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
