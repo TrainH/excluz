@@ -32,18 +32,25 @@ public class CartItemService {
 	// 물품 추가
 	@Transactional
 	public CreateCartItemResponseDto addItemToCart(Integer userId, CreateCartItemRequestDto requestDto) {
-		// todo 추후 의논할 것: CartitemService에서 다른 엔티티의 Repository를 의존하는 구조가 좋은 설계인지 추후에 다같이 고민해보면 좋을 것 같습니다!
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 		Item item = itemRepository.findById(requestDto.getItemId())
 			.orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
 
-		// 재고 체크 (요청된 개수가 재고보다 많은 경우 예외 발생)
-		if (requestDto.getQuantity() > item.getRemainingQuantity()) {
+		// 기존 장바구니에서 동일한 상품이 있는지 확인
+		CartItem cartItem = cartItemRepository.findByUserIdAndItemId(userId, requestDto.getItemId())
+			.orElseGet(() -> new CartItem(user, item, 0)); // 없으면 새 객체 생성 (초기 수량 0)
+
+		// 총 수량 계산
+		Integer newQuantity = cartItem.getQuantity() + requestDto.getQuantity();
+
+		// 재고 초과 여부 확인
+		if (newQuantity > item.getRemainingQuantity()) {
 			throw new BadRequestException(ErrorCode.OUT_OF_STOCK);
 		}
 
-		CartItem cartItem = new CartItem(user, item, requestDto.getQuantity());
+		// 수량 업데이트 및 저장
+		cartItem.updateQuantity(newQuantity);
 		cartItemRepository.save(cartItem);
 
 		return new CreateCartItemResponseDto();
@@ -88,15 +95,18 @@ public class CartItemService {
 		CartItem cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.CART_ITEM_NOT_FOUND));
 
-		// 장바구니에 담긴 상품의 정보 가져오기
+		// 장바구니에 담긴 해당 아이템의 정보 가져오기
 		Item item = cartItem.getItem();
 
-		// 재고 체크 (요청된 개수(기존 장바구니 개수 + 새로 요청한 개수)가 재고보다 많은 경우 예외 발생)
-		if (cartItem.getQuantity() + requestDto.getQuantity() > item.getRemainingQuantity()) {
+		// 사용자가 입력한 개수를 장바구니 속 해당 아이템의 최종 개수로 설정
+		Integer updatedQuantity = requestDto.getQuantity();
+
+		// 재고 체크 (요청된 개수가 재고보다 많은 경우 예외 발생)
+		if (updatedQuantity > item.getRemainingQuantity()) {
 			throw new BadRequestException(ErrorCode.OUT_OF_STOCK);
 		}
 
-		// 개수 업데이트
+		// 개수 업데이트 (기존 개수와 관계없이 사용자가 입력한 개수로 설정)
 		cartItem.updateQuantity(requestDto.getQuantity());
 
 		return GetCartItemResponseDto.builder()
