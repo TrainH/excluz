@@ -54,9 +54,10 @@ public class OrderService {
         }
 
         if (userRole.equals(UserRole.STREAMER.getRole())) {
-            return orderRepository.findByIdAndStreamerId(orderId, userOrStreamerId).orElseThrow(
+            Order order = orderRepository.findByIdAndStreamerId(orderId, userOrStreamerId).orElseThrow(
                     () -> new IllegalArgumentException("Order not found")
             );
+            return OrderResponseDto.from(order);
         }
 
         throw new IllegalArgumentException("not found") ;

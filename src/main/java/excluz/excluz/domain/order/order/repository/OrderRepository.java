@@ -28,14 +28,12 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
     Optional<Order> findByIdAndUserId(Integer orderId, Integer userId);
 
-    @Query("SELECT new excluz.excluz.domain.order.order.dto.response.OrderResponseDto(" +
-            "o.id, o.orderStatus, o.address, o.updatedAt) " +
-            "FROM Order o " +
+    @Query("SELECT o FROM Order o " +
             "LEFT JOIN OrderItem oi ON oi.order = o " +
             "LEFT JOIN oi.item i " +
             "LEFT JOIN i.store s " +
             "LEFT JOIN s.streamer st " +
             "WHERE o.id = :orderId AND st.id = :streamerId")
-    Optional<OrderResponseDto> findByIdAndStreamerId(@Param("orderId") Integer orderId, @Param("streamerId") Integer streamerId);
+    Optional<Order> findByIdAndStreamerId(@Param("orderId") Integer orderId, @Param("streamerId") Integer streamerId);
 
 }
