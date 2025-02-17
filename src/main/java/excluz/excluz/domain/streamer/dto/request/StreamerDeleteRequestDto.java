@@ -1,11 +1,15 @@
 package excluz.excluz.domain.streamer.dto.request;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@AllArgsConstructor
+@NoArgsConstructor
 public class StreamerDeleteRequestDto {
 
-	private final String password;
+	private String password;
+
+	public StreamerDeleteRequestDto(String password) {
+		this.password=password;
+	}
 }
