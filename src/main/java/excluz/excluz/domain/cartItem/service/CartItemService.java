@@ -38,29 +38,21 @@ public class CartItemService {
 		Item item = itemRepository.findById(requestDto.getItemId())
 			.orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
 
-		// 재고 체크 (요청된 개수가 재고보다 많은 경우 예외 발생)
-		if (requestDto.getQuantity() > item.getRemainingQuantity()) {
+		// 기존 장바구니에서 동일한 상품이 있는지 확인
+		CartItem cartItem = cartItemRepository.findByUserIdAndItemId(userId, requestDto.getItemId())
+			.orElseGet(() -> new CartItem(user, item, 0)); // 없으면 새 객체 생성 (초기 수량 0)
+
+		// 총 수량 계산
+		Integer newQuantity = cartItem.getQuantity() + requestDto.getQuantity();
+
+		// 재고 초과 여부 확인
+		if (newQuantity > item.getRemainingQuantity()) {
 			throw new BadRequestException(ErrorCode.OUT_OF_STOCK);
 		}
 
-		// 기존 장바구니에서 동일한 상품이 있는지 확인
-		Optional<CartItem> optionalCartItem = cartItemRepository.findByUserIdAndItemId(userId, requestDto.getItemId());
-
-		if (optionalCartItem.isPresent()) {
-			// 이미 장바구니에 있는 경우: 수량 증가
-			CartItem cartItem = optionalCartItem.get();
-			Integer newQuantity = cartItem.getQuantity() + requestDto.getQuantity();
-
-			if (newQuantity > item.getRemainingQuantity()) {
-				throw new BadRequestException(ErrorCode.OUT_OF_STOCK);
-			}
-
-			cartItem.updateQuantity(newQuantity);
-		} else {
-			// 장바구니에 없는 경우: 새로 추가
-			CartItem newCartItem = new CartItem(user, item, requestDto.getQuantity());
-			cartItemRepository.save(newCartItem);
-		}
+		// 수량 업데이트 및 저장
+		cartItem.updateQuantity(newQuantity);
+		cartItemRepository.save(cartItem);
 
 		return new CreateCartItemResponseDto();
 	}
