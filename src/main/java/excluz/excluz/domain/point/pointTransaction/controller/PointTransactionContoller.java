@@ -22,7 +22,7 @@ public class PointTransactionContoller {
     private final PointTransactionService pointTransactionService;
 
     @GetMapping("/points/transactions")
-    public ResponseEntity<Page<PointTransactionResponseDto>> getPointTransactions(
+    public ResponseEntity<Page<PointTransactionResponseDto>> getPointTransactionList(
             @AuthenticationPrincipal User user,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "5") int size
