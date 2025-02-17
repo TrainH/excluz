@@ -1,5 +1,6 @@
 package excluz.excluz.domain.streamer.controller;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,16 +22,18 @@ public class StreamerV1Controller {
 	private final StreamerService streamerService;
 
 	@PostMapping("/signup")
-	public ResponseEntity<Void> streamerSignup(@Valid @RequestBody StreamerSignupRequestDto signupRequestDto) {
-
+	public ResponseEntity<Void> streamerSignup(
+		@Valid @RequestBody StreamerSignupRequestDto signupRequestDto
+	) {
 		streamerService.streamerSignup(signupRequestDto);
 
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<StreamerLoginResponseDto> streamerLogin(@Valid @RequestBody StreamerLoginRequestDto loginRequestDto) {
-
+	public ResponseEntity<StreamerLoginResponseDto> streamerLogin(
+		@Valid @RequestBody StreamerLoginRequestDto loginRequestDto
+	) {
 		return new ResponseEntity<>(streamerService.streamerLogin(loginRequestDto), HttpStatus.OK);
 	}
 
@@ -58,5 +61,38 @@ public class StreamerV1Controller {
 		StreamerResponseDto responseDto = streamerService.updateStreamer(streamerId, requestDto);
 
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
+
+	// 스트리머 본인 조회
+	@GetMapping("/my-page")
+	@PreAuthorize("hasRole('STREAMER')")
+	public ResponseEntity<StreamerResponseDto> getPersonalInfo(
+		@AuthenticationPrincipal User user
+	) {
+		Integer streamerId = Integer.valueOf(user.getUsername());
+
+		StreamerResponseDto responseDto = streamerService.getPersonalInfo(streamerId);
+
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
+
+	@GetMapping()
+	public ResponseEntity<Page<StreamerSummaryResponseDto>> getStreamerList(
+		@RequestParam(required = false) String nickName,
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "10") int size
+	) {
+		Page<StreamerSummaryResponseDto> responseDtoList = streamerService.getStreamerList(page, size, nickName);
+
+		return new ResponseEntity<>(responseDtoList, HttpStatus.OK);
+	}
+
+	@GetMapping("/{streamerId}")
+	public ResponseEntity<StreamerSummaryResponseDto> getStreamer(
+		@PathVariable Integer streamerId
+	) {
+		StreamerSummaryResponseDto responseDtoList = streamerService.getStreamer(streamerId);
+
+		return new ResponseEntity<>(responseDtoList, HttpStatus.OK);
 	}
 }

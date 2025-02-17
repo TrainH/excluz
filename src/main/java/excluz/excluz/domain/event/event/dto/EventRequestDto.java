@@ -37,6 +37,15 @@ public class EventRequestDto {
     @Valid
     private List<EventItemRequestDto> eventItemList;
 
+    @AssertTrue(message = "이벤트 시작일시는 종료일시 이전이어야 합니다.")
+    public boolean isValidDateRange() {
+        // NotNull 검증은 위의 어노테이션이 처리하므로 null일 경우 검증 통과하도록 처리
+        if (startDatetime == null || endDatetime == null) {
+            return true;
+        }
+        return startDatetime.isBefore(endDatetime);
+    }
+
     @Builder
     public EventRequestDto(Integer storeId,
                            Integer numberOfWinners,

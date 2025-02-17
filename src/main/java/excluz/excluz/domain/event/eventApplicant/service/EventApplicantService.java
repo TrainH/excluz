@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -25,8 +27,24 @@ public class EventApplicantService {
         Event event = eventRepository.findByGeneratedCode(code)
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 이벤트 코드입니다."));
 
-        if (event.getIsCompleted()){
-            throw new IllegalArgumentException("이미 마감 된 이벤트입니다.");
+        if (event.getIsCompleted()) {
+            throw new IllegalArgumentException("이미 마감된 이벤트입니다.");
+        }
+        if (event.getIsDeleted()) {
+            throw new IllegalArgumentException("취소된 이벤트입니다..");
+        }
+
+//        이벤트 시간 관련 로직
+        LocalDateTime now = LocalDateTime.now();
+        if (now.isBefore(event.getStartDatetime())) {
+            throw new IllegalStateException("아직 이벤트가 시작되지 않았습니다.");
+        }
+        if (now.isAfter(event.getEndDatetime())) {
+            throw new IllegalStateException("이벤트가 이미 종료되었습니다.");
+        }
+
+        if (eventApplicantRepository.existsByEventAndEmail(event, requestDto.getEmail())) {
+            throw new IllegalArgumentException("이미 해당 이벤트에 응모한 이메일입니다.");
         }
 
         EventApplicant eventApplicant = EventApplicant.builder()
@@ -49,7 +67,6 @@ public class EventApplicantService {
         }
 
         EventApplicant savedApplicant = eventApplicantRepository.save(eventApplicant);
-
         return EventApplicantResponseDto.from(savedApplicant);
     }
 
@@ -72,18 +89,14 @@ public class EventApplicantService {
         }
 
         if (requestDto.getApplicantName() != null) {
-          
             eventApplicant.updateApplicantName(requestDto.getApplicantName());
-
         }
         if (requestDto.getDeliveryAddress() != null) {
             eventApplicant.updateDeliveryAddress(requestDto.getDeliveryAddress());
         }
 
         eventApplicant.updateApplicantStatus(ApplicantStatus.CONFIRMED);
-
         EventApplicant updatedApplicant = eventApplicantRepository.save(eventApplicant);
-
         return EventApplicantResponseDto.from(updatedApplicant);
     }
 }
