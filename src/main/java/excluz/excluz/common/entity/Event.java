@@ -84,6 +84,10 @@ public class Event extends BaseEntity  {
         this.endDatetime = endDatetime;
     }
 
+    public void updateIsDeleted(Boolean isDeleted) {
+            this.isDeleted = isDeleted;
+    }
+
     public void completeEvent() {
         this.isCompleted = true;
     }
