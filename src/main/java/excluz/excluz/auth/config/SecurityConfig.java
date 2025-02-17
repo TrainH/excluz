@@ -44,7 +44,6 @@ public class SecurityConfig {
 					).permitAll()
 				.requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // 관리자
 				.requestMatchers("/api/v1/users/**").hasRole("CUSTOMER") // 일반 회원
-				.requestMatchers("/api/v1/streamers/**").hasRole("STREAMER") // 판매자
 				.anyRequest().authenticated()
 			)
 			.build();

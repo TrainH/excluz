@@ -11,7 +11,9 @@ import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.streamer.dto.request.StreamerLoginRequestDto;
 import excluz.excluz.domain.streamer.dto.request.StreamerSignupRequestDto;
+import excluz.excluz.domain.streamer.dto.request.StreamerUpdateRequestDto;
 import excluz.excluz.domain.streamer.dto.response.StreamerLoginResponseDto;
+import excluz.excluz.domain.streamer.dto.response.StreamerResponseDto;
 import excluz.excluz.domain.streamer.repository.StreamerRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -66,6 +68,23 @@ public class StreamerService {
 
 		// 소프트 딜리트
 		streamer.updateStreamerStatus(true);
+	}
+
+	@Transactional
+	public StreamerResponseDto updateStreamer(Integer streamerId, StreamerUpdateRequestDto requestDto) {
+		Streamer streamer = findStreamerById(streamerId);
+
+		if (streamer.isDeleted()) {
+			throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
+		}
+
+		streamer.updateStreamer(
+			requestDto.getName(),
+			requestDto.getNickName(),
+			requestDto.getPhoneNumber(),
+			requestDto.getEmail());
+
+		return StreamerResponseDto.from(streamer);
 	}
 
 	/* 기타 메서드 */

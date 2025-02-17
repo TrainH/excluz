@@ -2,17 +2,13 @@ package excluz.excluz.domain.streamer.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.web.bind.annotation.*;
 
-import excluz.excluz.domain.streamer.dto.request.StreamerDeleteRequestDto;
-import excluz.excluz.domain.streamer.dto.request.StreamerLoginRequestDto;
-import excluz.excluz.domain.streamer.dto.request.StreamerSignupRequestDto;
-import excluz.excluz.domain.streamer.dto.response.StreamerLoginResponseDto;
+import excluz.excluz.domain.streamer.dto.request.*;
+import excluz.excluz.domain.streamer.dto.response.*;
 import excluz.excluz.domain.streamer.service.StreamerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,13 +34,29 @@ public class StreamerV1Controller {
 		return new ResponseEntity<>(streamerService.streamerLogin(loginRequestDto), HttpStatus.OK);
 	}
 
-	@DeleteMapping("/{streamerId}")
+	@DeleteMapping("/soft")
+	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<Void> deleteStreamer(
-		@PathVariable Integer streamerId,
+		@AuthenticationPrincipal User user,
 		@RequestBody StreamerDeleteRequestDto deleteRequestDto
 	) {
+		Integer streamerId = Integer.valueOf(user.getUsername());
+
 		streamerService.deleteStreamer(streamerId, deleteRequestDto.getPassword());
 
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
+
+	@PatchMapping()
+	@PreAuthorize("hasRole('STREAMER')")
+	public ResponseEntity<StreamerResponseDto> updateStreamer(
+		@AuthenticationPrincipal User user,
+		@RequestBody StreamerUpdateRequestDto requestDto
+	) {
+		Integer streamerId = Integer.valueOf(user.getUsername());
+
+		StreamerResponseDto responseDto = streamerService.updateStreamer(streamerId, requestDto);
+
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 }

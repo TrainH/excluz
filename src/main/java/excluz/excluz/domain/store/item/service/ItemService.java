@@ -45,17 +45,22 @@ public class ItemService {
 	}
 
 	@Transactional
-	public void deleteItem(Integer itemsId) {
+	public void deleteItem(Integer itemsId, Integer streamerId) {
 		Item item = findItemByIdAndNotDeleted(itemsId);
+
+		if (!item.getStore().getStreamer().getId().equals(streamerId)) {
+			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+		}
+
 		item.updateIsDeleted(true);
 	}
 
 	@Transactional
-	public ItemResponseDto updateItemInfo(ItemUpdateRequestDto itemUpdateRequestDto, Integer itemsId, Integer userId) {
+	public ItemResponseDto updateItemInfo(ItemUpdateRequestDto itemUpdateRequestDto, Integer itemsId, Integer streamerId) {
 		Item item = findItemByIdAndNotDeleted(itemsId);
 
 		// 아이템 수정 권한이 있는 회원인지 확인
-		if (!item.getStore().getStreamer().getId().equals(userId)) {
+		if (!item.getStore().getStreamer().getId().equals(streamerId)) {
 			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
 		}
 
