@@ -2,12 +2,11 @@ package excluz.excluz.domain.store.item.dto.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
 public class ItemCreateRequestDto {
 
@@ -21,4 +20,17 @@ public class ItemCreateRequestDto {
 
 	@Min(value = 0, message = "잔여수량은 0개 이상이어야 합니다.")
 	private Integer remainingQuantity;
+
+	@Builder
+	public ItemCreateRequestDto(
+		String itemName,
+		String explanation,
+		Integer price,
+		Integer remainingQuantity
+	) {
+		this.itemName=itemName;
+		this.explanation=explanation;
+		this.price=price;
+		this.remainingQuantity=remainingQuantity;
+	}
 }
