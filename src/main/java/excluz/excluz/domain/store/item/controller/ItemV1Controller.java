@@ -52,7 +52,6 @@ public class ItemV1Controller {
 		@PathVariable Integer itemsId,
 		@RequestBody(required = false) ItemUpdateRequestDto itemUpdateRequestDto
 	) {
-
 		Integer userId = Integer.valueOf(user.getUsername());
 
 		ItemResponseDto responseDto = itemService.updateItemInfo(itemUpdateRequestDto, itemsId, userId);
@@ -76,7 +75,6 @@ public class ItemV1Controller {
 		@RequestParam(required = false, defaultValue = "-1") Integer maxPrice,
 		@RequestParam(required = false) String itemName
 	) {
-
 		Page<ItemResponseDto> itemResponseDtoList = itemService.getItemList(page, size, minPrice, maxPrice, itemName);
 
 		return new ResponseEntity<>(itemResponseDtoList, HttpStatus.OK);
