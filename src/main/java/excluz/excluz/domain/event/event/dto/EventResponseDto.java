@@ -25,7 +25,7 @@ public class EventResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String generatedCode;
-    private List<EventItemDto> eventItems;
+    private List<EventItemDto> eventItemList;
 
     @Builder
     public EventResponseDto(Integer id,
@@ -39,7 +39,7 @@ public class EventResponseDto {
                             LocalDateTime createdAt,
                             LocalDateTime updatedAt,
                             String generatedCode,
-                            List<EventItemDto> eventItems) {
+                            List<EventItemDto> eventItemList) {
         this.id = id;
         this.streamerStoreId = streamerStoreId;
         this.numberOfWinners = numberOfWinners;
@@ -51,14 +51,14 @@ public class EventResponseDto {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.generatedCode = generatedCode;
-        this.eventItems = eventItems;
+        this.eventItemList = eventItemList;
     }
 
     // Event 엔티티와 EventItem 리스트를 받아서 EventResponseDto로 변환하는 정적 메서드
-    public static EventResponseDto fromWithItems(Event event, List<EventItem> eventItems) {
-        List<EventItemDto> eventItemDtos = null;
-        if (eventItems != null) {
-            eventItemDtos = eventItems.stream()
+    public static EventResponseDto fromWithItems(Event event, List<EventItem> eventItemList) {
+        List<EventItemDto> eventItemDtoList = null;
+        if (eventItemList != null) {
+            eventItemDtoList = eventItemList.stream()
                     .map(item -> EventItemDto.builder()
                             .id(item.getId())
                             .quantity(item.getQuantity())
@@ -79,7 +79,7 @@ public class EventResponseDto {
                 .createdAt(event.getCreatedAt())
                 .updatedAt(event.getUpdatedAt())
                 .generatedCode(event.getGeneratedCode())
-                .eventItems(eventItemDtos)
+                .eventItemList(eventItemDtoList)
                 .build();
     }
 
@@ -97,7 +97,7 @@ public class EventResponseDto {
                 .createdAt(event.getCreatedAt())
                 .updatedAt(event.getUpdatedAt())
                 .generatedCode(event.getGeneratedCode())
-                .eventItems(null) // EventItems를 포함하지 않음
+                .eventItemList(null) // EventItems를 포함하지 않음
                 .build();
     }
 }
