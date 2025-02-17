@@ -1,8 +1,9 @@
-package excluz.excluz.domain.order.orderItem.controller;
+package excluz.excluz.domain.order.order.controller;
 
-import excluz.excluz.domain.order.orderItem.dto.request.OrderItemRequestDto;
-import excluz.excluz.domain.order.orderItem.dto.response.OrderItemResponseDto;
-import excluz.excluz.domain.order.orderItem.service.OrderItemService;
+import excluz.excluz.domain.order.order.dto.request.OrderUpdateRequestDto;
+import excluz.excluz.domain.order.order.dto.response.OrderResponseDto;
+import excluz.excluz.domain.order.order.service.OrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,32 +13,17 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
-public class OrderItemController {
-    private final OrderItemService orderItemService;
+public class OrderController {
+    private final OrderService orderService;
 
-    @PostMapping("/order-items")
-    public ResponseEntity<String> createOrderItem(
-            @AuthenticationPrincipal User user,
-            @RequestBody List<OrderItemRequestDto> requestList){
-        Integer userOrStreamerId = Integer.parseInt(user.getUsername());
-
-        String userRole = user.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .findFirst()
-                .orElse("No role assigned");
-
-        orderItemService.createOrderItemList(userOrStreamerId, userRole, requestList);
-        return ResponseEntity.ok("주문이 완료 되었습니다.");
-    }
-
-    @GetMapping("/order-items")
-    public ResponseEntity<Page<OrderItemResponseDto>> getOrderItemList(
+    @GetMapping("/orders")
+    public ResponseEntity<Page<OrderResponseDto>> getOrderList(
             @AuthenticationPrincipal User user,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "5") int size){
@@ -48,15 +34,18 @@ public class OrderItemController {
                 .findFirst()
                 .orElse("No role assigned");
 
-        Pageable pageable = PageRequest.of(page -1 ,size);
+        Pageable pageable = PageRequest.of(page-1, size);
 
-        return ResponseEntity.ok(orderItemService.getOrderItemList(userOrStreamerId, userRole, pageable));
+        System.out.println(userOrStreamerId);
+        System.out.println(userRole);
+
+        return ResponseEntity.ok(orderService.getOrderList(userOrStreamerId, userRole, pageable));
     }
 
-    @GetMapping("/order-items/{orderItemId}")
-    public ResponseEntity<OrderItemResponseDto> getOrderItem(
+    @GetMapping("/orders/{orderId}")
+    public ResponseEntity<OrderResponseDto> getOrder(
             @AuthenticationPrincipal User user,
-            @PathVariable Integer orderItemId){
+            @PathVariable Integer orderId){
         Integer userOrStreamerId = Integer.parseInt(user.getUsername());
 
         String userRole = user.getAuthorities().stream()
@@ -64,6 +53,22 @@ public class OrderItemController {
                 .findFirst()
                 .orElse("No role assigned");
 
-        return ResponseEntity.ok(orderItemService.getOrderItem(userOrStreamerId, userRole, orderItemId));
+        return ResponseEntity.ok(orderService.getOrder(userOrStreamerId, userRole, orderId));
+    }
+
+    @PatchMapping("/orders/{orderId}")
+    public ResponseEntity<String> updateOrder(
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer orderId,
+            @Valid @RequestBody OrderUpdateRequestDto requestDto) {
+        Integer userOrStreamerId = Integer.parseInt(user.getUsername());
+
+        String userRole = user.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse("No role assigned");
+
+        orderService.updateOrder(userOrStreamerId, userRole, orderId, requestDto);
+        return ResponseEntity.ok("변경이 완료되었습니다.");
     }
 }

@@ -33,6 +33,10 @@ public enum OrderStatus {
                 .collect(Collectors.toList());
     }
 
+    public boolean canPerformAction(String actor) {
+        return Arrays.asList(actorList).contains(actor.toUpperCase());
+    }
+
     public String[] getActorList() {
         return actorList;
     }
