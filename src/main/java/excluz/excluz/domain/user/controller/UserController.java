@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import excluz.excluz.auth.util.SecurityContextUtil;
 import excluz.excluz.domain.user.dto.UpdatePasswordRequestDto;
 import excluz.excluz.domain.user.dto.request.UpdateMyProfileRequestDto;
 import excluz.excluz.domain.user.dto.request.UserLoginRequestDto;
@@ -56,11 +57,9 @@ public class UserController {
 
 	@PatchMapping("/withdraw")
 	public ResponseEntity<UserWithdrawResponseDto> userUnregisterAPI(
-		@AuthenticationPrincipal User user,
 		@RequestBody UserWithdrawRequestDto userWithdrawRequest) {
 
-		// 스트링 값으로 저장된 userId를 Integer 로 강제 반환
-		Integer userId = Integer.parseInt(user.getUsername());
+		Integer userId = SecurityContextUtil.getUserId();
 
 		UserWithdrawResponseDto userWithdrawResponseDto = userService.userWithdraw(userId, userWithdrawRequest);
 
@@ -78,9 +77,9 @@ public class UserController {
 	}
 
 	@GetMapping("/profile")
-	public ResponseEntity<MyProfileResponseDto> myPageGetAPI(@AuthenticationPrincipal User user) {
+	public ResponseEntity<MyProfileResponseDto> myPageGetAPI() {
 
-		Integer userId = Integer.parseInt(user.getUsername());
+		Integer userId = SecurityContextUtil.getUserId();
 
 		MyProfileResponseDto myProfileResponse = userService.userGetMyProfile(userId);
 
@@ -92,7 +91,7 @@ public class UserController {
 		@AuthenticationPrincipal User user,
 		@RequestBody UpdateMyProfileRequestDto updateMyProfileRequest) {
 
-		Integer userId = Integer.parseInt(user.getUsername());
+		Integer userId = SecurityContextUtil.getUserId();
 
 		UpdateMyProfileResponseDto updateMyProfileResponse = userService.userUpdateMyProfile(userId, updateMyProfileRequest);
 
@@ -101,10 +100,9 @@ public class UserController {
 
 	@PutMapping("/password")
 	public ResponseEntity<UpdatePasswordResponseDto> userUpdatePasswordAPU(
-		@AuthenticationPrincipal User user,
 		@RequestBody UpdatePasswordRequestDto updatePasswordRequest) {
 
-		Integer userId = Integer.parseInt(user.getUsername());
+		Integer userId = SecurityContextUtil.getUserId();
 
 		UpdatePasswordResponseDto updatePasswordResponse = userService.userUpdatePassword(userId, updatePasswordRequest);
 
