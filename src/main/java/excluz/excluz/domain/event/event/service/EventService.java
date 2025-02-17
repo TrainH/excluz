@@ -129,17 +129,7 @@ public class EventService {
                 }
             }
         } else if (event.getSelectionMethod() == SelectionMethod.FIRST_COME_FIRST_SERVED) {
-            // 선착순
-            applicantList.sort(Comparator.comparing(EventApplicant::getCreatedAt));
-            List<EventApplicant> winners = applicantList.subList(0, Math.min(numberOfWinners, applicantList.size()));
-
-            for (EventApplicant applicant : applicantList) {
-                if (winners.contains(applicant)) {
-                    applicant.updateApplicantStatus(ApplicantStatus.WINNER);
-                } else {
-                    applicant.updateApplicantStatus(ApplicantStatus.LOSER);
-                }
-            }
+            
         } else {
             throw new UnsupportedOperationException("지원되지 않는 선정 방식입니다.");
         }
