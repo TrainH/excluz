@@ -37,12 +37,14 @@ public class StreamerV1Controller {
 		return new ResponseEntity<>(streamerService.streamerLogin(loginRequestDto), HttpStatus.OK);
 	}
 
-	@DeleteMapping("/{streamerId}")
+	@DeleteMapping("/soft")
 	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<Void> deleteStreamer(
-		@PathVariable Integer streamerId,
+		@AuthenticationPrincipal User user,
 		@RequestBody StreamerDeleteRequestDto deleteRequestDto
 	) {
+		Integer streamerId = Integer.valueOf(user.getUsername());
+
 		streamerService.deleteStreamer(streamerId, deleteRequestDto.getPassword());
 
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
