@@ -2,6 +2,7 @@ package excluz.excluz.domain.event.event.service;
 
 import excluz.excluz.common.entity.*;
 import excluz.excluz.domain.event.event.dto.EventClosingResponseDto;
+import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantResponseDto;
 import excluz.excluz.domain.event.eventApplicant.enums.ApplicantStatus;
 import excluz.excluz.domain.event.eventApplicant.repository.EventApplicantRepository;
 import excluz.excluz.domain.event.eventItem.dto.EventItemRequestDto;
@@ -13,6 +14,7 @@ import excluz.excluz.domain.event.event.enums.ParticipantCondition;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
 import excluz.excluz.domain.event.event.repository.EventRepository;
 import excluz.excluz.domain.event.event.dto.EventResponseDto;
+import excluz.excluz.domain.streamer.repository.StreamerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,11 +36,19 @@ public class EventService {
     private final EventItemRepository eventItemRepository;
     private final ItemRepository itemRepository;
     private final EventApplicantRepository eventApplicantRepository;
+    private final StreamerRepository streamerRepository;
 
     @Transactional
-    public EventResponseDto createEvent(EventRequestDto eventRequestDto) {
+    public EventResponseDto createEvent(Integer streamerId, EventRequestDto eventRequestDto) {
         Store store = storeRepository.findById(eventRequestDto.getStoreId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 스토어를 찾을 수 없습니다."));
+
+        Streamer streamer = streamerRepository.findById(streamerId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 스트리머를 찾을 수 없습니다."));
+
+        if (!streamer.getId().equals(streamerId)){
+            throw new IllegalArgumentException("권한 없는 스토어의 이벤트를 만들 수 없습니다.");
+        }
 
         Event event = Event.builder()
                 .store(store)
@@ -100,9 +110,16 @@ public class EventService {
 
     // 이벤트 취소 시 재고 복구 및 이벤트 상태 변경 (예: 이벤트 취소 플래그 추가 등으로 확장 가능)
     @Transactional
-    public void cancelEvent(Integer eventId) {
+    public void cancelEvent(Integer streamerId, Integer eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 이벤트를 찾을 수 없습니다. ID: " + eventId));
+
+        Streamer streamer = streamerRepository.findById(streamerId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 스트리머를 찾을 수 없습니다."));
+
+        if (!streamer.getId().equals(streamerId)){
+            throw new IllegalArgumentException("권한 없는 스토어의 이벤트를 취소할 수 없습니다.");
+        }
 
         if (event.getIsCompleted()) {
             throw new IllegalStateException("이미 마감된 이벤트는 취소할 수 없습니다.");
@@ -124,9 +141,16 @@ public class EventService {
     }
 
     // 이벤트 마감 메서드 추가
-    public EventClosingResponseDto closeEvent(Integer eventId) {
+    public EventClosingResponseDto closeEvent(Integer streamerId, Integer eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 이벤트를 찾을 수 없습니다. ID: " + eventId));
+
+        Streamer streamer = streamerRepository.findById(streamerId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 스트리머를 찾을 수 없습니다."));
+
+        if (!streamer.getId().equals(streamerId)){
+            throw new IllegalArgumentException("권한 없는 스토어의 이벤트를 마감할 수 없습니다.");
+        }
 
         if (event.getIsDeleted()) {
             throw new IllegalStateException("취소된 이벤트입니다.");

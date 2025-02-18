@@ -1,5 +1,7 @@
 package excluz.excluz.domain.point.pointTransaction.service;
 
+import excluz.excluz.common.exception.NotFoundException;
+import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.point.pointTransaction.dto.response.PointTransactionResponseDto;
 import excluz.excluz.domain.point.pointTransaction.repository.PointTransactionRepository;
 import excluz.excluz.domain.user.enums.UserRole;
@@ -32,6 +34,6 @@ public class PointTransactionService {
                     .map(PointTransactionResponseDto::from);
         }
 
-        throw new IllegalArgumentException("not found") ;
+        throw new NotFoundException(ErrorCode.FORBIDDEN_USER_ACCESS) ;
     }
 }

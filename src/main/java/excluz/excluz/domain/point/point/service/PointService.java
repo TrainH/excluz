@@ -26,7 +26,6 @@ import java.util.Optional;
 public class PointService {
 
     private final UserRepository userRepository;
-    private final StoreRepository storeRepository;
     private final PointRepository pointRepository;
     private final PointTransactionRepository pointTransactionRepository;
 
@@ -60,10 +59,9 @@ public class PointService {
     }
 
     public PointResponseDto getPoint(Integer userOrStreamerId, String userRole) {
-        String roleName = userRole.replace("ROLE_", "").toUpperCase();
 
-        Point point = pointRepository.findByUserRoleAndUserOrStreamerId(UserRole.valueOf(roleName), userOrStreamerId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND)); // 나중에 예외처리 변경
+        Point point = pointRepository.findByUserRoleAndUserOrStreamerId(UserRole.valueOf(userRole), userOrStreamerId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.POINT_NOT_FOUND)); // 나중에 예외처리 변경
 
         return PointResponseDto.from(point);
     }

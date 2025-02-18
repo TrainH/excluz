@@ -46,9 +46,7 @@ public class UserService {
 		}
 
 		// 리퀘스트 요청에 들어온 비밀번호와 재확인 비밀번호가 일치 하지 않을 시 예외
-		if (!signupRequest.getPassword().equals(signupRequest.getReEnterPassword())) {
-			throw new BadRequestException(ErrorCode.PASSWORD_RE_ENTER_PASSWORD_MISMATCH);
-		}
+		matchPassword(signupRequest.getPassword(), signupRequest.getReEnterPassword());
 
 		// 비밀번호 해싱 처리
 		String bcryptPassword = passwordEncoder.encode(signupRequest.getPassword());
@@ -74,9 +72,7 @@ public class UserService {
 			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
 		// 비밀번호 검증 로직
-		if(!passwordEncoder.matches(loginRequest.getPassword(),user.getPassword())) {
-			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
-		}
+		validatePassword(loginRequest.getPassword(),user.getPassword());
 
 		// 토큰 생성 로직
 		String token = jwtUtil.createToken(user.getEmail(), user.getId(), user.getUserRole());
@@ -91,20 +87,15 @@ public class UserService {
 		Integer userId, UserWithdrawRequestDto userWithdrawRequest) {
 
 		// 유저 정보를 userId 로 조회
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+		User user = userProfile(userId);
 
 		// 리퀘스트 요청에 들어온 비밀번호와 재확인 비밀번호가 일치 하지 않을 시 예외
-		if (!userWithdrawRequest.getPassword().equals(userWithdrawRequest.getReEnterPassword())) {
-			throw new BadRequestException(ErrorCode.PASSWORD_RE_ENTER_PASSWORD_MISMATCH);
-		}
+		matchPassword(userWithdrawRequest.getPassword(), userWithdrawRequest.getReEnterPassword());
 
 		// 비밀번호 검증 로직
-		if(!passwordEncoder.matches(userWithdrawRequest.getPassword(), user.getPassword())) {
-			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
-		}
+		validatePassword(userWithdrawRequest.getPassword(), user.getPassword());
 
-		// 유저의 isDelete의 상태가 true 가 됨
+		// 유저의 isDeleted 의 상태가 true 가 됨
 		user.updateUserStatus(true);
 
 		return new UserWithdrawResponseDto("회원탈퇴가 완료되었습니다 저희 서비스를 이용해주셔서 감사합니다.");
@@ -114,8 +105,7 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public UserProfileResponseDto userGetProfile(Integer userId) {
 
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+		User user = userProfile(userId);
 
 		// 탈퇴한 회원 조회시 예외처리
 		if (user.getIsDeleted()) {
@@ -129,8 +119,7 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public MyProfileResponseDto userGetMyProfile(Integer userId) {
 
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+		User user = userProfile(userId);
 
 		return new MyProfileResponseDto(user);
 	}
@@ -139,13 +128,10 @@ public class UserService {
 	@Transactional
 	public UpdateMyProfileResponseDto userUpdateMyProfile(Integer userId, UpdateMyProfileRequestDto updateMyProfileRequest) {
 
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+		User user = userProfile(userId);
 
 		// 비밀번호 검증로직
-		if(!passwordEncoder.matches(updateMyProfileRequest.getPassword(), user.getPassword())) {
-			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
-		}
+		validatePassword(updateMyProfileRequest.getPassword(), user.getPassword());
 
 		user.updateUserProfile(
 			updateMyProfileRequest.getNickName(),
@@ -161,18 +147,13 @@ public class UserService {
 	@Transactional
 	public UpdatePasswordResponseDto userUpdatePassword(Integer userId, UpdatePasswordRequestDto updatePasswordRequest) {
 
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+		User user = userProfile(userId);
 
 		// 비밀번호 검증 로직
-		if(!passwordEncoder.matches(updatePasswordRequest.getOldPassword(), user.getPassword())) {
-			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
-		}
+		validatePassword(updatePasswordRequest.getOldPassword(), user.getPassword());
 
 		// 새로운 비밀번호와 재입력 비밀번호 검증 로직
-		if(!updatePasswordRequest.getNewPassword().equals(updatePasswordRequest.getReEnterPassword())) {
-			throw new BadRequestException(ErrorCode.PASSWORD_RE_ENTER_PASSWORD_MISMATCH);
-		}
+		matchPassword(updatePasswordRequest.getNewPassword(), updatePasswordRequest.getReEnterPassword());
 
 		// 새로운 비밀번호 해싱처리
 		String bcryptPassword = passwordEncoder.encode(updatePasswordRequest.getNewPassword());
@@ -180,5 +161,25 @@ public class UserService {
 		user.updatePassword(bcryptPassword);
 
 		return new UpdatePasswordResponseDto("비밀번호가 업데이트 되었습니다.", user);
+	}
+
+	// 기타 메서드(비밀번호 검증)
+	private void validatePassword(String rawPassword, String encodedPassword) {
+		if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
+			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
+		}
+	}
+
+	// 기타 메서드(비밀번호와 재입력 비밀번호 검증)
+	private void matchPassword(String inputPassword, String reEnterPassword) {
+		if(!inputPassword.equals(reEnterPassword)) {
+			throw new BadRequestException(ErrorCode.PASSWORD_RE_ENTER_PASSWORD_MISMATCH);
+		}
+	}
+
+	// 기타 메서드 (회원 정보 조회)
+	private User userProfile(Integer userId) {
+		return userRepository.findById(userId)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 	}
 }

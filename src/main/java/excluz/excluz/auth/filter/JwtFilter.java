@@ -53,10 +53,10 @@ public class JwtFilter implements Filter {
 		String authorizationHeader = httpRequest.getHeader("Authorization");
 
 		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-			log.info("JWT 토큰이 필요 합니다.");
 			httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "JWT 토큰이 필요 합니다.");
 			return;
 		}
+
 		String jwt = authorizationHeader.substring(7);
 
 		if (!jwtUtil.validateToken(jwt)) {
