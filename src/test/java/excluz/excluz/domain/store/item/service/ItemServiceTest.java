@@ -93,8 +93,8 @@ class ItemServiceTest {
 		}
 
 		@Test
-		@DisplayName("success: 아이템 소프트 딜리트 성공")
-		void deleteItem() {
+		@DisplayName("success: 아이템 소프트 딜리트 정상 수행")
+		void deleteItem_SoftDelete_success() {
 			// given
 			when(itemRepository.findItemByIdAndNotDeleted(anyInt())).thenReturn(Optional.of(mockItem));
 			when(mockItem.getStore().getStreamer().getId()).thenReturn(1);
@@ -107,8 +107,8 @@ class ItemServiceTest {
 		}
 
 		@Test
-		@DisplayName("success: 아이템 정보 변경 성공")
-		void updateItemInfo() {
+		@DisplayName("success: 아이템 정보 수정 성공")
+		void update_ItemInfo_success() {
 			// given
 			Item updatedItem = TEST_UPDATED_ITEM;
 
@@ -138,8 +138,8 @@ class ItemServiceTest {
 	class WithoutStubbing {
 
 		@Test
-		@DisplayName("success: 아이템 저장 메서드 호출 성공")
-		void createItem() {
+		@DisplayName("success: 아이템 생성 기능 정상 수행")
+		void createItem_success() {
 			// given
 			when(storeRepository.findStoreWithStreamer(TEST_STREAMER_ID1)).thenReturn(Optional.of(TEST_STORE1));
 			when(itemRepository.save(any(Item.class))).thenReturn(TEST_ITEM1);
@@ -152,8 +152,8 @@ class ItemServiceTest {
 		}
 
 		@Test
-		@DisplayName("success: itemId로 굿즈 단건 조회 성공")
-		void getItemById() {
+		@DisplayName("success: itemId로 아이템 단건 조회")
+		void getItemById_success() {
 			// given
 			Item item = TEST_ITEM2;
 
