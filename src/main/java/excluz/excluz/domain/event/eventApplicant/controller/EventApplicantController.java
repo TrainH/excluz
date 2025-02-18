@@ -33,8 +33,7 @@ public class EventApplicantController {
 
     @DeleteMapping("/{eventApplicantId}")
     public ResponseEntity<Void> deleteEventApplicant(@RequestParam("code") String code,
-                                                     @Valid @RequestBody EventApplicantReadRequestDto requestDto,
-                                                     @PathVariable Integer eventApplicantId) {
+                                                     @Valid @RequestBody EventApplicantReadRequestDto requestDto) {
         eventApplicantService.cancelEventApplicant(code, requestDto.getEmail(), requestDto.getApplicantPassword());
         return ResponseEntity.ok().build();
     }
