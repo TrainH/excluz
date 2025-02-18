@@ -18,6 +18,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import excluz.excluz.common.entity.CartItem;
 import excluz.excluz.common.entity.Item;
 import excluz.excluz.common.entity.Store;
+import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.common.entity.User;
 import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.ForbiddenException;
@@ -360,6 +361,62 @@ class CartItemServiceTest {
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.getCartItem(userId, userRole, cartItemId))
 			.isInstanceOf(ForbiddenException.class);
+	}
+
+	@Test
+	@DisplayName("fail: 다른 유저의 장바구니 아이템 조회 시 예외 발생")
+	void getCartItem_fail_wrongUser() {
+		// given
+		User userA = User.builder()
+			.name("유저A")
+			.nickName("userA")
+			.phoneNumber("010-1111-1111")
+			.address("서울시 강남구")
+			.email("userA@example.com")
+			.password("passwordA!!!!!!!!!")
+			.build();
+
+		User userB = User.builder()
+			.name("유저B")
+			.nickName("userB")
+			.phoneNumber("010-2222-2222")
+			.address("서울시 서초구")
+			.email("userB@example.com")
+			.password("passwordB!!!!!!!!!")
+			.build();
+
+		ReflectionTestUtils.setField(userA, "id", 1);
+		ReflectionTestUtils.setField(userB, "id", 2);
+
+		Streamer streamer = new Streamer(); // Streamer 객체
+		ReflectionTestUtils.setField(streamer, "id", 1); // Streamer의 ID 설정
+
+		Store store = Store.builder()
+			.streamer(streamer) // streamer: 위에서 생성한 streamer 객체
+			.address("서울시 강남구") // 스토어 주소
+			.storeName("테스트 스토어") // 스토어 이름
+			.registrationNumber("123-45-67890") // 사업자 등록번호
+			.build();
+
+		Item item = new Item(
+			store,         // store: 위에서 생성한 store 객체
+			"itemName",   // itemName: "itemName" (상품명)
+			"test",       // explanation: "test" (설명)
+			100,          // price: 100 (상품 가격)
+			10            // remainingQuantity: 10 (재고 개수)
+		);
+
+		CartItem cartItem = new CartItem(userB, item, 5); // userB의 장바구니 아이템
+		ReflectionTestUtils.setField(cartItem, "id", 1); // cartItemId 설정
+
+		UserRole userRole = UserRole.CUSTOMER;
+
+		when(cartItemRepository.findByIdAndUserId(1, 1))
+			.thenReturn(Optional.empty()); // userA의 ID로는 userB의 장바구니 아이템 조회 불가능
+
+		// when, then
+		Assertions.assertThatThrownBy(() -> cartItemService.getCartItem(userA.getId(), userRole, cartItem.getId()))
+			.isInstanceOf(NotFoundException.class);
 	}
 
 
