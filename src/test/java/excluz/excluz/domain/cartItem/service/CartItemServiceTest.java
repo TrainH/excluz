@@ -18,7 +18,6 @@ import excluz.excluz.common.entity.Item;
 import excluz.excluz.common.entity.User;
 import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.NotFoundException;
-import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.cartItem.dto.request.CreateCartItemRequestDto;
 import excluz.excluz.domain.cartItem.dto.request.UpdateCartItemQuantityRequestDto;
 import excluz.excluz.domain.cartItem.dto.response.CreateCartItemResponseDto;
@@ -186,7 +185,7 @@ class CartItemServiceTest {
 	}
 
 	@Test
-	@DisplayName("fail: 요청 개수 > 재고 (예외 발생))")
+	@DisplayName("fail: 요청 개수 > 재고 (예외 발생)")
 	void addItemToCart_fail_stockExceeded_case_1() {
 		// given
 		User user = mock(User.class);
@@ -208,6 +207,35 @@ class CartItemServiceTest {
 		when(itemRepository.findById(requestDto.getItemId())).thenReturn(Optional.of(item));
 		when(cartItemRepository.findByUserIdAndItemId(userId, requestDto.getItemId()))
 			.thenReturn(Optional.of(new CartItem(user, item, 0))); // 기존 장바구니에 0개 있음
+
+		// when, then
+		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, requestDto))
+			.isInstanceOf(BadRequestException.class);
+	}
+
+	@Test
+	@DisplayName("fail: 기 요청 개수 + 새로운 요청 개수 > 재고 (예외 발생)")
+	void addItemToCart_fail_stockExceeded_case_2() {
+		// given
+		User user = mock(User.class);
+		Item item = new Item(
+			null,         // store: null (스토어 정보 없음)
+			"itemName",   // itemName: "itemName" (상품명)
+			"test",       // explanation: "test" (설명)
+			100,          // price: 100 (상품 가격)
+			100           // remainingQuantity: 100 (재고 개수)
+		);
+
+		Integer userId = 1;
+		CreateCartItemRequestDto requestDto = new CreateCartItemRequestDto(
+			1, // itemId: 1 (아이템 아이디)
+			51 // quantity: 51 (장바구니에 담는 물건 개수)
+		);
+
+		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+		when(itemRepository.findById(requestDto.getItemId())).thenReturn(Optional.of(item));
+		when(cartItemRepository.findByUserIdAndItemId(userId, requestDto.getItemId()))
+			.thenReturn(Optional.of(new CartItem(user, item, 50))); // 기존 장바구니에 50개 있음
 
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, requestDto))
