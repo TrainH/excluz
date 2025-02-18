@@ -17,6 +17,8 @@ import excluz.excluz.common.entity.CartItem;
 import excluz.excluz.common.entity.Item;
 import excluz.excluz.common.entity.User;
 import excluz.excluz.common.exception.BadRequestException;
+import excluz.excluz.common.exception.NotFoundException;
+import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.cartItem.dto.request.CreateCartItemRequestDto;
 import excluz.excluz.domain.cartItem.dto.request.UpdateCartItemQuantityRequestDto;
 import excluz.excluz.domain.cartItem.dto.response.CreateCartItemResponseDto;
@@ -147,6 +149,22 @@ class CartItemServiceTest {
 		Assertions.assertThat(result).isNotNull();
 		Assertions.assertThat(result.getMessage()).isEqualTo("장바구니에 굿즈가 담겼습니다.");
 	}
+
+	@Test
+	@DisplayName("fail: 물품 추가 시 존재하지 않는 유저 (예외 발생)")
+	void addItemToCart_fail_userNotFound() {
+		// given
+		Integer userId = 1;
+		CreateCartItemRequestDto requestDto = new CreateCartItemRequestDto(1, 10);
+
+		// 유저가 없는 경우
+		when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+		// when, then
+		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, requestDto))
+			.isInstanceOf(NotFoundException.class);
+	}
+
 
 	@Test
 	@DisplayName("success: 요청 개수 < 재고")
