@@ -2,14 +2,15 @@ package excluz.excluz.domain.store.item.service;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -61,6 +62,7 @@ class ItemServiceTest {
 	public final static Integer TEST_REMAINING_QUANTITY2 = 200;
 	public final static Item TEST_UPDATED_ITEM = new Item(TEST_STORE1, TEST_ITEM_NAME2, TEST_EXPLANATION2, TEST_PRICE2, TEST_REMAINING_QUANTITY2);
 	public final static Item TEST_ITEM1 = new Item(TEST_STORE1, TEST_ITEM_NAME1, TEST_EXPLANATION1, TEST_PRICE1, TEST_REMAINING_QUANTITY1);
+	public final static Item TEST_ITEM2 = new Item(TEST_STORE1, TEST_ITEM_NAME2, TEST_EXPLANATION2, TEST_PRICE2, TEST_REMAINING_QUANTITY2);
 	public final static ItemCreateRequestDto TEST_ITEM_CREATE_REQUEST_DTO = new ItemCreateRequestDto(TEST_ITEM_NAME1, TEST_EXPLANATION1, TEST_PRICE1, TEST_REMAINING_QUANTITY1);
 	public final static ItemUpdateRequestDto TEST_ITEM_UPDATE_REQUEST_DTO = new ItemUpdateRequestDto(TEST_ITEM_NAME2, TEST_EXPLANATION2, TEST_PRICE2, TEST_REMAINING_QUANTITY2);
 	public final static ItemResponseDto TEST_ITEM_RESPONSE_DTO = new ItemResponseDto(TEST_ITEM_NAME2, TEST_EXPLANATION2, TEST_PRICE2, TEST_REMAINING_QUANTITY2);
@@ -79,65 +81,96 @@ class ItemServiceTest {
 	@Mock
 	Streamer mockStreamer;
 
-	@BeforeEach
-	void setUp() {
-		when(mockItem.getStore()).thenReturn(mockStore);
-		when(mockStore.getStreamer()).thenReturn(mockStreamer);
-		when(mockStreamer.getId()).thenReturn(1);
+	@Nested
+	@DisplayName("기본 설정이 필요한 테스트")
+	class WithStubbing {
+
+		@BeforeEach
+		void setUp() {
+			when(mockItem.getStore()).thenReturn(mockStore);
+			when(mockStore.getStreamer()).thenReturn(mockStreamer);
+			when(mockStreamer.getId()).thenReturn(1);
+		}
+
+		@Test
+		@DisplayName("success: 아이템 소프트 딜리트 성공")
+		void deleteItem() {
+			// given
+			when(itemRepository.findItemByIdAndNotDeleted(anyInt())).thenReturn(Optional.of(mockItem));
+			when(mockItem.getStore().getStreamer().getId()).thenReturn(1);
+
+			// when
+			itemService.deleteItem(TEST_ITEM_ID1, TEST_STREAMER_ID1);
+
+			// then
+			verify(mockItem, times(1)).updateIsDeleted(true);
+		}
+
+		@Test
+		@DisplayName("success: 아이템 정보 변경 성공")
+		void updateItemInfo() {
+			// given
+			Item updatedItem = TEST_UPDATED_ITEM;
+
+			when(itemRepository.findItemByIdAndNotDeleted(anyInt())).thenReturn(Optional.of(mockItem));
+			when(mockItem.getStore().getStreamer().getId()).thenReturn(1);
+
+			try (MockedStatic<ItemResponseDto> itemMockedStatic = mockStatic(ItemResponseDto.class)) {
+				given(ItemResponseDto.from(any(Item.class))).willReturn(TEST_ITEM_RESPONSE_DTO);
+
+				// when
+				ItemResponseDto actualResult = itemService.updateItemInfo(TEST_ITEM_UPDATE_REQUEST_DTO, TEST_ITEM_ID1,
+					TEST_STREAMER_ID1);
+
+				// then
+				verify(mockItem, times(1)).updateItem(anyString(), anyString(), anyInt(), anyInt());
+
+				assertThat(actualResult.getItemName()).isEqualTo(updatedItem.getItemName());
+				assertThat(actualResult.getExplanation()).isEqualTo(updatedItem.getExplanation());
+				assertThat(actualResult.getPrice()).isEqualTo(updatedItem.getPrice());
+				assertThat(actualResult.getRemainingQuantity()).isEqualTo(updatedItem.getRemainingQuantity());
+			}
+		}
 	}
 
-	@Test
-	@DisplayName("success: 아이템 저장 메서드 호출 성공")
-	void createItem() {
-		// given
-		when(storeRepository.findStoreWithStreamer(TEST_STREAMER_ID1)).thenReturn(Optional.of(TEST_STORE1));
-		when(itemRepository.save(any(Item.class))).thenReturn(TEST_ITEM1);
+	@Nested
+	@DisplayName("기본 설정이 불필요한 테스트")
+	class WithoutStubbing {
 
-		// when
-		itemService.createItem(TEST_ITEM_CREATE_REQUEST_DTO, TEST_STREAMER_ID1);
+		@Test
+		@DisplayName("success: 아이템 저장 메서드 호출 성공")
+		void createItem() {
+			// given
+			when(storeRepository.findStoreWithStreamer(TEST_STREAMER_ID1)).thenReturn(Optional.of(TEST_STORE1));
+			when(itemRepository.save(any(Item.class))).thenReturn(TEST_ITEM1);
 
-		// then
-		verify(itemRepository, times(1)).save(any(Item.class));
-	}
+			// when
+			itemService.createItem(TEST_ITEM_CREATE_REQUEST_DTO, TEST_STREAMER_ID1);
 
-	@Test
-	@DisplayName("success: 아이템 소프트 딜리트 성공")
-	void deleteItem() {
-		// given
-		when(itemRepository.findItemByIdAndNotDeleted(anyInt())).thenReturn(Optional.of(mockItem));
-		when(mockItem.getStore().getStreamer().getId()).thenReturn(1);
+			// then
+			verify(itemRepository, times(1)).save(any(Item.class));
+		}
 
-		// when
-		itemService.deleteItem(TEST_ITEM_ID1, TEST_STREAMER_ID1);
+		@Test
+		@DisplayName("success: itemId로 굿즈 단건 조회 성공")
+		void getItemById() {
+			// given
+			Item item = TEST_ITEM2;
 
-		// then
-		verify(mockItem, times(1)).updateIsDeleted(true);
-	}
+			when(itemRepository.findItemByIdAndNotDeleted(eq(item.getId()))).thenReturn(Optional.of(item));
 
-	@Test
-	@DisplayName("success: 아이템 정보 변경 성공")
-	void updateItemInfo() {
-		// given
-		ItemUpdateRequestDto updateRequestDto = TEST_ITEM_UPDATE_REQUEST_DTO;
-		ItemResponseDto responseDto = TEST_ITEM_RESPONSE_DTO;
-		Item updatedItem = TEST_UPDATED_ITEM;
+			try (MockedStatic<ItemResponseDto> itemMockedStatic = mockStatic(ItemResponseDto.class)) {
+				given(ItemResponseDto.from(any(Item.class))).willReturn(TEST_ITEM_RESPONSE_DTO);
 
-		when(itemRepository.findItemByIdAndNotDeleted(anyInt())).thenReturn(Optional.of(mockItem));
-		when(mockItem.getStore().getStreamer().getId()).thenReturn(1);
+				// when
+				ItemResponseDto actualResult = itemService.getItemById(item.getId());
 
-		try (MockedStatic<ItemResponseDto> itemMockedStatic = mockStatic(ItemResponseDto.class)) {
-			given(ItemResponseDto.from(any(Item.class))).willReturn(responseDto);
-
-		// when
-		ItemResponseDto actualResult = itemService.updateItemInfo(updateRequestDto, TEST_ITEM_ID1, TEST_STREAMER_ID1);
-
-		// then
-		verify(mockItem, times(1)).updateItem(anyString(), anyString(), anyInt(), anyInt());
-
-		assertThat(actualResult.getItemName()).isEqualTo(updatedItem.getItemName());
-		assertThat(actualResult.getExplanation()).isEqualTo(updatedItem.getExplanation());
-		assertThat(actualResult.getPrice()).isEqualTo(updatedItem.getPrice());
-		assertThat(actualResult.getRemainingQuantity()).isEqualTo(updatedItem.getRemainingQuantity());
+				// then
+				assertThat(actualResult.getItemName()).isEqualTo(item.getItemName());
+				assertThat(actualResult.getExplanation()).isEqualTo(item.getExplanation());
+				assertThat(actualResult.getPrice()).isEqualTo(item.getPrice());
+				assertThat(actualResult.getRemainingQuantity()).isEqualTo(item.getRemainingQuantity());
+			}
 		}
 	}
 }
