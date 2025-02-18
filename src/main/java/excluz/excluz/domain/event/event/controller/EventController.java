@@ -48,7 +48,7 @@ public class EventController {
         return ResponseEntity.ok(eventResponseDto);
     }
 
-    @DeleteMapping("/soft/{eventId}")
+    @DeleteMapping("/{eventId}/soft")
     @PreAuthorize("hasRole('STREAMER')")
     public ResponseEntity<Void> deleteEvent(@PathVariable Integer eventId) {
         Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
