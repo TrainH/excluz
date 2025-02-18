@@ -285,6 +285,7 @@ class CartItemServiceTest {
 			.isInstanceOf(ForbiddenException.class);
 	}
 
+
 	/*
 	 * getCartItem
 	 */
@@ -343,6 +344,19 @@ class CartItemServiceTest {
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.getCartItem(user.getId(), userRole, cartItemId))
 			.isInstanceOf(NotFoundException.class);
+	}
+
+	@Test
+	@DisplayName("fail: 유효하지 않은 유저 역할 (예외 발생)")
+	void getCartItem_fail_invalidUserRole() {
+		// given
+		Integer userId = 1;
+		Integer cartItemId = 1;
+		UserRole userRole = UserRole.STREAMER; // 유효하지 않은 유저 역할 (CUSTOMER가 아님)
+
+		// when, then
+		Assertions.assertThatThrownBy(() -> cartItemService.getCartItem(userId, userRole, cartItemId))
+			.isInstanceOf(ForbiddenException.class);
 	}
 
 
