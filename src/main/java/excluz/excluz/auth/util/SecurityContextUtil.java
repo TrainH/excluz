@@ -23,7 +23,7 @@ public class SecurityContextUtil {
 		return UserRole.valueOf(grantedAuthority.getAuthority());
 	}
 
-	public static Integer getUserId() {
+	public static Integer getUserOrStreamerId() {
 		String userId = SecurityContextHolder.getContext()
 			.getAuthentication()
 			.getName();
