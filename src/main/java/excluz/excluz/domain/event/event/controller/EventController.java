@@ -1,5 +1,6 @@
 package excluz.excluz.domain.event.event.controller;
 
+import excluz.excluz.auth.util.SecurityContextUtil;
 import excluz.excluz.common.entity.Event;
 import excluz.excluz.domain.event.event.dto.EventClosingResponseDto;
 import excluz.excluz.domain.event.event.dto.EventRequestDto;
@@ -45,6 +46,14 @@ public class EventController {
         // todo : 유저 인증 불필요
         EventResponseDto eventResponseDto = eventService.getEvent(eventId);
         return ResponseEntity.ok(eventResponseDto);
+    }
+
+    @DeleteMapping("/soft/{eventId}")
+    @PreAuthorize("hasRole('STREAMER')")
+    public ResponseEntity<Void> deleteEvent(@PathVariable Integer eventId) {
+        Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
+        eventService.cancelEvent(streamerId, eventId);
+        return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/{eventId}/applicants")
