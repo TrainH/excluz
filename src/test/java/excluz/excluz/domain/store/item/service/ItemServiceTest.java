@@ -234,21 +234,22 @@ class ItemServiceTest {
 		void get_item_list_when_max_price_less_than_or_equal_to_min_price() {
 			// given
 			Pageable pageable = PageRequest.of(1, 10);
-			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(5000));
+			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(6000));
 			List<Item> itemList = Collections.singletonList(SharedData.ITEM2);
 			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
 
-			when(itemRepository.findByPriceWithItemName(pageable, 5000, Integer.MAX_VALUE, SharedData.ITEM_NAME2)).thenReturn(itemPage);
+			when(itemRepository.findByPriceWithItemName(pageable, 1000, 6000, SharedData.ITEM_NAME2)).thenReturn(itemPage);
 
 			try (MockedStatic<ItemResponseDto> mockedStatic = mockStatic(ItemResponseDto.class)) {
 				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
 
 				// when
+				// maxPrice가 minPrice보다 작음
 				Page<ItemResponseDto> actualResult = itemService.getItemList(2, 10, 5000, 1000, SharedData.ITEM_NAME2);
 
 				// then
 				verify(itemRepository).findHighestItemPrice();
-				verify(itemRepository).findByPriceWithItemName(pageable, 1000, 5000, SharedData.ITEM_NAME2);
+				verify(itemRepository).findByPriceWithItemName(pageable, 1000, 6000, SharedData.ITEM_NAME2);
 			}
 		}
 	}
