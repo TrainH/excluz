@@ -31,7 +31,7 @@ public class CartItemController {
 	public ResponseEntity<CreateCartItemResponseDto> addItemToCart(
 		@Valid @RequestBody CreateCartItemRequestDto requestDto
 	) {
-		Integer userId = SecurityContextUtil.getUserId();
+		Integer userId = SecurityContextUtil.getUserOrStreamerId();
 
 		// 서비스단으로 userId와 리퀘스트 정보 넘기기
 		CreateCartItemResponseDto response = cartItemService.addItemToCart(userId, requestDto);
@@ -45,7 +45,7 @@ public class CartItemController {
 	public ResponseEntity<GetCartItemResponseDto> getCartItem(
 		@PathVariable(name = "cartItemId") Integer cartItemId
 	) {
-		Integer userId = SecurityContextUtil.getUserId();
+		Integer userId = SecurityContextUtil.getUserOrStreamerId();
 
 		GetCartItemResponseDto response = cartItemService.getCartItem(userId, cartItemId);
 		return ResponseEntity.ok(response);
@@ -54,7 +54,7 @@ public class CartItemController {
 	// 물품 다건 조회
 	@GetMapping("/v1/cart-items")
 	public ResponseEntity<CartItemListResponseDto> getCartItemList() {
-		Integer userId = SecurityContextUtil.getUserId();
+		Integer userId = SecurityContextUtil.getUserOrStreamerId();
 
 		CartItemListResponseDto response = cartItemService.getCartItemList(userId);
 		return ResponseEntity.ok(response);
@@ -66,7 +66,7 @@ public class CartItemController {
 		@PathVariable(name = "cartItemId") Integer cartItemId,
 		@Valid @RequestBody UpdateCartItemQuantityRequestDto requestDto
 	) {
-		Integer userId = SecurityContextUtil.getUserId();
+		Integer userId = SecurityContextUtil.getUserOrStreamerId();
 
 		GetCartItemResponseDto response = cartItemService.updateCartItemQuantity(userId, cartItemId, requestDto);
 		return ResponseEntity.ok(response);
@@ -77,7 +77,7 @@ public class CartItemController {
 	public ResponseEntity<Void> removeCartItem(
 		@PathVariable(name = "cartItemId") Integer cartItemId
 	) {
-		Integer userId = SecurityContextUtil.getUserId();
+		Integer userId = SecurityContextUtil.getUserOrStreamerId();
 
 		// cartItemId를 서비스 단으로 넘겨서 검증 및 삭제 진행
 		cartItemService.removeCartItem(userId, cartItemId);
