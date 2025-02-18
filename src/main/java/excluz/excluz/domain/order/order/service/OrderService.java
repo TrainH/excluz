@@ -3,7 +3,9 @@ package excluz.excluz.domain.order.order.service;
 import excluz.excluz.common.entity.Order;
 import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.common.entity.User;
+import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
+import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.order.order.dto.request.OrderUpdateRequestDto;
 import excluz.excluz.domain.order.order.dto.response.OrderResponseDto;
 import excluz.excluz.domain.order.order.enums.OrderStatus;
@@ -41,26 +43,26 @@ public class OrderService {
             return orderRepository.findByStreamerId(userOrStreamerId, pageable);
         }
 
-        throw new IllegalArgumentException("not found") ;
+        throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
     }
 
     @Transactional(readOnly = true)
     public OrderResponseDto getOrder(Integer userOrStreamerId, String userRole, Integer orderId) {
         if (userRole.equals(UserRole.CUSTOMER.getRole())) {
             Order order = orderRepository.findByIdAndUserId(orderId, userOrStreamerId).orElseThrow(
-                    () -> new IllegalArgumentException("Order not found")
+                    () -> new NotFoundException(ErrorCode.ORDER_NOT_FOUND)
             );
             return OrderResponseDto.from(order);
         }
 
         if (userRole.equals(UserRole.STREAMER.getRole())) {
             Order order = orderRepository.findByIdAndStreamerId(orderId, userOrStreamerId).orElseThrow(
-                    () -> new IllegalArgumentException("Order not found")
+                    () -> new NotFoundException(ErrorCode.ORDER_NOT_FOUND)
             );
             return OrderResponseDto.from(order);
         }
 
-        throw new IllegalArgumentException("not found") ;
+        throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
     }
 
     @Transactional
@@ -70,12 +72,12 @@ public class OrderService {
 
         // 주문상태에 따른 변경할 수 있는 주체(CUSTOMER / STREAMER) 검증
         if (!orderStatus.canPerformAction(userRole)) {
-            throw new IllegalArgumentException(userRole + " cannot perform this action on the current order status");
+            throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
         }
 
         if (userRole.equals(UserRole.CUSTOMER.getRole())) {
             Order order = orderRepository.findByIdAndUserId(orderId, userOrStreamerId).orElseThrow(
-                    () -> new IllegalArgumentException("Order not found")
+                    () -> new NotFoundException(ErrorCode.ORDER_NOT_FOUND)
             );
             order.updateWith(requestDto);
             orderRepository.save(order);
@@ -84,12 +86,13 @@ public class OrderService {
 
         if (userRole.equals(UserRole.STREAMER.getRole())) {
             Order order = orderRepository.findByIdAndStreamerId(orderId, userOrStreamerId).orElseThrow(
-                    () -> new IllegalArgumentException("Order not found")
+                    () -> new NotFoundException(ErrorCode.ORDER_NOT_FOUND)
             );
             order.updateWith(requestDto);
             orderRepository.save(order);
             return;
         }
-        throw new IllegalArgumentException("not found");
+
+        throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
     }
 }

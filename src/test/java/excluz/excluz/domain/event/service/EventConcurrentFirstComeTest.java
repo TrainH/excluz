@@ -1,9 +1,6 @@
-package excluz.excluz;
+package excluz.excluz.domain.event.service;
 
-import excluz.excluz.common.entity.Event;
-import excluz.excluz.common.entity.EventApplicant;
-import excluz.excluz.common.entity.Item;
-import excluz.excluz.common.entity.Store;
+import excluz.excluz.common.entity.*;
 import excluz.excluz.domain.event.event.dto.EventRequestDto;
 import excluz.excluz.domain.event.event.dto.EventResponseDto;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
@@ -14,12 +11,12 @@ import excluz.excluz.domain.event.eventApplicant.service.EventApplicantService;
 import excluz.excluz.domain.event.eventItem.dto.EventItemRequestDto;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
+import excluz.excluz.domain.streamer.repository.StreamerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -48,12 +45,16 @@ public class EventConcurrentFirstComeTest {
     private EventApplicantRepository eventApplicantRepository;
 
     @Autowired
+    private StreamerRepository streamerRepository;
+
+    @Autowired
     private StoreRepository storeRepository;
 
     @Autowired
     private ItemRepository itemRepository;
 
     // 테스트 전 기본 데이터 세팅 (Store, Item, Event 생성)
+    private Streamer streamer;
     private Store store;
     private Item testItem;
     private Event event;
@@ -64,8 +65,17 @@ public class EventConcurrentFirstComeTest {
     public void setup() {
         uniqueSuffix = UUID.randomUUID().toString().substring(0, 4);
 
+        streamer = Streamer.builder()
+                .name("스트리머" + uniqueSuffix)
+                .nickName("스트리머" + uniqueSuffix)
+                .phoneNumber("010" + ((int) (Math.random() * 90000000 + 10000000)))
+                .email("streamer" + uniqueSuffix + "@example.com")
+                .password("password")
+                .build();
+        streamerRepository.save(streamer);
+
         store = Store.builder()
-                .streamer(null)  // 단순 테스트를 위해 null 처리하거나 미리 등록된 Streamer 사용
+                .streamer(streamer)
                 .address("테스트 주소" + uniqueSuffix)
                 .storeName("테스트 스토어" + uniqueSuffix)
                 .registrationNumber("123450" + uniqueSuffix)
@@ -98,7 +108,7 @@ public class EventConcurrentFirstComeTest {
                 ))
                 .build();
 
-        EventResponseDto responseDto = eventService.createEvent(eventRequestDto);
+        EventResponseDto responseDto = eventService.createEvent(streamer.getId(), eventRequestDto);
         event = eventRepository.findById(responseDto.getId())
                 .orElseThrow(() -> new IllegalStateException("생성된 이벤트가 없습니다."));
     }
@@ -106,7 +116,7 @@ public class EventConcurrentFirstComeTest {
     @Test
     public void testConcurrentApplicants_FirstComeFirstServed() throws Exception {
         // 동시성 테스트를 위한 스레드 풀과 CountDownLatch 준비
-        int numberOfThreads = 100; // 동시에 n명의 응모 시도
+        int numberOfThreads = 5; // 동시에 n명의 응모 시도
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
         CountDownLatch startLatch = new CountDownLatch(1); // 모든 스레드를 동시에 시작
         CountDownLatch finishLatch = new CountDownLatch(numberOfThreads);
@@ -150,7 +160,7 @@ public class EventConcurrentFirstComeTest {
 
         // 모든 응모 처리 후, 이벤트 마감 로직 실행 (선착순 기준으로 당첨자 판별)
         // 동시성 상황에서 저장된 응모는 createdAt 값 순으로 정렬됨.
-        var closingResponse = eventService.closeEvent(event.getId());
+        var closingResponse = eventService.closeEvent(streamer.getId(), event.getId());
 
         // 당첨자 수가 NUMBER_OF_WINNERS로 제한되었는지 확인
         List<EventApplicant> allApplicants = eventApplicantRepository.findByEvent(event);

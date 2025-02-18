@@ -9,6 +9,7 @@ import excluz.excluz.domain.user.enums.UserRole;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
@@ -24,34 +25,35 @@ public class EventController {
     private final EventService eventService;
 
     @PostMapping()
+    @PreAuthorize("hasRole('STREAMER')")
     public ResponseEntity<EventResponseDto> createEvent(@AuthenticationPrincipal User user,
                                                         @Valid @RequestBody EventRequestDto eventRequestDto) {
-//      todo: 로그인 된 스트리머 id 확인 및 검사
-//        Integer userId = Integer.parseInt(user.getUsername());
-//        UserRole userRole = user.getAuthorities();
-//        EventResponseDto eventResponseDto = eventService.createEvent(userId, eventRequestDto);
-        EventResponseDto eventResponseDto = eventService.createEvent(eventRequestDto);
+        Integer streamerId = Integer.parseInt(user.getUsername());
+        EventResponseDto eventResponseDto = eventService.createEvent(streamerId, eventRequestDto);
         return ResponseEntity.status(201).body(eventResponseDto);
     }
 
     @GetMapping()
     public ResponseEntity<List<EventResponseDto>> getAllEvents() {
-        // todo: 유저인증로직
+//        todo: 유저 인증 불필요
         List<EventResponseDto> eventResponseDtoList = eventService.getAllEvents();
         return ResponseEntity.ok(eventResponseDtoList);
     }
 
     @GetMapping("/{eventId}")
     public ResponseEntity<EventResponseDto> getEvent(@PathVariable Integer eventId) {
-        // todo: 유저인증로직
+        // todo : 유저 인증 불필요
         EventResponseDto eventResponseDto = eventService.getEvent(eventId);
         return ResponseEntity.ok(eventResponseDto);
     }
 
     @PatchMapping("/{eventId}/applicants")
-    public ResponseEntity<EventClosingResponseDto> closeEvent(@PathVariable Integer eventId) {
-        // todo: 유저인증로직
-        EventClosingResponseDto eventClosingResponseDto = eventService.closeEvent(eventId);
+    @PreAuthorize("hasRole('STREAMER')")
+    public ResponseEntity<EventClosingResponseDto> closeEvent(@AuthenticationPrincipal User user,
+                                                              @PathVariable Integer eventId) {
+
+        Integer streamerId = Integer.parseInt(user.getUsername());
+        EventClosingResponseDto eventClosingResponseDto = eventService.closeEvent(streamerId, eventId);
         return ResponseEntity.ok(eventClosingResponseDto);
     }
 }
