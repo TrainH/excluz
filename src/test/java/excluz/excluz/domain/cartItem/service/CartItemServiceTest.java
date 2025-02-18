@@ -51,13 +51,13 @@ class CartItemServiceTest {
 			"itemName",   // itemName: "itemName" (상품명)
 			"test",       // explanation: "test" (설명)
 			100,          // price: 100 (상품 가격)
-			100            // remainingQuantity: 100 (재고 개수)
+			100           // remainingQuantity: 100 (재고 개수)
 		);
 
 		Integer userId = 1;
 		CreateCartItemRequestDto requestDto = new CreateCartItemRequestDto(
 			1, // itemId: 1 (아이템 아이디)
-			10 // quantity: 10 (장바구니에 담는 물건 개수)
+			99 // quantity: 99 (장바구니에 담는 물건 개수)
 		);
 
 		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
@@ -75,10 +75,45 @@ class CartItemServiceTest {
 		CreateCartItemResponseDto result = cartItemService.addItemToCart(userId, requestDto);
 
 		// than
+		verify(cartItemRepository, times(1)).save(any(CartItem.class));  // save()가 1번만 실행되었는지 확인
 		Assertions.assertThat(result).isNotNull(); // 반환값이 null이 아닌지 확인
 		Assertions.assertThat(result.getMessage()).isEqualTo("장바구니에 굿즈가 담겼습니다."); // 응답 메시지 동일하게 나오는지 확인
-		verify(cartItemRepository, times(1)).save(any(CartItem.class));  // save()가 1번만 실행되었는지 확인
 	}
+
+	@Test
+	@DisplayName("success: 특정 아이템 재고와 동일한 수량 요청")
+	void addItemToCart_success_matchingStockQuantity() {
+		// given
+		User user = mock(User.class);
+		Item item = new Item(
+			null,         // store: null (스토어 정보 없음)
+			"itemName",   // itemName: "itemName" (상품명)
+			"test",       // explanation: "test" (설명)
+			100,          // price: 100 (상품 가격)
+			100           // remainingQuantity: 100 (재고 개수)
+		);
+
+		Integer userId = 1;
+		CreateCartItemRequestDto requestDto = new CreateCartItemRequestDto(
+			1,  // itemId: 1 (아이템 아이디)
+			100 // quantity: 100 (장바구니에 담는 물건 개수)
+		);
+
+		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+		when(itemRepository.findById(requestDto.getItemId())).thenReturn(Optional.of(item));
+		when(cartItemRepository.findByUserIdAndItemId(userId, requestDto.getItemId()))
+			.thenReturn(Optional.of(new CartItem(user, item, 0))); // 기존 장바구니에 0개 있음
+		when(cartItemRepository.save(any(CartItem.class))).thenReturn(mock(CartItem.class));
+
+		// when
+		CreateCartItemResponseDto result = cartItemService.addItemToCart(userId, requestDto);
+
+		// then
+		verify(cartItemRepository, times(1)).save(any(CartItem.class));  // save()가 1번만 실행되었는지 확인
+		Assertions.assertThat(result).isNotNull(); // 반환값이 null이 아닌지 확인
+		Assertions.assertThat(result.getMessage()).isEqualTo("장바구니에 굿즈가 담겼습니다."); // 응답 메시지 동일하게 나오는지 확인
+	}
+
 
 	@Test
 	@DisplayName("success: 요청 개수 < 재고")
