@@ -2,6 +2,7 @@ package excluz.excluz.domain.cartItem.service;
 
 import static org.mockito.Mockito.*;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.assertj.core.api.Assertions;
@@ -22,6 +23,7 @@ import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.domain.cartItem.dto.request.CreateCartItemRequestDto;
 import excluz.excluz.domain.cartItem.dto.request.UpdateCartItemQuantityRequestDto;
+import excluz.excluz.domain.cartItem.dto.response.CartItemListResponseDto;
 import excluz.excluz.domain.cartItem.dto.response.CreateCartItemResponseDto;
 import excluz.excluz.domain.cartItem.dto.response.GetCartItemResponseDto;
 import excluz.excluz.domain.cartItem.repository.CartItemRepository;
@@ -363,6 +365,62 @@ class CartItemServiceTest {
 	/*
 	 * getCartItemList
 	 */
+	@Test
+	@DisplayName("success: 장바구니 아이템 목록 조회")
+	void getCartItemList_success() {
+		// given
+		User user = mock(User.class);
+		Store store = mock(Store.class);
+
+		Item item1 = new Item(
+			store,         // store: 위에서 생성한 store 객체
+			"itemName",   // itemName: "itemName" (상품명)
+			"test",       // explanation: "test" (설명)
+			100,          // price: 100 (상품 가격)
+			10            // remainingQuantity: 10 (재고 개수)
+		);
+		Item item2 = new Item(
+			store,         // store: 위에서 생성한 store 객체
+			"itemName2",   // itemName: "itemName2" (상품명)
+			"test2",       // explanation: "test2" (설명)
+			200,          // price: 200 (상품 가격)
+			20            // remainingQuantity: 20 (재고 개수)
+		);
+
+		CartItem cartItem1 = new CartItem(
+			user,  // user: 위에서 생성한 user 객체
+			item1,  // item: 위에서 생성한 Item1 객체
+			2      // quantity: 2 (현재 장바구니에 담긴 수량)
+		);
+		CartItem cartItem2 = new CartItem(
+			user,  // user: 위에서 생성한 user 객체
+			item2,  // item: 위에서 생성한 Item2 객체
+			3      // quantity: 3 (현재 장바구니에 담긴 수량)
+		);
+
+		ReflectionTestUtils.setField(user, "id", 1);
+		ReflectionTestUtils.setField(cartItem1, "id", 1);
+		ReflectionTestUtils.setField(cartItem2, "id", 2);
+
+		UserRole userRole = UserRole.CUSTOMER;
+
+		when(cartItemRepository.findByUserId(user.getId()))
+			.thenReturn(List.of(cartItem1, cartItem2));
+
+		// when
+		CartItemListResponseDto result = cartItemService.getCartItemList(user.getId(), userRole);
+
+		// then
+		Assertions.assertThat(result).isNotNull(); // 결과가 null이 아닌지 확인
+		Assertions.assertThat(result.getCartItemList()).hasSize(2); // 장바구니에 2개 아이템 있는지 확인
+		Assertions.assertThat(result.getTotalPrice()).isEqualTo(800); // (100*2 + 200*3) = 800 확인
+
+		Assertions.assertThat(result.getCartItemList().get(0).getQuantity()).isEqualTo(2); // 첫 번째 아이템 개수 확인
+		Assertions.assertThat(result.getCartItemList().get(1).getQuantity()).isEqualTo(3); // 두 번째 아이템 개수 확인
+	}
+
+
+
 
 	/*
 	 * updateCartItemQuantity
