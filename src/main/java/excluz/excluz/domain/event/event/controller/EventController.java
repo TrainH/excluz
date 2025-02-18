@@ -43,7 +43,16 @@ public class EventController {
         return ResponseEntity.ok(eventClosingResponseDto);
     }
 
-//    공개된 조회 로직
+    @DeleteMapping("/{eventId}/soft")
+    @PreAuthorize("hasRole('STREAMER')")
+    public ResponseEntity<Void> deleteEvent(@PathVariable Integer eventId) {
+        Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
+        eventService.cancelEvent(streamerId, eventId);
+        return ResponseEntity.ok().build();
+    }
+
+
+    //    공개된 조회 로직
     @GetMapping()
     public ResponseEntity<List<EventResponseDto>> getAllEvents() {
         List<EventResponseDto> eventResponseDtoList = eventService.getAllEvents();
@@ -56,22 +65,5 @@ public class EventController {
         return ResponseEntity.ok(eventResponseDto);
     }
 
-    @DeleteMapping("/{eventId}/soft")
-    @PreAuthorize("hasRole('STREAMER')")
-    public ResponseEntity<Void> deleteEvent(@PathVariable Integer eventId) {
-        Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
-        eventService.cancelEvent(streamerId, eventId);
-        return ResponseEntity.ok().build();
-    }
-
-    @PatchMapping("/{eventId}/applicants")
-    @PreAuthorize("hasRole('STREAMER')")
-    public ResponseEntity<EventClosingResponseDto> closeEvent(@AuthenticationPrincipal User user,
-                                                              @PathVariable Integer eventId) {
-
-        Integer streamerId = Integer.parseInt(user.getUsername());
-        EventClosingResponseDto eventClosingResponseDto = eventService.closeEvent(streamerId, eventId);
-        return ResponseEntity.ok(eventClosingResponseDto);
-    }
 
 }
