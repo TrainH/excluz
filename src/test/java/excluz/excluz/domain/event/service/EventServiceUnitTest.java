@@ -1,4 +1,4 @@
-package excluz.excluz;
+package excluz.excluz.domain.event.service;
 
 import excluz.excluz.common.entity.*;
 import excluz.excluz.domain.event.event.dto.EventClosingResponseDto;
@@ -59,6 +59,7 @@ public class EventServiceUnitTest {
     @Autowired
     private EventApplicantService eventApplicantService;
 
+    private Streamer testStreamer;
     private Store testStore;
     private Item testItem1;
     private Item testItem2;
@@ -69,17 +70,17 @@ public class EventServiceUnitTest {
         // 각 테스트마다 중복데이터 방지를 위해 고유 접미사 사용
         uniqueSuffix = UUID.randomUUID().toString().substring(0, 4);
 
-        Streamer streamer = Streamer.builder()
+        testStreamer = Streamer.builder()
                 .name("스트리머" + uniqueSuffix)
                 .nickName("스트리머" + uniqueSuffix)
                 .phoneNumber("010" + ((int) (Math.random() * 90000000 + 10000000)))
                 .email("streamer" + uniqueSuffix + "@example.com")
                 .password("password")
                 .build();
-        streamerRepository.save(streamer);
+        streamerRepository.save(testStreamer);
 
         Store store = Store.builder()
-                .streamer(streamer)
+                .streamer(testStreamer)
                 .storeName("StoreName" + uniqueSuffix)
                 .address("StoreAddress" + uniqueSuffix)
                 .registrationNumber("RegNum" + uniqueSuffix)
@@ -122,7 +123,7 @@ public class EventServiceUnitTest {
                 .eventItemList(eventItemList)
                 .build();
 
-        EventResponseDto responseDto = eventService.createEvent(requestDto);
+        EventResponseDto responseDto = eventService.createEvent(testStreamer.getId(), requestDto);
 
         assertNotNull(responseDto);
         assertNotNull(responseDto.getId());
@@ -163,7 +164,7 @@ public class EventServiceUnitTest {
                 .build();
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            eventService.createEvent(requestDto);
+            eventService.createEvent(testStreamer.getId(), requestDto);
         });
         assertTrue(exception.getMessage().contains("해당 스토어를 찾을 수 없습니다."));
     }
@@ -214,7 +215,7 @@ public class EventServiceUnitTest {
                 .build();
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            eventService.createEvent(requestDto);
+            eventService.createEvent(testStreamer.getId(), requestDto);
         });
         assertTrue(exception.getMessage().contains("현재 스토어에 소속되어 있지 않습니다."));
     }
@@ -282,7 +283,7 @@ public class EventServiceUnitTest {
             eventApplicantRepository.save(applicant);
         }
 
-        EventClosingResponseDto closingResponse = eventService.closeEvent(createdEvent.getId());
+        EventClosingResponseDto closingResponse = eventService.closeEvent(testStreamer.getId(), createdEvent.getId());
 
         assertNotNull(closingResponse);
         assertEquals(createdEvent.getId(), closingResponse.getId());
@@ -309,7 +310,7 @@ public class EventServiceUnitTest {
         EventResponseDto createdEvent = createTestEvent();
 
         Exception exception = assertThrows(IllegalStateException.class, () -> {
-            eventService.closeEvent(createdEvent.getId());
+            eventService.closeEvent(testStreamer.getId(), createdEvent.getId());
         });
 
         assertTrue(exception.getMessage().contains("응모자가 없습니다."));
@@ -329,9 +330,9 @@ public class EventServiceUnitTest {
                 .endDatetime(LocalDateTime.now().plusDays(1))
                 .eventItemList(eventItemList)
                 .build();
-        EventResponseDto createdEvent = eventService.createEvent(requestDto);
+        EventResponseDto createdEvent = eventService.createEvent(testStreamer.getId(), requestDto);
 
-        eventService.cancelEvent(createdEvent.getId());
+        eventService.cancelEvent(testStreamer.getId(), createdEvent.getId());
 
         Event cancelledEvent = eventRepository.findById(createdEvent.getId()).orElseThrow();
         assertTrue(cancelledEvent.getIsDeleted());
@@ -360,10 +361,10 @@ public void testCancelEventFailure_AlreadyCompleted() {
         eventApplicantRepository.save(applicant);
     }
 
-    eventService.closeEvent(createdEvent.getId());
+    eventService.closeEvent(testStreamer.getId(), createdEvent.getId());
 
     Exception ex = assertThrows(IllegalStateException.class, () -> {
-        eventService.cancelEvent(createdEvent.getId());
+        eventService.cancelEvent(testStreamer.getId(), createdEvent.getId());
     });
     assertTrue(ex.getMessage().contains("이미 마감된 이벤트는 취소할 수 없습니다."));
 }
@@ -444,7 +445,7 @@ public void testCancelEventFailure_AlreadyCompleted() {
                 .eventItemList(eventItemList)
                 .build();
 
-        return eventService.createEvent(eventRequestDto);
+        return eventService.createEvent(testStreamer.getId(), eventRequestDto);
     }
 
 }
