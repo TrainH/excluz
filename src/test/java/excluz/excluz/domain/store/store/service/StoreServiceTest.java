@@ -4,20 +4,29 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import excluz.excluz.common.datas.SharedData;
 import excluz.excluz.common.entity.Store;
 import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
+import excluz.excluz.domain.store.store.dto.request.StoreRequestDto;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
+import excluz.excluz.domain.streamer.repository.StreamerRepository;
 import excluz.excluz.domain.streamer.service.StreamerService;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("StoreServiceTest")
 public class StoreServiceTest {
 
 	@InjectMocks
@@ -28,47 +37,40 @@ public class StoreServiceTest {
 	@Mock
 	ItemRepository itemRepository;
 	@Mock
+	StreamerRepository streamerRepository;
+	@Mock
 	StreamerService streamerService;
 
-	/* 공유 데이터 */
-	// Streamer 데이터
-	public final static Integer TEST_STREAMER_ID1 = 1;
-	public final static String TEST_STREAMER_NAME1 = "홍길동";
-	public final static String TEST_STREAMER_NICKNAME1 = "암행어사";
-	public final static String TEST_STREAMER_PHONE_NUMBER1 = "010-1234-1234";
-	public final static String TEST_STREAMER_EMAIL1 = "test12@test.com";
-	public final static String TEST_PASSWORD1 = "Qwer1234!!!!";
-	public final static Streamer TEST_STREAMER1 = new Streamer(TEST_STREAMER_NAME1, TEST_STREAMER_NICKNAME1, TEST_STREAMER_PHONE_NUMBER1, TEST_STREAMER_EMAIL1, TEST_PASSWORD1);
+	@Nested
+	@DisplayName("createStore 메서드")
+	class CreateStore {
+		@Test
+		@DisplayName("success: 스토어 생성 성공")
+		void createStore_success() {
 
-	// Store 데이터
-	public final static Integer TEST_STORE_ID1 = 1;
-	public final static String TEST_ADDRESS1 = "사랑시 평화동 정의로12";
-	public final static String TEST_STORE_NAME1 = "테스트샵";
-	public final static String TEST_REGISTRATION_NUMBER1 = "123-12-12345";
-	public final static Store TEST_STORE1 = new Store(TEST_STREAMER1, TEST_ADDRESS1, TEST_STORE_NAME1,TEST_REGISTRATION_NUMBER1);
+			// given
+			StoreRequestDto requestDto = new StoreRequestDto(SharedData.ADDRESS1, SharedData.STORE_NAME1, SharedData.REGISTRATION_NUMBER1);
+			Store store = SharedData.STORE1;
+			Streamer mockStreamer = mock(Streamer.class);
 
-	@Test
-	@DisplayName("success: 스토어 생성 성공")
-	void createStore_success(){
+			when(mockStreamer.isDeleted()).thenReturn(false);
+			when(streamerService.findStreamerById(anyInt())).thenReturn(mockStreamer);
+			when(storeRepository.save(any(Store.class))).thenReturn(store);
 
-		// given
-		Streamer streamer = TEST_STREAMER1;
-		Store store = TEST_STORE1;
+			// when
+			storeService.createStore(requestDto, SharedData.STREAMER_ID1);
 
-		when(storeRepository.save(any(Store.class))).thenReturn(store);
+			// then
+			verify(streamerService).findStreamerById(SharedData.STREAMER_ID1);
+			// 저장 시 전달된 Store 객체의 필드를 검증
+			ArgumentCaptor<Store> storeCaptor = ArgumentCaptor.forClass(Store.class);
+			verify(storeRepository).save(storeCaptor.capture());
+			Store savedStore = storeCaptor.getValue();
 
-		// when
-		Store actualResult = storeRepository.save(store);
-
-		// then
-		// 상태검증
-		assertThat(actualResult.getAddress()).isEqualTo(store.getAddress());
-		assertThat(actualResult.getStoreName()).isEqualTo(store.getStoreName());
-		assertThat(actualResult.getRegistrationNumber()).isEqualTo(store.getRegistrationNumber());
-
-		// 행위 검증: save()메서드 호출 성공
-		verify(storeRepository, times(1)).save(any(Store.class));
+			assertThat(savedStore.getAddress()).isEqualTo(requestDto.getAddress());
+			assertThat(savedStore.getStoreName()).isEqualTo(requestDto.getStoreName());
+			assertThat(savedStore.getRegistrationNumber()).isEqualTo(requestDto.getRegistrationNumber());
+			assertThat(savedStore.getStreamer()).isEqualTo(mockStreamer);
+		}
 	}
-
-
 }
