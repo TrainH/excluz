@@ -160,8 +160,7 @@ class CartItemServiceTest {
 			10 // quantity: 10 (장바구니에 담는 물건 개수)
 		);
 
-		when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class))); // 유저는 존재
-		when(itemRepository.findById(requestDto.getItemId())).thenReturn(Optional.empty()); // 아이템이 존재하지 않음
+		when(userRepository.findById(userId)).thenReturn(Optional.empty()); // 유저가 없는 경우
 
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, requestDto))
@@ -178,11 +177,41 @@ class CartItemServiceTest {
 			10 // quantity: 10 (장바구니에 담는 물건 개수)
 		);
 
-		when(userRepository.findById(userId)).thenReturn(Optional.empty()); // 아이템이 없는 경우
+		when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class))); // 유저는 존재
+		when(itemRepository.findById(requestDto.getItemId())).thenReturn(Optional.empty()); // 아이템이 존재하지 않음
 
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, requestDto))
 			.isInstanceOf(NotFoundException.class);
+	}
+
+	@Test
+	@DisplayName("fail: 요청 개수 > 재고 (예외 발생))")
+	void addItemToCart_fail_stockExceeded_case_1() {
+		// given
+		User user = mock(User.class);
+		Item item = new Item(
+			null,         // store: null (스토어 정보 없음)
+			"itemName",   // itemName: "itemName" (상품명)
+			"test",       // explanation: "test" (설명)
+			100,          // price: 100 (상품 가격)
+			100           // remainingQuantity: 100 (재고 개수)
+		);
+
+		Integer userId = 1;
+		CreateCartItemRequestDto requestDto = new CreateCartItemRequestDto(
+			1,  // itemId: 1 (아이템 아이디)
+			101 // quantity: 101 (장바구니에 담는 물건 개수)
+		);
+
+		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+		when(itemRepository.findById(requestDto.getItemId())).thenReturn(Optional.of(item));
+		when(cartItemRepository.findByUserIdAndItemId(userId, requestDto.getItemId()))
+			.thenReturn(Optional.of(new CartItem(user, item, 0))); // 기존 장바구니에 0개 있음
+
+		// when, then
+		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, requestDto))
+			.isInstanceOf(BadRequestException.class);
 	}
 
 	@Test
