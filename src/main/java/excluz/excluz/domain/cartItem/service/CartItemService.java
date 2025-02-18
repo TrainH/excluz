@@ -139,6 +139,7 @@ public class CartItemService {
 
 		// 개수 업데이트 (기존 개수와 관계없이 사용자가 입력한 개수로 설정)
 		cartItem.updateQuantity(requestDto.getQuantity());
+		cartItemRepository.save(cartItem);
 
 		return GetCartItemResponseDto.builder()
 			.cartItemId(cartItem.getId())
