@@ -15,11 +15,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import excluz.excluz.common.datas.SharedData;
 import excluz.excluz.common.entity.Store;
 import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
+import excluz.excluz.domain.store.store.dto.request.StoreDeleteRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreRequestDto;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
 import excluz.excluz.domain.streamer.repository.StreamerRepository;
@@ -40,21 +42,21 @@ public class StoreServiceTest {
 	StreamerRepository streamerRepository;
 	@Mock
 	StreamerService streamerService;
+	@Mock
+	PasswordEncoder passwordEncoder;
 
 	@Nested
 	@DisplayName("createStore 메서드")
 	class CreateStore {
 		@Test
 		@DisplayName("success: 스토어 생성 성공")
-		void createStore_success() {
+		void create_store_success() {
 
 			// given
 			StoreRequestDto requestDto = new StoreRequestDto(SharedData.ADDRESS1, SharedData.STORE_NAME1, SharedData.REGISTRATION_NUMBER1);
 			Store store = SharedData.STORE1;
-			Streamer mockStreamer = mock(Streamer.class);
 
-			when(mockStreamer.isDeleted()).thenReturn(false);
-			when(streamerService.findStreamerById(anyInt())).thenReturn(mockStreamer);
+			when(streamerService.findStreamerById(anyInt())).thenReturn(SharedData.STREAMER1);
 			when(storeRepository.save(any(Store.class))).thenReturn(store);
 
 			// when
@@ -70,7 +72,43 @@ public class StoreServiceTest {
 			assertThat(savedStore.getAddress()).isEqualTo(requestDto.getAddress());
 			assertThat(savedStore.getStoreName()).isEqualTo(requestDto.getStoreName());
 			assertThat(savedStore.getRegistrationNumber()).isEqualTo(requestDto.getRegistrationNumber());
-			assertThat(savedStore.getStreamer()).isEqualTo(mockStreamer);
+			assertThat(savedStore.getStreamer()).isEqualTo(SharedData.STREAMER1);
 		}
+	}
+
+	@Nested
+	@DisplayName("deleteStore 메서드")
+	class DeleteStore {
+
+		@Test
+		@DisplayName("success: 스토어 소프트 딜리트 정상 호출")
+		void delete_store_success() {
+			// given
+			StoreDeleteRequestDto deleteRequestDto = new StoreDeleteRequestDto(SharedData.STREAMER_PASSWORD1);
+			//Store mockStore = mock(Store.class);
+			Store spyStore = spy(SharedData.STORE1);
+
+			when(streamerService.findStreamerById(anyInt())).thenReturn(SharedData.STREAMER1);
+			when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+			when(storeRepository.findById(SharedData.STORE_ID1)).thenReturn(Optional.of(spyStore));
+
+			// 삭제 상태 변경 전 검증
+			assertThat(spyStore.isDeleted()).isEqualTo(false);
+
+			// when
+			storeService.deleteStore(deleteRequestDto, SharedData.STREAMER_ID1, SharedData.STORE_ID1);
+
+			// then
+			verify(streamerService).findStreamerById(SharedData.STREAMER_ID1);
+			verify(passwordEncoder).matches(SharedData.STREAMER_PASSWORD1, SharedData.STREAMER_PASSWORD1);
+			verify(storeRepository).findById(SharedData.STORE_ID1);
+			verify(spyStore).updateIsDeleted(true);
+
+			// 삭제 상태 변경 후 검증
+			assertThat(spyStore.isDeleted()).isEqualTo(true);
+		}
+
+		// 실패: 비밀번호 불일치
+		// 실패: 이미 삭제된 스토어
 	}
 }
