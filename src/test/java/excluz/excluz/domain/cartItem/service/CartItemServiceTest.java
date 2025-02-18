@@ -155,16 +155,35 @@ class CartItemServiceTest {
 	void addItemToCart_fail_userNotFound() {
 		// given
 		Integer userId = 1;
-		CreateCartItemRequestDto requestDto = new CreateCartItemRequestDto(1, 10);
+		CreateCartItemRequestDto requestDto = new CreateCartItemRequestDto(
+			1, // itemId: 1 (아이템 아이디)
+			10 // quantity: 10 (장바구니에 담는 물건 개수)
+		);
 
-		// 유저가 없는 경우
-		when(userRepository.findById(userId)).thenReturn(Optional.empty());
+		when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class))); // 유저는 존재
+		when(itemRepository.findById(requestDto.getItemId())).thenReturn(Optional.empty()); // 아이템이 존재하지 않음
 
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, requestDto))
 			.isInstanceOf(NotFoundException.class);
 	}
 
+	@Test
+	@DisplayName("fail: 물품 추가 시 존재하지 않는 아이템 (예외 발생)")
+	void addItemToCart_fail_itemNotFound() {
+		// given
+		Integer userId = 1;
+		CreateCartItemRequestDto requestDto = new CreateCartItemRequestDto(
+			1, // itemId: 1 (아이템 아이디)
+			10 // quantity: 10 (장바구니에 담는 물건 개수)
+		);
+
+		when(userRepository.findById(userId)).thenReturn(Optional.empty()); // 아이템이 없는 경우
+
+		// when, then
+		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, requestDto))
+			.isInstanceOf(NotFoundException.class);
+	}
 
 	@Test
 	@DisplayName("success: 요청 개수 < 재고")
