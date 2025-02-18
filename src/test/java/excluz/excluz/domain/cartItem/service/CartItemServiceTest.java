@@ -419,6 +419,17 @@ class CartItemServiceTest {
 		Assertions.assertThat(result.getCartItemList().get(1).getQuantity()).isEqualTo(3); // 두 번째 아이템 개수 확인
 	}
 
+	@Test
+	@DisplayName("fail: 유효하지 않은 유저 역할 (예외 발생)")
+	void getCartItemList_fail_invalidUserRole() {
+		// given
+		Integer userId = 1;
+		UserRole userRole = UserRole.STREAMER; // CUSTOMER가 아닌 경우
+
+		// when, then
+		Assertions.assertThatThrownBy(() -> cartItemService.getCartItemList(userId, userRole))
+			.isInstanceOf(ForbiddenException.class);
+	}
 
 
 
