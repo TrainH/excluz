@@ -56,4 +56,22 @@ public class EventController {
         return ResponseEntity.ok(eventResponseDto);
     }
 
+    @DeleteMapping("/{eventId}/soft")
+    @PreAuthorize("hasRole('STREAMER')")
+    public ResponseEntity<Void> deleteEvent(@PathVariable Integer eventId) {
+        Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
+        eventService.cancelEvent(streamerId, eventId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{eventId}/applicants")
+    @PreAuthorize("hasRole('STREAMER')")
+    public ResponseEntity<EventClosingResponseDto> closeEvent(@AuthenticationPrincipal User user,
+                                                              @PathVariable Integer eventId) {
+
+        Integer streamerId = Integer.parseInt(user.getUsername());
+        EventClosingResponseDto eventClosingResponseDto = eventService.closeEvent(streamerId, eventId);
+        return ResponseEntity.ok(eventClosingResponseDto);
+    }
+
 }
