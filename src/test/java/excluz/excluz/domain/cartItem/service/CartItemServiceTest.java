@@ -42,6 +42,9 @@ class CartItemServiceTest {
 	@InjectMocks
 	private CartItemService cartItemService;
 
+	/*
+	 * addItemToCart
+	 */
 	@Test
 	@DisplayName("success: 장바구니에 아이템 추가 메서드")
 	void addItemToCart_success() {
@@ -242,6 +245,19 @@ class CartItemServiceTest {
 			.isInstanceOf(BadRequestException.class);
 	}
 
+	/*
+	 * getCartItem
+	 */
+
+
+	/*
+	 * getCartItemList
+	 */
+
+
+	/*
+	 * updateCartItemQuantity
+	 */
 	@Test
 	@DisplayName("success: 요청 개수 < 재고")
 	void updateCartItemQuantity_success() {
