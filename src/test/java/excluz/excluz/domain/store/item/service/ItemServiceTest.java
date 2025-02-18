@@ -205,5 +205,51 @@ class ItemServiceTest {
 				assertThat(dto.getExplanation()).isEqualTo(SharedData.ITEM2.getExplanation());
 			}
 		}
+
+		@Test
+		@DisplayName("success: 가격 범위 재설정 - minPrice가 Integer.Max_VALUE인 경우")
+		void get_item_list_when_min_price_is_max_value() {
+			// given
+			Pageable pageable = PageRequest.of(1, 10);
+			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(5000));
+			List<Item> itemList = Collections.singletonList(SharedData.ITEM2);
+			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
+			// minPrice가 Integer.MAX_VALUE일 경우 가격 범위를 '아이템 최고가 ~ Integer.MAX_VALUE'로 재설정
+			when(itemRepository.findByPriceWithItemName(pageable, 5000, Integer.MAX_VALUE, SharedData.ITEM_NAME2)).thenReturn(itemPage);
+
+			try (MockedStatic<ItemResponseDto> mockedStatic = mockStatic(ItemResponseDto.class)) {
+				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
+
+				// when
+				Page<ItemResponseDto> actualResult = itemService.getItemList(2, 10, Integer.MAX_VALUE, 5000, SharedData.ITEM_NAME2);
+
+				// then
+				verify(itemRepository).findHighestItemPrice();
+				verify(itemRepository).findByPriceWithItemName(pageable, 5000, Integer.MAX_VALUE, SharedData.ITEM_NAME2);
+			}
+		}
+
+		@Test
+		@DisplayName("success: maxPrice 재설정 - maxPrice가 minPrice보다 작을 경우")
+		void get_item_list_when_max_price_less_than_or_equal_to_min_price() {
+			// given
+			Pageable pageable = PageRequest.of(1, 10);
+			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(5000));
+			List<Item> itemList = Collections.singletonList(SharedData.ITEM2);
+			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
+
+			when(itemRepository.findByPriceWithItemName(pageable, 5000, Integer.MAX_VALUE, SharedData.ITEM_NAME2)).thenReturn(itemPage);
+
+			try (MockedStatic<ItemResponseDto> mockedStatic = mockStatic(ItemResponseDto.class)) {
+				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
+
+				// when
+				Page<ItemResponseDto> actualResult = itemService.getItemList(2, 10, 5000, 1000, SharedData.ITEM_NAME2);
+
+				// then
+				verify(itemRepository).findHighestItemPrice();
+				verify(itemRepository).findByPriceWithItemName(pageable, 1000, 5000, SharedData.ITEM_NAME2);
+			}
+		}
 	}
 }
