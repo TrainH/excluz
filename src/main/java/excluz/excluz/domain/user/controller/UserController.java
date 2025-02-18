@@ -60,7 +60,7 @@ public class UserController {
 	public ResponseEntity<UserWithdrawResponseDto> userUnregisterAPI(
 		@RequestBody UserWithdrawRequestDto userWithdrawRequest) {
 
-		Integer userId = SecurityContextUtil.getUserId();
+		Integer userId = SecurityContextUtil.getUserOrStreamerId();
 
 		UserWithdrawResponseDto userWithdrawResponseDto = userService.userWithdraw(userId, userWithdrawRequest);
 
@@ -80,7 +80,7 @@ public class UserController {
 	@GetMapping("/profile")
 	public ResponseEntity<MyProfileResponseDto> myPageGetAPI() {
 
-		Integer userId = SecurityContextUtil.getUserId();
+		Integer userId = SecurityContextUtil.getUserOrStreamerId();
 
 		MyProfileResponseDto myProfileResponse = userService.userGetMyProfile(userId);
 
@@ -92,7 +92,7 @@ public class UserController {
 		@AuthenticationPrincipal User user,
 		@RequestBody UpdateMyProfileRequestDto updateMyProfileRequest) {
 
-		Integer userId = SecurityContextUtil.getUserId();
+		Integer userId = SecurityContextUtil.getUserOrStreamerId();
 
 		UpdateMyProfileResponseDto updateMyProfileResponse = userService.userUpdateMyProfile(userId, updateMyProfileRequest);
 
@@ -103,7 +103,7 @@ public class UserController {
 	public ResponseEntity<UpdatePasswordResponseDto> userUpdatePasswordAPU(
 		@RequestBody UpdatePasswordRequestDto updatePasswordRequest) {
 
-		Integer userId = SecurityContextUtil.getUserId();
+		Integer userId = SecurityContextUtil.getUserOrStreamerId();
 
 		UpdatePasswordResponseDto updatePasswordResponse = userService.userUpdatePassword(userId, updatePasswordRequest);
 
