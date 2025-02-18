@@ -328,6 +328,22 @@ class CartItemServiceTest {
 		Assertions.assertThat(result.getTotalItemPrice()).isEqualTo(1000); // 총 가격(단가 * 개수)이 올바르게 계산되었는지 확인
 	}
 
+	@Test
+	@DisplayName("fail: 존재하지 않는 장바구니 아이템 ID (예외 발생)")
+	void getCartItem_fail_notFound() {
+		// given
+		User user = mock(User.class);
+		ReflectionTestUtils.setField(user, "id", 1); // user id 값을 1로 세팅
+		UserRole userRole = UserRole.CUSTOMER;
+		Integer cartItemId = 999; // 존재하지 않는 ID
+
+		when(cartItemRepository.findByIdAndUserId(cartItemId, user.getId()))
+			.thenReturn(Optional.empty()); // 없는 데이터
+
+		// when, then
+		Assertions.assertThatThrownBy(() -> cartItemService.getCartItem(user.getId(), userRole, cartItemId))
+			.isInstanceOf(NotFoundException.class);
+	}
 
 
 	/*
