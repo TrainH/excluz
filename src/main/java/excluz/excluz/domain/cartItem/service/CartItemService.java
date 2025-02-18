@@ -32,8 +32,11 @@ public class CartItemService {
 	// 물품 추가
 	@Transactional
 	public CreateCartItemResponseDto addItemToCart(Integer userId, CreateCartItemRequestDto requestDto) {
+		// 유저 존재 여부 확인
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+
+		// 아이템 존재 여부 확인
 		Item item = itemRepository.findById(requestDto.getItemId())
 			.orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
 
@@ -53,7 +56,11 @@ public class CartItemService {
 		cartItem.updateQuantity(newQuantity);
 		cartItemRepository.save(cartItem);
 
-		return new CreateCartItemResponseDto();
+		return CreateCartItemResponseDto.builder()
+			.cartItemId(cartItem.getId())
+			.quantity(cartItem.getQuantity())
+			.itemPrice(cartItem.getItem().getPrice())
+			.build();
 	}
 
 	// 물품 단건 조회
