@@ -2,6 +2,7 @@ package excluz.excluz.domain.cartItem.service;
 
 import static org.mockito.Mockito.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -417,6 +418,25 @@ class CartItemServiceTest {
 
 		Assertions.assertThat(result.getCartItemList().get(0).getQuantity()).isEqualTo(2); // 첫 번째 아이템 개수 확인
 		Assertions.assertThat(result.getCartItemList().get(1).getQuantity()).isEqualTo(3); // 두 번째 아이템 개수 확인
+	}
+
+	@Test
+	@DisplayName("success: 장바구니가 비어있는 경우")
+	void getCartItemList_success_emptyCart() {
+		// given
+		Integer userId = 1;
+		UserRole userRole = UserRole.CUSTOMER;
+
+		when(cartItemRepository.findByUserId(userId))
+			.thenReturn(Collections.emptyList()); // 빈 리스트 반환
+
+		// when
+		CartItemListResponseDto result = cartItemService.getCartItemList(userId, userRole);
+
+		// then
+		Assertions.assertThat(result).isNotNull();
+		Assertions.assertThat(result.getCartItemList()).isEmpty(); // 빈 리스트인지 확인
+		Assertions.assertThat(result.getTotalPrice()).isEqualTo(0); // 총 가격이 0인지 확인
 	}
 
 	@Test
