@@ -11,9 +11,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import excluz.excluz.common.entity.CartItem;
 import excluz.excluz.common.entity.Item;
+import excluz.excluz.common.entity.Store;
 import excluz.excluz.common.entity.User;
 import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.ForbiddenException;
@@ -21,6 +23,7 @@ import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.domain.cartItem.dto.request.CreateCartItemRequestDto;
 import excluz.excluz.domain.cartItem.dto.request.UpdateCartItemQuantityRequestDto;
 import excluz.excluz.domain.cartItem.dto.response.CreateCartItemResponseDto;
+import excluz.excluz.domain.cartItem.dto.response.GetCartItemResponseDto;
 import excluz.excluz.domain.cartItem.repository.CartItemRepository;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.user.enums.UserRole;
@@ -47,7 +50,7 @@ class CartItemServiceTest {
 	 * addItemToCart
 	 */
 	@Test
-	@DisplayName("success: 장바구니에 아이템 추가 메서드")
+	@DisplayName("success: 장바구니 아이템 추가")
 	void addItemToCart_success() {
 		// given
 		User user = mock(User.class);
@@ -285,12 +288,51 @@ class CartItemServiceTest {
 	/*
 	 * getCartItem
 	 */
+	@Test
+	@DisplayName("success: 장바구니 아이템 단건 조회")
+	void getCartItem_success() {
+		// given
+		User user = mock(User.class);
+		Store store = mock(Store.class);
+		Item item = new Item(
+			store,         // store: 위에서 생성한 store 객체
+			"itemName",   // itemName: "itemName" (상품명)
+			"test",       // explanation: "test" (설명)
+			100,          // price: 100 (상품 가격)
+			10            // remainingQuantity: 10 (재고 개수)
+		);
+		CartItem cartItem = new CartItem(
+			user,  // user: 위에서 생성한 user 객체
+			item,  // item: 위에서 생성한 Item 객체
+			10     // quantity: 10 (현재 장바구니에 담긴 수량)
+		);
+
+		ReflectionTestUtils.setField(user, "id", 1); // user id 값을 1로 세팅
+		ReflectionTestUtils.setField(cartItem, "id", 1); // cartItem id 값을 1로 세팅
+
+		UserRole userRole = UserRole.CUSTOMER;
+
+		when(cartItemRepository.findByIdAndUserId(cartItem.getId(), user.getId()))
+			.thenReturn(Optional.of(cartItem));
+
+		// when
+		GetCartItemResponseDto result = cartItemService.getCartItem(user.getId(), userRole, cartItem.getId());
+
+		// then
+		verify(cartItemRepository, times(1)).findByIdAndUserId(cartItem.getId(), user.getId()); // findByIdAndUserId()가 1번 호출되었는지 확인
+
+		Assertions.assertThat(result).isNotNull(); // 반환된 응답 객체가 null이 아닌지 확인
+		Assertions.assertThat(result.getCartItemId()).isEqualTo(cartItem.getId()); // 요청한 cartItemId와 동일한지 확인
+		Assertions.assertThat(result.getQuantity()).isEqualTo(10); // 장바구니에 담긴 개수가 요청한 수량과 일치하는지 확인
+		Assertions.assertThat(result.getItemPrice()).isEqualTo(100); // 아이템의 단가가 예상 값과 일치하는지 확인
+		Assertions.assertThat(result.getTotalItemPrice()).isEqualTo(1000); // 총 가격(단가 * 개수)이 올바르게 계산되었는지 확인
+	}
+
 
 
 	/*
 	 * getCartItemList
 	 */
-
 
 	/*
 	 * updateCartItemQuantity
