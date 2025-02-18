@@ -25,25 +25,33 @@ public class EventController {
 
     private final EventService eventService;
 
+    // 스트리머 로직
     @PostMapping()
     @PreAuthorize("hasRole('STREAMER')")
-    public ResponseEntity<EventResponseDto> createEvent(@AuthenticationPrincipal User user,
-                                                        @Valid @RequestBody EventRequestDto eventRequestDto) {
-        Integer streamerId = Integer.parseInt(user.getUsername());
+    public ResponseEntity<EventResponseDto> createEvent(@Valid @RequestBody EventRequestDto eventRequestDto) {
+        Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
         EventResponseDto eventResponseDto = eventService.createEvent(streamerId, eventRequestDto);
         return ResponseEntity.status(201).body(eventResponseDto);
     }
 
+    @PatchMapping("/{eventId}/applicants")
+    @PreAuthorize("hasRole('STREAMER')")
+    public ResponseEntity<EventClosingResponseDto> closeEvent(@PathVariable Integer eventId) {
+
+        Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
+        EventClosingResponseDto eventClosingResponseDto = eventService.closeEvent(streamerId, eventId);
+        return ResponseEntity.ok(eventClosingResponseDto);
+    }
+
+//    공개된 조회 로직
     @GetMapping()
     public ResponseEntity<List<EventResponseDto>> getAllEvents() {
-//        todo: 유저 인증 불필요
         List<EventResponseDto> eventResponseDtoList = eventService.getAllEvents();
         return ResponseEntity.ok(eventResponseDtoList);
     }
 
     @GetMapping("/{eventId}")
     public ResponseEntity<EventResponseDto> getEvent(@PathVariable Integer eventId) {
-        // todo : 유저 인증 불필요
         EventResponseDto eventResponseDto = eventService.getEvent(eventId);
         return ResponseEntity.ok(eventResponseDto);
     }
@@ -65,4 +73,5 @@ public class EventController {
         EventClosingResponseDto eventClosingResponseDto = eventService.closeEvent(streamerId, eventId);
         return ResponseEntity.ok(eventClosingResponseDto);
     }
+
 }
