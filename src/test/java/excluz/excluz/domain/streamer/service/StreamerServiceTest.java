@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +19,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -28,6 +34,7 @@ import excluz.excluz.domain.streamer.dto.request.StreamerSignupRequestDto;
 import excluz.excluz.domain.streamer.dto.request.StreamerUpdateRequestDto;
 import excluz.excluz.domain.streamer.dto.response.StreamerLoginResponseDto;
 import excluz.excluz.domain.streamer.dto.response.StreamerResponseDto;
+import excluz.excluz.domain.streamer.dto.response.StreamerSummaryResponseDto;
 import excluz.excluz.domain.streamer.repository.StreamerRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -221,5 +228,39 @@ class StreamerServiceTest {
 		}
 
 		// 실패: 탈퇴한 본인 계정은 조회할 수 없음
+	}
+
+	@Nested
+	@DisplayName("getStreamerList 메서드")
+	class GetStreamerList {
+
+		@Test
+		@DisplayName("success: 닉네임을 통해 스트리머를 검색")
+		void getStreamerList() {
+			// given
+			int page = 1;
+			int size = 10;
+			Pageable pageable = PageRequest.of(page - 1, size);
+			StreamerSummaryResponseDto responseDto = new StreamerSummaryResponseDto(SharedData.STREAMER_NICKNAME1);
+
+			List<Streamer> streamerList = Collections.singletonList(SharedData.STREAMER1);
+			Page<Streamer> streamerPage = new PageImpl<>(streamerList, pageable, streamerList.size());
+
+			when(streamerRepository.findByNickName(pageable, SharedData.STREAMER_NICKNAME1)).thenReturn(streamerPage);
+
+			try (MockedStatic<StreamerSummaryResponseDto> mockedStatic = mockStatic(StreamerSummaryResponseDto.class)) {
+				given(StreamerSummaryResponseDto.from(SharedData.STREAMER1)).willReturn(responseDto);
+
+				// when
+				Page<StreamerSummaryResponseDto> actualResult = streamerService.getStreamerList(page, size,	SharedData.STREAMER_NICKNAME1);
+
+				// then
+				verify(streamerRepository).findByNickName(pageable, SharedData.STREAMER_NICKNAME1);
+				assertThat(actualResult).isNotNull();
+
+				StreamerSummaryResponseDto dto = actualResult.getContent().get(0);
+				assertThat(dto.getNickName()).isEqualTo(SharedData.STREAMER1.getNickName());
+			}
+		}
 	}
 }
