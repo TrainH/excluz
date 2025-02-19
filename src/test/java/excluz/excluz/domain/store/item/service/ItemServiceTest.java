@@ -236,8 +236,6 @@ class ItemServiceTest {
 
 			verify(itemRepository).findItemByIdAndNotDeleted(eq(SharedData.ITEM_ID1)); // findItemByIdAndNotDeleted가 1번 실행되었는지 확인
 		}
-
-
 	}
 
 	@Nested
@@ -358,6 +356,26 @@ class ItemServiceTest {
 				verify(itemRepository).findHighestItemPrice();
 				verify(itemRepository).findByPriceWithItemName(pageable, 1000, 6000, SharedData.ITEM_NAME2);
 			}
+		}
+
+		@Test
+		@DisplayName("success: 아이템이 없을 경우 빈 페이지 반환")
+		void getItemListWhenNoItems() {
+			// given
+			Pageable pageable = PageRequest.of(0, 10);
+			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(5000));
+			Page<Item> emptyPage = Page.empty();
+			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString())).thenReturn(emptyPage);
+
+			// when
+			Page<ItemResponseDto> actualResult = itemService.getItemList(1, 10, 1000, 5000, SharedData.ITEM_NAME2);
+
+			// then
+			verify(itemRepository).findHighestItemPrice();
+			verify(itemRepository).findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString());
+
+			assertThat(actualResult).isNotNull();
+			assertThat(actualResult.getTotalElements()).isEqualTo(0);
 		}
 	}
 }
