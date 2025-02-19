@@ -29,7 +29,6 @@ import excluz.excluz.common.entity.Store;
 import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
-import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.store.item.dto.response.ItemResponseDto;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
@@ -95,6 +94,7 @@ class ItemServiceTest {
 				assertThat(actualResult.getRemainingQuantity()).isEqualTo(updatedItem.getRemainingQuantity());
 			}
 		}
+
 		@Test
 		@DisplayName("fail: 아이템 수정 권한 없음 (예외 발생)")
 		void updateItemForbidden() {
@@ -110,9 +110,11 @@ class ItemServiceTest {
 				SharedData.STREAMER_ID2)) // 권한 없는 스트리머 ID
 				.isInstanceOf(ForbiddenException.class); // ForbiddenException 발생 확인
 
-			verify(itemRepository, times(1)).findItemByIdAndNotDeleted(anyInt()); // findItemByIdAndNotDeleted 1번만 호출되는지 확인
+			verify(itemRepository, times(1)).findItemByIdAndNotDeleted(
+				anyInt()); // findItemByIdAndNotDeleted 1번만 호출되는지 확인
 		}
 	}
+
 	/**
 	 * UnnecessaryStubbingException
 	 * 위 UpdateItem에 속하는 메서드지만, 위에 넣으면 setUp()과 충돌하는 이슈 발생. (아이템이 없어야 하는데, 아이템이 존재하도록 세팅돼서)
@@ -165,6 +167,7 @@ class ItemServiceTest {
 
 			verify(mockItem).updateIsDeleted(true);
 		}
+
 		@Test
 		@DisplayName("fail: 아이템 삭제 권한 없음 (ForbiddenException 발생)")
 		void deleteItemForbidden() {
@@ -179,6 +182,7 @@ class ItemServiceTest {
 				.isInstanceOf(ForbiddenException.class); // Only verifying exception type, no message validation
 		}
 	}
+
 	/**
 	 * UnnecessaryStubbingException
 	 * 위 DeleteItem에 속하는 메서드지만, 위에 넣으면 setUp()과 충돌하는 이슈 발생. (아이템이 없어야 하는데, 아이템이 존재하도록 세팅돼서)
@@ -235,7 +239,8 @@ class ItemServiceTest {
 			assertThatThrownBy(() -> itemService.getItemById(SharedData.ITEM_ID1))
 				.isInstanceOf(NotFoundException.class); // 예외 발생 검증
 
-			verify(itemRepository).findItemByIdAndNotDeleted(eq(SharedData.ITEM_ID1)); // findItemByIdAndNotDeleted가 1번 실행되었는지 확인
+			verify(itemRepository).findItemByIdAndNotDeleted(
+				eq(SharedData.ITEM_ID1)); // findItemByIdAndNotDeleted가 1번 실행되었는지 확인
 		}
 	}
 
@@ -270,7 +275,8 @@ class ItemServiceTest {
 			assertThatThrownBy(() -> itemService.createItem(SharedData.ITEM_CREATE_REQUEST_DTO, streamerId))
 				.isInstanceOf(NotFoundException.class); // NotFoundException 예외 발생 확인
 
-			verify(storeRepository, times(1)).findStoreWithStreamer(streamerId); // findStoreWithStreamer()가 1번 호출되었는지 확인
+			verify(storeRepository, times(1)).findStoreWithStreamer(
+				streamerId); // findStoreWithStreamer()가 1번 호출되었는지 확인
 		}
 	}
 
@@ -366,7 +372,8 @@ class ItemServiceTest {
 			Pageable pageable = PageRequest.of(0, 10);
 			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(5000));
 			Page<Item> emptyPage = Page.empty();
-			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString())).thenReturn(emptyPage);
+			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString())).thenReturn(
+				emptyPage);
 
 			// when
 			Page<ItemResponseDto> actualResult = itemService.getItemList(1, 10, 1000, 5000, SharedData.ITEM_NAME2);
@@ -388,7 +395,8 @@ class ItemServiceTest {
 			List<Item> itemList = Arrays.asList(SharedData.ITEM1, SharedData.ITEM2);
 			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
 
-			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), isNull())).thenReturn(itemPage);
+			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), isNull())).thenReturn(
+				itemPage);
 
 			try (MockedStatic<ItemResponseDto> mockedStatic = mockStatic(ItemResponseDto.class)) {
 				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
