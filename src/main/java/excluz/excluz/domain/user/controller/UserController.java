@@ -1,8 +1,8 @@
 package excluz.excluz.domain.user.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -12,9 +12,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import excluz.excluz.auth.util.SecurityContextUtil;
-import excluz.excluz.domain.user.dto.UpdatePasswordRequestDto;
+import excluz.excluz.domain.user.dto.request.UpdatePasswordRequestDto;
 import excluz.excluz.domain.user.dto.request.UpdateMyProfileRequestDto;
 import excluz.excluz.domain.user.dto.request.UserLoginRequestDto;
 import excluz.excluz.domain.user.dto.request.UserSignupRequestDto;
@@ -25,7 +24,6 @@ import excluz.excluz.domain.user.dto.response.UpdatePasswordResponseDto;
 import excluz.excluz.domain.user.dto.response.UserLoginResponseDto;
 import excluz.excluz.domain.user.dto.response.UserProfileResponseDto;
 import excluz.excluz.domain.user.dto.response.UserSignupResponseDto;
-import excluz.excluz.domain.user.dto.response.UserWithdrawResponseDto;
 import excluz.excluz.domain.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -57,14 +55,15 @@ public class UserController {
 	}
 
 	@DeleteMapping("/soft")
-	public ResponseEntity<UserWithdrawResponseDto> userUnregisterAPI(
+	@PreAuthorize("hasRole('CUSTOMER')")
+	public ResponseEntity<Void> userUnregisterAPI(
 		@RequestBody UserWithdrawRequestDto userWithdrawRequest) {
 
 		Integer userId = SecurityContextUtil.getUserOrStreamerId();
 
-		UserWithdrawResponseDto userWithdrawResponseDto = userService.userWithdraw(userId, userWithdrawRequest);
+		userService.userWithdraw(userId, userWithdrawRequest);
 
-		return ResponseEntity.ok(userWithdrawResponseDto);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	// 마이페이지가 아닌 다른 유저의 정보 조회
@@ -89,12 +88,11 @@ public class UserController {
 
 	@PatchMapping("/profile")
 	public ResponseEntity<UpdateMyProfileResponseDto> userProfileUpdateAPI(
-		@AuthenticationPrincipal User user,
 		@RequestBody UpdateMyProfileRequestDto updateMyProfileRequest) {
 
 		Integer userId = SecurityContextUtil.getUserOrStreamerId();
 
-		UpdateMyProfileResponseDto updateMyProfileResponse = userService.userUpdateMyProfile(userId, updateMyProfileRequest);
+		UpdateMyProfileResponseDto updateMyProfileResponse = userService.updateMyProfile(userId, updateMyProfileRequest);
 
 		return ResponseEntity.ok(updateMyProfileResponse);
 	}
@@ -105,7 +103,7 @@ public class UserController {
 
 		Integer userId = SecurityContextUtil.getUserOrStreamerId();
 
-		UpdatePasswordResponseDto updatePasswordResponse = userService.userUpdatePassword(userId, updatePasswordRequest);
+		UpdatePasswordResponseDto updatePasswordResponse = userService.updatePassword(userId, updatePasswordRequest);
 
 		return ResponseEntity.ok(updatePasswordResponse);
 	}

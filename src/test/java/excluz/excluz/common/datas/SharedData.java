@@ -8,6 +8,7 @@ import excluz.excluz.domain.store.item.dto.request.ItemUpdateRequestDto;
 import excluz.excluz.domain.store.item.dto.response.ItemResponseDto;
 import excluz.excluz.domain.streamer.dto.request.StreamerLoginRequestDto;
 import excluz.excluz.domain.streamer.dto.request.StreamerSignupRequestDto;
+import excluz.excluz.domain.user.dto.request.UserSignupRequestDto;
 
 /* 공유 데이터 */
 public class SharedData {
@@ -50,4 +51,20 @@ public class SharedData {
 	public final static ItemCreateRequestDto ITEM_CREATE_REQUEST_DTO = new ItemCreateRequestDto(ITEM_NAME1, EXPLANATION1, PRICE1, REMAINING_QUANTITY1);
 	public final static ItemUpdateRequestDto ITEM_UPDATE_REQUEST_DTO = new ItemUpdateRequestDto(ITEM_NAME2, EXPLANATION2, PRICE2, REMAINING_QUANTITY2);
 	public final static ItemResponseDto ITEM_RESPONSE_DTO = new ItemResponseDto(ITEM_NAME2, EXPLANATION2, PRICE2, REMAINING_QUANTITY2);
+
+	// User 데이터
+	public final static Integer USER_ID = 1;
+	public final static String USER_NAME1 = "홍길동";
+	public final static String USER_NICKNAME1 = "암행어사";
+	public final static String UPDATE_NICKNAME2 = "엄행어사";
+	public final static String USER_PHONE_NUMBER1 = "010-1234-1234";
+	public final static String USER_PHONE_NUMBER2 = "010-5678-1234";
+	public final static String USER_ADDRESS1 = "사랑시 평화동 정의로12";
+	public final static String USER_ADDRESS2 = "사랑시 고백구 행복4길 4-1";
+	public final static String USER_EMAIL1 = "test12@test.com";
+	public final static String USER_PASSWORD1 = "Qwer1234!!!!";
+	public final static String USER_REENTER_PASSWORD1 = "Qwer1234!!!!";
+	public final static String USER_PASSWORD2 = "Qwer1234!@@!";
+	public final static String USER_REENTER_PASSWORD2 = "Qwer1234!@@!";
+	public final static UserSignupRequestDto USER_SIGNUP_REQUEST_DTO = new UserSignupRequestDto(USER_NAME1, USER_NICKNAME1, USER_PHONE_NUMBER1, USER_ADDRESS1, USER_EMAIL1, USER_PASSWORD1, USER_REENTER_PASSWORD1);
 }

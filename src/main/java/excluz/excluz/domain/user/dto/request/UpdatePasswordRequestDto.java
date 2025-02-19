@@ -1,4 +1,4 @@
-package excluz.excluz.domain.user.dto;
+package excluz.excluz.domain.user.dto.request;
 
 import lombok.Getter;
 
