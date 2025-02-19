@@ -263,4 +263,33 @@ class StreamerServiceTest {
 			}
 		}
 	}
+
+	@Nested
+	@DisplayName("getStreamer 메서드")
+	class GetStreamer {
+
+		@Test
+		@DisplayName("success: 탈퇴하지 않은 스트리머 단건 조회")
+		void getStreamer() {
+			// given
+			Streamer spyStreamer = spy(SharedData.STREAMER1);
+			StreamerSummaryResponseDto responseDto = new StreamerSummaryResponseDto(SharedData.STREAMER_NICKNAME1);
+			when(streamerRepository.findById(SharedData.STREAMER_ID1)).thenReturn(Optional.of(spyStreamer));
+
+			try (MockedStatic<StreamerSummaryResponseDto> mockedStatic = mockStatic(StreamerSummaryResponseDto.class)) {
+				given(StreamerSummaryResponseDto.from(spyStreamer)).willReturn(responseDto);
+
+				// when
+				StreamerSummaryResponseDto actualResult = streamerService.getStreamer(SharedData.STREAMER_ID1);
+
+				// then
+				verify(streamerRepository).findById(SharedData.STREAMER_ID1);
+				verify(spyStreamer).isDeleted();
+
+				assertNotNull(actualResult);
+				assertThat(actualResult.getNickName()).isEqualTo(spyStreamer.getNickName());
+			}
+		}
+
+	}
 }
