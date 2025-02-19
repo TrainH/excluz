@@ -4,11 +4,11 @@ import static org.assertj.core.api.Assertions.*;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.*;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -19,6 +19,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import excluz.excluz.common.datas.SharedData;
@@ -61,7 +65,7 @@ public class StoreServiceTest {
 	class CreateStore {
 		@Test
 		@DisplayName("success: 스토어 생성 성공")
-		void create_store_success() {
+		void createStore() {
 
 			// given
 			StoreRequestDto requestDto = new StoreRequestDto(SharedData.ADDRESS1, SharedData.STORE_NAME1, SharedData.REGISTRATION_NUMBER1);
@@ -93,7 +97,7 @@ public class StoreServiceTest {
 
 		@Test
 		@DisplayName("success: 스토어 소프트 딜리트 정상 호출")
-		void delete_store_success() {
+		void deleteStore() {
 			// given
 			StoreDeleteRequestDto deleteRequestDto = new StoreDeleteRequestDto(SharedData.STREAMER_PASSWORD1);
 			Store spyStore = spy(SharedData.STORE1);
@@ -118,8 +122,8 @@ public class StoreServiceTest {
 			assertThat(spyStore.isDeleted()).isEqualTo(true);
 		}
 
-		// 실패: 비밀번호 불일치
-		// 실패: 이미 삭제된 스토어
+		// 실패: 비밀번호가 불일치할 경우 스토어 삭제 불가능
+		// 실패: 이미 삭제된 스토어는 삭제 작업 불가능
 	}
 
 	@Nested
@@ -128,7 +132,7 @@ public class StoreServiceTest {
 
 		@Test
 		@DisplayName("success: 스토어 주인은 스토어 정보 수정 가능")
-		void update_store_success() {
+		void updateStore() {
 			// given
 			StoreUpdateRequestDto requestDto = new StoreUpdateRequestDto(SharedData.ADDRESS2, SharedData.STORE_NAME2, SharedData.REGISTRATION_NUMBER2);
 			StoreUpdateResponseDto responseDto = new StoreUpdateResponseDto(SharedData.ADDRESS2, SharedData.STORE_NAME2, SharedData.REGISTRATION_NUMBER2);
@@ -151,7 +155,8 @@ public class StoreServiceTest {
 
 				// then
 				verify(storeRepository).findById(SharedData.STORE_ID1);
-				verify(spyStore).updateStore(SharedData.ADDRESS2, SharedData.STORE_NAME2, SharedData.REGISTRATION_NUMBER2);
+				verify(spyStore).updateStore(SharedData.ADDRESS2, SharedData.STORE_NAME2,
+					SharedData.REGISTRATION_NUMBER2);
 
 				// 정보 수정 후 검증
 				assertThat(actualResult.getAddress()).isEqualTo(SharedData.ADDRESS2);
@@ -160,7 +165,37 @@ public class StoreServiceTest {
 			}
 		}
 
-		// 실패: 스토어 주인이 아닐 경우 스토어 정보 수정 불가
-		// 실패: 소프트 딜리트된 스토어는 수정 불가
+		// 실패: 스토어 주인이 아닐 경우 스토어 정보 수정 불가능
+		// 실패: 소프트 딜리트된 스토어는 수정 불가능
+	}
+
+	@Nested
+	@DisplayName("getStoreList 메서드")
+	class GetStoreList {
+		@Test
+		@DisplayName("success: 스토어 목록 조회 성공")
+		void getStoreList() {
+			// given
+			int page = 1;
+			int size = 10;
+			Pageable pageable = PageRequest.of(page-1, size);
+			Store store = SharedData.STORE1;
+			List<Store> storeList = Collections.singletonList(store);
+			Page<Store> storePage = new PageImpl<>(storeList, pageable, storeList.size());
+
+			when(storeRepository.findByStoreName(pageable, SharedData.STORE_NAME1)).thenReturn(storePage);
+
+			// when
+			Page<StoreResponseDto> actualResult = storeService.getStoreList(SharedData.STORE_NAME1, page, size);
+
+			// then
+			verify(storeRepository).findByStoreName(pageable, SharedData.STORE_NAME1);
+
+			assertThat(actualResult).isNotNull();
+			StoreResponseDto storeResponseDto = actualResult.getContent().get(0);
+			assertThat(storeResponseDto.getStoreName()).isEqualTo(store.getStoreName());
+		}
+
+		// 실패: 페이지 사이즈가 0 이하일 경우 예외 발생
 	}
 }
