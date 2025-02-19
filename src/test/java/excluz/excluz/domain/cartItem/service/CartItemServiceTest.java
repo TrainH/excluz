@@ -98,7 +98,7 @@ class CartItemServiceTest {
 	}
 
 	@Test
-	@DisplayName("success: 재고와 동일한 수량을 장바구니에 추가")
+	@DisplayName("success: 요청 수량 = 재고")
 	void addItemToCart_success_matchingStockQuantity_case_1() {
 		// given
 		User user = mock(User.class);
@@ -136,7 +136,7 @@ class CartItemServiceTest {
 	}
 
 	@Test
-	@DisplayName("success: 장바구니에 있는 개수 + 추가 요청 개수 = 재고")
+	@DisplayName("success: 장바구니에 있는 수량 + 추가 요청 수량 = 재고")
 	void addItemToCart_success_matchingStockQuantity_case_2() {
 		// given
 		User user = mock(User.class);
@@ -188,7 +188,7 @@ class CartItemServiceTest {
 
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, userRole, requestDto))
-			.isInstanceOf(NotFoundException.class);
+			.isInstanceOf(NotFoundException.class); // NotFoundException 예외 발생
 	}
 
 	@Test
@@ -207,7 +207,7 @@ class CartItemServiceTest {
 
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, userRole, requestDto))
-			.isInstanceOf(NotFoundException.class);
+			.isInstanceOf(NotFoundException.class); // NotFoundException 예외 발생
 	}
 
 	@Test
@@ -238,7 +238,7 @@ class CartItemServiceTest {
 
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, userRole, requestDto))
-			.isInstanceOf(BadRequestException.class);
+			.isInstanceOf(BadRequestException.class); // BadRequestException 예외 발생
 	}
 
 	@Test
@@ -269,7 +269,7 @@ class CartItemServiceTest {
 
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, userRole, requestDto))
-			.isInstanceOf(BadRequestException.class);
+			.isInstanceOf(BadRequestException.class); // BadRequestException 예외 발생
 	}
 
 	@Test
@@ -286,7 +286,7 @@ class CartItemServiceTest {
 
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, userRole, requestDto))
-			.isInstanceOf(ForbiddenException.class);
+			.isInstanceOf(ForbiddenException.class); // ForbiddenException 예외 발생
 	}
 
 
@@ -347,7 +347,7 @@ class CartItemServiceTest {
 
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.getCartItem(user.getId(), userRole, cartItemId))
-			.isInstanceOf(NotFoundException.class);
+			.isInstanceOf(NotFoundException.class); // NotFoundException 예외 발생
 	}
 
 	@Test
@@ -360,7 +360,7 @@ class CartItemServiceTest {
 
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.getCartItem(userId, userRole, cartItemId))
-			.isInstanceOf(ForbiddenException.class);
+			.isInstanceOf(ForbiddenException.class); // ForbiddenException 예외 발생
 	}
 
 	@Test
@@ -416,7 +416,7 @@ class CartItemServiceTest {
 
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.getCartItem(userA.getId(), userRole, cartItem.getId()))
-			.isInstanceOf(NotFoundException.class);
+			.isInstanceOf(NotFoundException.class); // NotFoundException 예외 발생
 	}
 
 
@@ -472,7 +472,6 @@ class CartItemServiceTest {
 		Assertions.assertThat(result).isNotNull(); // 결과가 null이 아닌지 확인
 		Assertions.assertThat(result.getCartItemList()).hasSize(2); // 장바구니에 2개 아이템 있는지 확인
 		Assertions.assertThat(result.getTotalPrice()).isEqualTo(800); // (100*2 + 200*3) = 800 확인
-
 		Assertions.assertThat(result.getCartItemList().get(0).getQuantity()).isEqualTo(2); // 첫 번째 아이템 개수 확인
 		Assertions.assertThat(result.getCartItemList().get(1).getQuantity()).isEqualTo(3); // 두 번째 아이템 개수 확인
 	}
@@ -505,7 +504,7 @@ class CartItemServiceTest {
 
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.getCartItemList(userId, userRole))
-			.isInstanceOf(ForbiddenException.class);
+			.isInstanceOf(ForbiddenException.class); // ForbiddenException 예외 발생
 	}
 
 
@@ -531,20 +530,20 @@ class CartItemServiceTest {
 			10     // quantity: 10 (현재 장바구니에 담긴 수량)
 		);
 
-		Integer userId = 1;
 		UserRole userRole = UserRole.CUSTOMER;
-		Integer cartItemId = 1;
+		ReflectionTestUtils.setField(user, "id", 1);
+		ReflectionTestUtils.setField(cartItem, "id", 1);
 
-		when(cartItemRepository.findByIdAndUserId(cartItemId, userId))
+		when(cartItemRepository.findByIdAndUserId(cartItem.getId(), user.getId()))
 			.thenReturn(Optional.of(cartItem));
 
 		UpdateCartItemQuantityRequestDto requestDto = new UpdateCartItemQuantityRequestDto(1); // 개수 수정
 
 		// when, then
 		Assertions.assertThatCode(() -> cartItemService.updateCartItemQuantity(
-				userId,
+				user.getId(),
 				userRole,
-				cartItemId,
+				cartItem.getId(),
 				requestDto // 업데이트할 장바구니 아이템 정보
 			))
 			.doesNotThrowAnyException(); // 예외 발생하지 않아야 함
@@ -569,22 +568,45 @@ class CartItemServiceTest {
 			10     // quantity: 10 (현재 장바구니에 담긴 수량)
 		);
 
-		Integer userId = 1;
 		UserRole userRole = UserRole.CUSTOMER;
-		Integer cartItemId = 1;
+		ReflectionTestUtils.setField(user, "id", 1);
+		ReflectionTestUtils.setField(cartItem, "id", 1);
 
-		when(cartItemRepository.findByIdAndUserId(cartItemId, userId))
+		when(cartItemRepository.findByIdAndUserId(cartItem.getId(), user.getId()))
 			.thenReturn(Optional.of(cartItem));
 
 		UpdateCartItemQuantityRequestDto requestDto = new UpdateCartItemQuantityRequestDto(100); // 100개로 개수 수정
 
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.updateCartItemQuantity(
+				user.getId(),
+				userRole,
+				cartItem.getId(),
+				requestDto // 업데이트할 장바구니 아이템 정보
+			))
+			.isInstanceOf(BadRequestException.class); // BadRequestException 예외 발생
+	}
+
+	@Test
+	@DisplayName("fail: 존재하지 않는 장바구니 아이템 (예외 발생)")
+	void updateCartItemQuantity_fail_cartItemNotFound() {
+		// given
+		Integer userId = 1;
+		UserRole userRole = UserRole.CUSTOMER;
+		Integer cartItemId = 999; // 존재하지 않는 ID
+
+		when(cartItemRepository.findByIdAndUserId(cartItemId, userId))
+			.thenReturn(Optional.empty()); // 해당 장바구니 아이템 없음
+
+		UpdateCartItemQuantityRequestDto requestDto = new UpdateCartItemQuantityRequestDto(5); // 5개로 변경 요청
+
+		// when, then
+		Assertions.assertThatThrownBy(() -> cartItemService.updateCartItemQuantity(
 				userId,
 				userRole,
 				cartItemId,
-				requestDto // 업데이트할 장바구니 아이템 정보
+				requestDto
 			))
-			.isInstanceOf(BadRequestException.class);
+			.isInstanceOf(NotFoundException.class); // NotFoundException 예외 발생
 	}
 }
