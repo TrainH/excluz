@@ -8,6 +8,7 @@ import static org.mockito.BDDMockito.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -26,12 +27,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import excluz.excluz.common.datas.SharedData;
+import excluz.excluz.common.entity.Item;
 import excluz.excluz.common.entity.Store;
 import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.store.store.dto.request.StoreDeleteRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreUpdateRequestDto;
+import excluz.excluz.domain.store.store.dto.response.StoreDetailResponseDto;
 import excluz.excluz.domain.store.store.dto.response.StoreResponseDto;
 import excluz.excluz.domain.store.store.dto.response.StoreUpdateResponseDto;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
@@ -172,6 +175,7 @@ public class StoreServiceTest {
 	@Nested
 	@DisplayName("getStoreList 메서드")
 	class GetStoreList {
+
 		@Test
 		@DisplayName("success: 스토어 목록 조회 성공")
 		void getStoreList() {
@@ -197,5 +201,41 @@ public class StoreServiceTest {
 		}
 
 		// 실패: 페이지 사이즈가 0 이하일 경우 예외 발생
+	}
+
+	@Nested
+	@DisplayName("getStoreById 메서드")
+	class GetStoreById {
+
+		@Test
+		@DisplayName("success: 스토어 아이디를 통해 스토어 단건 조회 성공")
+		void getStoreById() {
+			// given
+			int page = 1;
+			int size = 10;
+			Pageable pageable = PageRequest.of(page-1, size);
+			when(storeRepository.findStreamerWithStore(anyInt())).thenReturn(Optional.of(SharedData.STREAMER1));
+
+			when(storeRepository.findById(SharedData.STORE_ID1)).thenReturn(Optional.of(SharedData.STORE1));
+
+			List<Item> itemList = Collections.singletonList(SharedData.ITEM1);
+			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
+			when(itemRepository.findByStoreId(SharedData.STORE_ID1, pageable)).thenReturn(itemPage);
+
+			// when
+			StoreDetailResponseDto actualResult = storeService.getStoreById(SharedData.STORE_ID1, page, size);
+
+			// then
+			verify(storeRepository).findStreamerWithStore(SharedData.STORE_ID1);
+			verify(storeRepository).findById(SharedData.STORE_ID1);
+
+			// 데이터가 Dto로 바르게 변환되는지 검증
+			assertThat(actualResult.getNickName()).isEqualTo(SharedData.STREAMER1.getNickName());
+			assertThat(actualResult.getAddress()).isEqualTo(SharedData.STORE1.getAddress());
+			assertThat(actualResult.getStoreName()).isEqualTo(SharedData.STORE1.getStoreName());
+			assertThat(actualResult.getRegistrationNumber()).isEqualTo(SharedData.STORE1.getRegistrationNumber());
+			assertThat(actualResult.getItemList()).hasSize(itemList.size());
+		}
+		// 실패: 스토어 아이디로 조회되는 유저가 없을 경우 예외 발생
 	}
 }
