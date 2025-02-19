@@ -144,7 +144,7 @@ class StreamerServiceTest {
 
 		@Test
 		@DisplayName("fail: 등록되지 않은 이메일로 로그인할 수 없음")
-		void streamerLoginEmailDoseNotExist() {
+		void streamerLoginEmailDoesNotExist() {
 			// given
 			when(streamerRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
@@ -277,7 +277,45 @@ class StreamerServiceTest {
 			}
 		}
 
-		// 실패: 탈퇴한 계정의 정보는 수정할 수 없음
+		@Test
+		@DisplayName("fail: 등록되지 않은 계정의 정보는 수정할 수 없음")
+		void updateStreamerFailsWhenEmailDoesNotExist() {
+			// given
+			StreamerUpdateRequestDto requestDto = new StreamerUpdateRequestDto(
+				SharedData.STREAMER_NAME2,
+				SharedData.STREAMER_NICKNAME2,
+				SharedData.STREAMER_PHONE_NUMBER2,
+				SharedData.STREAMER_EMAIL2,
+				SharedData.STREAMER_PASSWORD1);
+			when(streamerRepository.findById(anyInt())).thenReturn(Optional.empty());
+
+			// when & then
+			NotFoundException exception = assertThrows(NotFoundException.class,
+				() -> streamerService.updateStreamer(SharedData.STREAMER_ID1, requestDto)
+			);
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.UNAUTHORIZED_USER);
+		}
+
+		@Test
+		@DisplayName("fail: 탈퇴한 계정의 정보는 수정할 수 없음")
+		void updateStreamerFailsWhenAccountIsDeleted() {
+			// given
+			StreamerUpdateRequestDto requestDto = new StreamerUpdateRequestDto(
+				SharedData.STREAMER_NAME2,
+				SharedData.STREAMER_NICKNAME2,
+				SharedData.STREAMER_PHONE_NUMBER2,
+				SharedData.STREAMER_EMAIL2,
+				SharedData.STREAMER_PASSWORD1);
+			Streamer mockStreamer = mock(Streamer.class);
+			when(streamerRepository.findById(anyInt())).thenReturn(Optional.of(mockStreamer));
+			when(mockStreamer.isDeleted()).thenReturn(true);
+
+			// when & then
+			NotFoundException exception = assertThrows(NotFoundException.class,
+				() -> streamerService.updateStreamer(SharedData.STREAMER_ID1, requestDto)
+			);
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
+		}
 	}
 
 	@Nested
