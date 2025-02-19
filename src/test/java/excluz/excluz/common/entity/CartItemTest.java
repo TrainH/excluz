@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 class CartItemTest {
 
 	@Test
-	@DisplayName("CartItem의 개수가 잘 업데이트된다.")
+	@DisplayName("success: CartItem 특정 물품 개수 업데이트")
 	void updateQuantity() {
 		// given
 		CartItem cartItem = new CartItem(

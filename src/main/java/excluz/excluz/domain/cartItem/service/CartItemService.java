@@ -9,6 +9,7 @@ import excluz.excluz.common.entity.CartItem;
 import excluz.excluz.common.entity.Item;
 import excluz.excluz.common.entity.User;
 import excluz.excluz.common.exception.BadRequestException;
+import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.cartItem.dto.request.CreateCartItemRequestDto;
@@ -18,6 +19,7 @@ import excluz.excluz.domain.cartItem.dto.response.CreateCartItemResponseDto;
 import excluz.excluz.domain.cartItem.dto.response.GetCartItemResponseDto;
 import excluz.excluz.domain.cartItem.repository.CartItemRepository;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
+import excluz.excluz.domain.user.enums.UserRole;
 import excluz.excluz.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,9 +33,17 @@ public class CartItemService {
 
 	// 물품 추가
 	@Transactional
-	public CreateCartItemResponseDto addItemToCart(Integer userId, CreateCartItemRequestDto requestDto) {
+	public CreateCartItemResponseDto addItemToCart(Integer userId, UserRole userRole, CreateCartItemRequestDto requestDto) {
+		// 유저 존재 여부 확인
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+
+		// 장바구니 이용은 CUSTOMER만 가능
+		if (userRole != UserRole.CUSTOMER) {
+			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+		}
+
+		// 아이템 존재 여부 확인
 		Item item = itemRepository.findById(requestDto.getItemId())
 			.orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
 
@@ -53,13 +63,23 @@ public class CartItemService {
 		cartItem.updateQuantity(newQuantity);
 		cartItemRepository.save(cartItem);
 
-		return new CreateCartItemResponseDto();
+		return CreateCartItemResponseDto.builder()
+			.cartItemId(cartItem.getId())
+			.quantity(cartItem.getQuantity())
+			.itemPrice(cartItem.getItem().getPrice())
+			.build();
 	}
 
 	// 물품 단건 조회
-	public GetCartItemResponseDto getCartItem(Integer userId, Integer cartItemId) {
+	public GetCartItemResponseDto getCartItem(Integer userId, UserRole userRole, Integer cartItemId) {
+		// 장바구니 이용은 CUSTOMER만 가능
+		if (userRole != UserRole.CUSTOMER) {
+			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+		}
+
+		// 장바구니에서 해당 아이템 찾기
 		CartItem cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
-			.orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
+			.orElseThrow(() -> new NotFoundException(ErrorCode.CART_ITEM_NOT_FOUND));
 
 		return GetCartItemResponseDto.builder()
 			.cartItemId(cartItem.getId())
@@ -69,7 +89,12 @@ public class CartItemService {
 	}
 
 	// 물품 다건 조회
-	public CartItemListResponseDto getCartItemList(Integer userId) {
+	public CartItemListResponseDto getCartItemList(Integer userId, UserRole userRole) {
+		// 장바구니 이용은 CUSTOMER만 가능
+		if (userRole != UserRole.CUSTOMER) {
+			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+		}
+
 		List<CartItem> cartItems = cartItemRepository.findByUserId(userId);
 
 		List<GetCartItemResponseDto> cartItemList = cartItems.stream()
@@ -88,9 +113,15 @@ public class CartItemService {
 	@Transactional
 	public GetCartItemResponseDto updateCartItemQuantity(
 		Integer userId,
+		UserRole userRole,
 		Integer cartItemId,
 		UpdateCartItemQuantityRequestDto requestDto
 	) {
+		// 장바구니 이용은 CUSTOMER만 가능
+		if (userRole != UserRole.CUSTOMER) {
+			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+		}
+
 		// 장바구니에서 해당 아이템 찾기
 		CartItem cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.CART_ITEM_NOT_FOUND));
@@ -108,6 +139,7 @@ public class CartItemService {
 
 		// 개수 업데이트 (기존 개수와 관계없이 사용자가 입력한 개수로 설정)
 		cartItem.updateQuantity(requestDto.getQuantity());
+		cartItemRepository.save(cartItem);
 
 		return GetCartItemResponseDto.builder()
 			.cartItemId(cartItem.getId())
@@ -118,7 +150,13 @@ public class CartItemService {
 
 	// 물품 삭제(단건)
 	@Transactional
-	public void removeCartItem(Integer userId, Integer cartItemId) {
+	public void removeCartItem(Integer userId, UserRole userRole, Integer cartItemId) {
+		// 장바구니 이용은 CUSTOMER만 가능
+		if (userRole != UserRole.CUSTOMER) {
+			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+		}
+
+		// 장바구니에서 해당 아이템 찾기
 		CartItem cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.CART_ITEM_NOT_FOUND));
 

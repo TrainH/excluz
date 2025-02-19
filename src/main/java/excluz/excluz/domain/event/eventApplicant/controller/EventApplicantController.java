@@ -1,6 +1,7 @@
 package excluz.excluz.domain.event.eventApplicant.controller;
 
 import excluz.excluz.domain.event.event.dto.EventResponseDto;
+import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantReadRequestDto;
 import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantRequestDto;
 import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantResponseDto;
 import excluz.excluz.domain.event.eventApplicant.service.EventApplicantService;
@@ -26,8 +27,15 @@ public class EventApplicantController {
 
     @GetMapping
     public EventApplicantResponseDto getEventApplication(@RequestParam("code") String code,
-                                                         @Valid @RequestBody EventApplicantRequestDto requestDto) {
+                                                         @Valid @RequestBody EventApplicantReadRequestDto requestDto) {
         return eventApplicantService.getEventApplication(code, requestDto.getEmail(), requestDto.getApplicantPassword());
+    }
+
+    @DeleteMapping("/{eventApplicantId}")
+    public ResponseEntity<Void> deleteEventApplicant(@RequestParam("code") String code,
+                                                     @Valid @RequestBody EventApplicantReadRequestDto requestDto) {
+        eventApplicantService.cancelEventApplicant(code, requestDto.getEmail(), requestDto.getApplicantPassword());
+        return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/{eventApplicantId}")
@@ -38,5 +46,7 @@ public class EventApplicantController {
         EventApplicantResponseDto updated = eventApplicantService.confirmReceipt(eventApplicantId, requestDto);
         return ResponseEntity.ok(updated);
     }
+
+
 
 }

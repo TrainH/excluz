@@ -20,10 +20,12 @@ public class SecurityContextUtil {
 			return null;
 		}
 
-		return UserRole.valueOf(grantedAuthority.getAuthority());
+		String role = grantedAuthority.getAuthority().replace("ROLE_", "");
+
+		return UserRole.valueOf(role);
 	}
 
-	public static Integer getUserId() {
+	public static Integer getUserOrStreamerId() {
 		String userId = SecurityContextHolder.getContext()
 			.getAuthentication()
 			.getName();

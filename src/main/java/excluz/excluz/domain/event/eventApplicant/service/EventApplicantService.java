@@ -12,6 +12,7 @@ import excluz.excluz.domain.event.eventApplicant.repository.EventApplicantReposi
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -23,6 +24,7 @@ public class EventApplicantService {
     private final EventApplicantRepository eventApplicantRepository;
     private final EventRepository eventRepository;
 
+    @Transactional // todo: 락 테스트
     public EventApplicantResponseDto applyForEvent(String code, EventApplicantRequestDto requestDto) {
         Event event = eventRepository.findByGeneratedCode(code)
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 이벤트 코드입니다."));
@@ -78,6 +80,21 @@ public class EventApplicantService {
                 .orElseThrow(() -> new IllegalArgumentException("응모 정보를 찾을 수 없거나 잘못된 인증 정보입니다."));
 
         return EventApplicantResponseDto.from(eventApplicant);
+    }
+
+    @Transactional
+    public void cancelEventApplicant(String code, String email, String applicantPassword) {
+        Event event = eventRepository.findByGeneratedCode(code)
+                .orElseThrow(() -> new IllegalArgumentException("잘못된 이벤트 코드입니다."));
+
+        EventApplicant eventApplicant = eventApplicantRepository.findByEventAndEmailAndApplicantPassword(event, email, applicantPassword)
+                .orElseThrow(() -> new IllegalArgumentException("응모 정보를 찾을 수 없거나 잘못된 인증 정보입니다."));
+
+        if (eventApplicant.getApplicantStatus().equals(ApplicantStatus.CONFIRMED)){
+            throw new IllegalArgumentException("이미 수령 확정한 응모를 취소할 수 없습니다.");
+        }
+
+        eventApplicantRepository.delete(eventApplicant);
     }
 
     public EventApplicantResponseDto confirmReceipt(Integer eventApplicantId, EventApplicantRequestDto requestDto) {

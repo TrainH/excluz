@@ -1,8 +1,6 @@
 package excluz.excluz.domain.cartItem.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -12,87 +10,83 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import excluz.excluz.auth.util.SecurityContextUtil;
 import excluz.excluz.domain.cartItem.dto.request.CreateCartItemRequestDto;
 import excluz.excluz.domain.cartItem.dto.request.UpdateCartItemQuantityRequestDto;
 import excluz.excluz.domain.cartItem.dto.response.CartItemListResponseDto;
 import excluz.excluz.domain.cartItem.dto.response.CreateCartItemResponseDto;
 import excluz.excluz.domain.cartItem.dto.response.GetCartItemResponseDto;
 import excluz.excluz.domain.cartItem.service.CartItemService;
+import excluz.excluz.domain.user.enums.UserRole;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/v1/cart-items")
 @RequiredArgsConstructor
 public class CartItemController {
 	private final CartItemService cartItemService;
 
 	// 물품 추가
-	@PostMapping("/v1/cart-items")
+	@PostMapping
 	public ResponseEntity<CreateCartItemResponseDto> addItemToCart(
-		@AuthenticationPrincipal User user,
 		@Valid @RequestBody CreateCartItemRequestDto requestDto
 	) {
-		// `user.getUsername()`을 사용하여 userId 가져오기
-		Integer userId = Integer.parseInt(user.getUsername());
+		Integer userId = SecurityContextUtil.getUserOrStreamerId();
+		UserRole userRole = SecurityContextUtil.getUserRole();
 
 		// 서비스단으로 userId와 리퀘스트 정보 넘기기
-		CreateCartItemResponseDto response = cartItemService.addItemToCart(userId, requestDto);
+		CreateCartItemResponseDto response = cartItemService.addItemToCart(userId, userRole, requestDto);
 
 		// HTTP 상태 코드 201(create)와 함께 CreateCartItemResponseDto 응답
 		return ResponseEntity.status(201).body(response);
 	}
 
 	// 물품 단건 조회
-	@GetMapping("/v1/cart-items/{cartItemId}")
+	@GetMapping("/{cartItemId}")
 	public ResponseEntity<GetCartItemResponseDto> getCartItem(
-		@AuthenticationPrincipal User user,
 		@PathVariable(name = "cartItemId") Integer cartItemId
 	) {
-		// `user.getUsername()`을 사용하여 userId 가져오기
-		Integer userId = Integer.parseInt(user.getUsername());
+		Integer userId = SecurityContextUtil.getUserOrStreamerId();
+		UserRole userRole = SecurityContextUtil.getUserRole();
 
-		GetCartItemResponseDto response = cartItemService.getCartItem(userId, cartItemId);
+		GetCartItemResponseDto response = cartItemService.getCartItem(userId, userRole, cartItemId);
 		return ResponseEntity.ok(response);
 	}
 
 	// 물품 다건 조회
-	@GetMapping("/v1/cart-items")
-	public ResponseEntity<CartItemListResponseDto> getCartItemList(
-		@AuthenticationPrincipal User user
-	) {
-		// `user.getUsername()`을 사용하여 userId 가져오기
-		Integer userId = Integer.parseInt(user.getUsername());
+	@GetMapping
+	public ResponseEntity<CartItemListResponseDto> getCartItemList() {
+		Integer userId = SecurityContextUtil.getUserOrStreamerId();
+		UserRole userRole = SecurityContextUtil.getUserRole();
 
-		CartItemListResponseDto response = cartItemService.getCartItemList(userId);
+		CartItemListResponseDto response = cartItemService.getCartItemList(userId, userRole);
 		return ResponseEntity.ok(response);
 	}
 
 	// 물품 개수 수정
-	@PatchMapping("/v1/cart-items/{cartItemId}")
+	@PatchMapping("/{cartItemId}")
 	public ResponseEntity<GetCartItemResponseDto> updateCartItemQuantity(
-		@AuthenticationPrincipal User user,
 		@PathVariable(name = "cartItemId") Integer cartItemId,
 		@Valid @RequestBody UpdateCartItemQuantityRequestDto requestDto
 	) {
-		// `user.getUsername()`을 사용하여 userId 가져오기
-		Integer userId = Integer.parseInt(user.getUsername());
+		Integer userId = SecurityContextUtil.getUserOrStreamerId();
+		UserRole userRole = SecurityContextUtil.getUserRole();
 
-		GetCartItemResponseDto response = cartItemService.updateCartItemQuantity(userId, cartItemId, requestDto);
+		GetCartItemResponseDto response = cartItemService.updateCartItemQuantity(userId, userRole, cartItemId, requestDto);
 		return ResponseEntity.ok(response);
 	}
 
 	// 물품 삭제(단건)
-	@DeleteMapping("/v1/cart-items/{cartItemId}")
+	@DeleteMapping("/{cartItemId}")
 	public ResponseEntity<Void> removeCartItem(
-		@AuthenticationPrincipal User user,
 		@PathVariable(name = "cartItemId") Integer cartItemId
 	) {
-		// `user.getUsername()`을 사용하여 userId 가져오기
-		Integer userId = Integer.parseInt(user.getUsername());
+		Integer userId = SecurityContextUtil.getUserOrStreamerId();
+		UserRole userRole = SecurityContextUtil.getUserRole();
 
 		// cartItemId를 서비스 단으로 넘겨서 검증 및 삭제 진행
-		cartItemService.removeCartItem(userId, cartItemId);
+		cartItemService.removeCartItem(userId, userRole, cartItemId);
 
 		// HTTP 상태 코드 204(No Content) 반환
 		return ResponseEntity.noContent().build();
