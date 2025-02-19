@@ -609,4 +609,44 @@ class CartItemServiceTest {
 			))
 			.isInstanceOf(NotFoundException.class); // NotFoundException 예외 발생
 	}
+
+
+	/*
+	 * removeCartItem
+	 */
+	@Test
+	@DisplayName("success: 장바구니 아이템 삭제")
+	void removeCartItem_success() {
+		// given
+		User user = mock(User.class);
+		Store store = mock(Store.class);
+		Item item = new Item(
+			store,         // store: 위에서 생성한 store 객체
+			"itemName",   // itemName: "itemName" (상품명)
+			"test",       // explanation: "test" (설명)
+			100,          // price: 100 (상품 가격)
+			10            // remainingQuantity: 10 (재고 개수)
+		);
+		CartItem cartItem = new CartItem(
+			user,  // user: 위에서 생성한 user 객체
+			item,  // item: 위에서 생성한 Item 객체
+			10     // quantity: 10 (현재 장바구니에 담긴 수량)
+		);
+
+		ReflectionTestUtils.setField(user, "id", 1);
+		ReflectionTestUtils.setField(cartItem, "id", 1);
+
+		Integer userId = user.getId();
+		UserRole userRole = UserRole.CUSTOMER;
+		Integer cartItemId = cartItem.getId();
+
+		when(cartItemRepository.findByIdAndUserId(cartItemId, userId))
+			.thenReturn(Optional.of(cartItem)); // 장바구니 아이템 찾기 성공
+
+		// when
+		cartItemService.removeCartItem(userId, userRole, cartItemId);
+
+		// then
+		verify(cartItemRepository, times(1)).delete(cartItem); // delete() 메서드가 1번 호출되었는지 확인
+	}
 }
