@@ -89,8 +89,9 @@ public class ItemService {
 			newMinPrice = highestPrice.orElse(0);
 			newMaxPrice = Integer.MAX_VALUE;
 		}
-		if (maxPrice <= minPrice) {
+		else if (maxPrice <= minPrice) {
 			newMaxPrice = highestPrice.orElse(minPrice + 1);
+			newMinPrice = maxPrice;
 		}
 
 		Page<Item> items = itemRepository.findByPriceWithItemName(pageable, newMinPrice, newMaxPrice, itemName);
