@@ -63,7 +63,7 @@ public class EventConcurrentFirstComeTest {
 
     @BeforeEach
     public void setup() {
-        uniqueSuffix = UUID.randomUUID().toString().substring(0, 4);
+        uniqueSuffix = UUID.randomUUID().toString().substring(0, 5);
 
         streamer = Streamer.builder()
                 .name("스트리머" + uniqueSuffix)
@@ -116,7 +116,7 @@ public class EventConcurrentFirstComeTest {
     @Test
     public void testConcurrentApplicants_FirstComeFirstServed() throws Exception {
         // 동시성 테스트를 위한 스레드 풀과 CountDownLatch 준비
-        int numberOfThreads = 5; // 동시에 n명의 응모 시도
+        int numberOfThreads = 10; // 동시에 n명의 응모 시도
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
         CountDownLatch startLatch = new CountDownLatch(1); // 모든 스레드를 동시에 시작
         CountDownLatch finishLatch = new CountDownLatch(numberOfThreads);

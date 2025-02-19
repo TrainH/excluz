@@ -62,7 +62,8 @@ public class EventResponseDto {
                     .map(item -> EventItemDto.builder()
                             .id(item.getId())
                             .quantity(item.getQuantity())
-                            // 필요한 다른 필드들을 추가
+                            .eventId(event.getId())
+                            .itemId(item.getId())
                             .build())
                     .collect(Collectors.toList());
         }
