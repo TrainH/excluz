@@ -61,7 +61,7 @@ class ItemServiceTest {
 
 		@Test
 		@DisplayName("success: 아이템 정보 수정 성공")
-		void update_item_info_success() {
+		void updateItemInfo() {
 			// given
 			Item updatedItem = SharedData.UPDATED_ITEM;
 
@@ -105,7 +105,7 @@ class ItemServiceTest {
 
 		@Test
 		@DisplayName("success: 아이템 소프트 딜리트 정상 수행")
-		void soft_delete_item_success() {
+		void softDeleteItem() {
 			// given
 			when(itemRepository.findItemByIdAndNotDeleted(anyInt())).thenReturn(Optional.of(mockItem));
 			when(mockItem.getStore().getStreamer().getId()).thenReturn(1);
@@ -131,7 +131,7 @@ class ItemServiceTest {
 
 		@Test
 		@DisplayName("success: itemId로 아이템 단건 조회")
-		void get_item_by_id_success() {
+		void getItemByIdSuccess() {
 			// given
 			Item item = SharedData.ITEM2;
 			when(itemRepository.findItemByIdAndNotDeleted(eq(item.getId()))).thenReturn(Optional.of(item));
@@ -159,7 +159,7 @@ class ItemServiceTest {
 
 		@Test
 		@DisplayName("success: 아이템 생성 기능 정상 수행")
-		void create_item_success() {
+		void createItemSuccess() {
 			// given
 			when(storeRepository.findStoreWithStreamer(anyInt())).thenReturn(Optional.of(SharedData.STORE1));
 			when(itemRepository.save(any(Item.class))).thenReturn(SharedData.ITEM1);
@@ -179,7 +179,7 @@ class ItemServiceTest {
 
 		@Test
 		@DisplayName("success: 일반 케이스 - minPrice와 maxPrice가 정상 범위임")
-		void get_item_list_standard() {
+		void getItemListStandard() {
 			// given
 			Pageable pageable = PageRequest.of(1, 10);
 			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(5000));
@@ -208,7 +208,7 @@ class ItemServiceTest {
 
 		@Test
 		@DisplayName("success: 가격 범위 재설정 - minPrice가 Integer.Max_VALUE인 경우")
-		void get_item_list_when_min_price_is_max_value() {
+		void getItemListWhenMinPriceIsMaxValue() {
 			// given
 			Pageable pageable = PageRequest.of(1, 10);
 			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(5000));
@@ -231,7 +231,7 @@ class ItemServiceTest {
 
 		@Test
 		@DisplayName("success: maxPrice 재설정 - maxPrice가 minPrice보다 작을 경우")
-		void get_item_list_when_max_price_less_than_or_equal_to_min_price() {
+		void getItemListWhenMaxPriceLessThanOrEqualToMinPrice() {
 			// given
 			Pageable pageable = PageRequest.of(1, 10);
 			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(6000));
