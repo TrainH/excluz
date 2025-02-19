@@ -3,6 +3,7 @@ package excluz.excluz.domain.store.item.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -376,6 +377,31 @@ class ItemServiceTest {
 
 			assertThat(actualResult).isNotNull();
 			assertThat(actualResult.getTotalElements()).isEqualTo(0);
+		}
+
+		@Test
+		@DisplayName("success: itemName이 null일 때 전체 목록 반환")
+		void getItemListWhenItemNameIsNull() {
+			// given
+			Pageable pageable = PageRequest.of(0, 10);
+			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(5000));
+			List<Item> itemList = Arrays.asList(SharedData.ITEM1, SharedData.ITEM2);
+			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
+
+			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), isNull())).thenReturn(itemPage);
+
+			try (MockedStatic<ItemResponseDto> mockedStatic = mockStatic(ItemResponseDto.class)) {
+				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
+
+				// when
+				Page<ItemResponseDto> actualResult = itemService.getItemList(1, 10, 1000, 5000, null);
+
+				// then
+				verify(itemRepository).findHighestItemPrice();
+				verify(itemRepository).findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), isNull());
+
+				assertThat(actualResult.getTotalElements()).isEqualTo(itemList.size());
+			}
 		}
 	}
 }
