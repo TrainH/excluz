@@ -47,6 +47,4 @@ public class EventApplicantController {
         return ResponseEntity.ok(updated);
     }
 
-
-
 }

@@ -1,6 +1,10 @@
 package excluz.excluz.domain.event.event.service;
 
 import excluz.excluz.common.entity.*;
+import excluz.excluz.common.exception.BadRequestException;
+import excluz.excluz.common.exception.NotFoundException;
+import excluz.excluz.common.exception.UnauthorizedException;
+import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.event.event.dto.EventClosingResponseDto;
 import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantResponseDto;
 import excluz.excluz.domain.event.eventApplicant.enums.ApplicantStatus;
@@ -20,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,13 +46,17 @@ public class EventService {
     @Transactional
     public EventResponseDto createEvent(Integer streamerId, EventRequestDto eventRequestDto) {
         Store store = storeRepository.findById(eventRequestDto.getStoreId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 스토어를 찾을 수 없습니다."));
+                .orElseThrow(() ->  new NotFoundException(ErrorCode.STORE_NOT_FOUND));
 
         Streamer streamer = streamerRepository.findById(streamerId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 스트리머를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         if (!streamer.getId().equals(streamerId)){
-            throw new IllegalArgumentException("권한 없는 스토어의 이벤트를 만들 수 없습니다.");
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_USER);
+        }
+
+        if (eventRequestDto.getEndDatetime().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException(ErrorCode.EVENT_ENDDATETIME_TOO_EARLY);
         }
 
         Event event = Event.builder()
@@ -68,10 +77,10 @@ public class EventService {
             Integer itemId = eventItemRequestDto.getItemId();
 
             Item item = itemRepository.findById(itemId)
-                    .orElseThrow(() -> new IllegalArgumentException("ID가 " + itemId + "인 아이템을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
 
             if (item.getStore() == null || !item.getStore().getId().equals(store.getId())) {
-                throw new IllegalArgumentException("아이템 ID " + itemId + "은(는) 현재 스토어에 소속되어 있지 않습니다.");
+                throw new UnauthorizedException(ErrorCode.ITEM_NOT_MATCH);
             }
 
             Integer requestedItemQuantity = eventItemRequestDto.getQuantity();
@@ -100,7 +109,7 @@ public class EventService {
     public EventResponseDto getEvent(Integer eventId) {
         // 이벤트 단건 조회
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 이벤트를 찾을 수 없습니다. ID: " + eventId));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
 
         // EventResponseDto로 변환하여 반환
         List<EventItem> eventItems = eventItemRepository.findByEvent(event);
@@ -112,17 +121,17 @@ public class EventService {
     @Transactional
     public void cancelEvent(Integer streamerId, Integer eventId) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 이벤트를 찾을 수 없습니다. ID: " + eventId));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
 
         Streamer streamer = streamerRepository.findById(streamerId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 스트리머를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         if (!streamer.getId().equals(streamerId)){
-            throw new IllegalArgumentException("권한 없는 스토어의 이벤트를 취소할 수 없습니다.");
+            throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
         }
 
         if (event.getIsCompleted()) {
-            throw new IllegalStateException("이미 마감된 이벤트는 취소할 수 없습니다.");
+            throw new BadRequestException(ErrorCode.EVENT_ALREADY_CLOSED);
         }
 
         if (event.getIsDeleted()) {
@@ -143,28 +152,28 @@ public class EventService {
     // 이벤트 마감 메서드 추가
     public EventClosingResponseDto closeEvent(Integer streamerId, Integer eventId) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 이벤트를 찾을 수 없습니다. ID: " + eventId));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
 
         Streamer streamer = streamerRepository.findById(streamerId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 스트리머를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         if (!streamer.getId().equals(streamerId)){
-            throw new IllegalArgumentException("권한 없는 스토어의 이벤트를 마감할 수 없습니다.");
+            throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
         }
 
         if (event.getIsDeleted()) {
-            throw new IllegalStateException("취소된 이벤트입니다.");
+            throw new BadRequestException(ErrorCode.EVENT_ALREADY_CANCELED);
         }
 
         if (event.getIsCompleted()) {
-            throw new IllegalStateException("이미 마감된 이벤트입니다.");
+            throw new BadRequestException(ErrorCode.EVENT_ALREADY_CLOSED);
         }
 
         // 이벤트 응모자 조회
         List<EventApplicant> applicantList = eventApplicantRepository.findByEvent(event);
-        if (applicantList.isEmpty()) {
-            throw new IllegalStateException("해당 이벤트에 응모자가 없습니다.");
-        }
+//        if (applicantList.isEmpty()) {
+//            throw new IllegalStateException("해당 이벤트에 응모자가 없습니다.");
+//        }
 
         // 당첨자 선정 로직
         int numberOfWinners = event.getNumberOfWinners();
@@ -183,7 +192,7 @@ public class EventService {
         } else if (event.getSelectionMethod() == SelectionMethod.FIRST_COME_FIRST_SERVED) {
 //      응모시에 이미 WINNER/LOSER 구분 완료
         } else {
-            throw new UnsupportedOperationException("지원되지 않는 선정 방식입니다.");
+            throw new BadRequestException(ErrorCode.EVENT_METHOD_NOT_SUPPORTED);
         }
 
         event.completeEvent();

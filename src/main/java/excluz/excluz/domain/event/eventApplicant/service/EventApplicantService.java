@@ -3,6 +3,9 @@ package excluz.excluz.domain.event.eventApplicant.service;
 
 import excluz.excluz.common.entity.Event;
 import excluz.excluz.common.entity.EventApplicant;
+import excluz.excluz.common.exception.BadRequestException;
+import excluz.excluz.common.exception.NotFoundException;
+import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
 import excluz.excluz.domain.event.event.repository.EventRepository;
 import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantRequestDto;
@@ -27,26 +30,26 @@ public class EventApplicantService {
     @Transactional // todo: 락 테스트
     public EventApplicantResponseDto applyForEvent(String code, EventApplicantRequestDto requestDto) {
         Event event = eventRepository.findByGeneratedCode(code)
-                .orElseThrow(() -> new IllegalArgumentException("잘못된 이벤트 코드입니다."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
 
         if (event.getIsCompleted()) {
-            throw new IllegalArgumentException("이미 마감된 이벤트입니다.");
+            throw new BadRequestException(ErrorCode.EVENT_ALREADY_CLOSED);
         }
         if (event.getIsDeleted()) {
-            throw new IllegalArgumentException("취소된 이벤트입니다..");
+            throw new BadRequestException(ErrorCode.EVENT_ALREADY_CANCELED);
         }
 
 //        이벤트 시간 관련 로직
         LocalDateTime now = LocalDateTime.now();
         if (now.isBefore(event.getStartDatetime())) {
-            throw new IllegalStateException("아직 이벤트가 시작되지 않았습니다.");
+            throw new BadRequestException(ErrorCode.EVENT_APPLICANT_NOT_STARTED);
         }
         if (now.isAfter(event.getEndDatetime())) {
-            throw new IllegalStateException("이벤트가 이미 종료되었습니다.");
+            throw new BadRequestException(ErrorCode.EVENT_APPLICANT_EXPIRED);
         }
 
         if (eventApplicantRepository.existsByEventAndEmail(event, requestDto.getEmail())) {
-            throw new IllegalArgumentException("이미 해당 이벤트에 응모한 이메일입니다.");
+            throw new BadRequestException((ErrorCode.EMAIL_ALREADY_EXISTS));
         }
 
         EventApplicant eventApplicant = EventApplicant.builder()
@@ -74,10 +77,10 @@ public class EventApplicantService {
 
     public EventApplicantResponseDto getEventApplication(String code, String email, String applicantPassword) {
         Event event = eventRepository.findByGeneratedCode(code)
-                .orElseThrow(() -> new IllegalArgumentException("잘못된 이벤트 코드입니다."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
 
         EventApplicant eventApplicant = eventApplicantRepository.findByEventAndEmailAndApplicantPassword(event, email, applicantPassword)
-                .orElseThrow(() -> new IllegalArgumentException("응모 정보를 찾을 수 없거나 잘못된 인증 정보입니다."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_APPLICANT_NOT_FOUND));
 
         return EventApplicantResponseDto.from(eventApplicant);
     }
@@ -85,13 +88,13 @@ public class EventApplicantService {
     @Transactional
     public void cancelEventApplicant(String code, String email, String applicantPassword) {
         Event event = eventRepository.findByGeneratedCode(code)
-                .orElseThrow(() -> new IllegalArgumentException("잘못된 이벤트 코드입니다."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
 
         EventApplicant eventApplicant = eventApplicantRepository.findByEventAndEmailAndApplicantPassword(event, email, applicantPassword)
-                .orElseThrow(() -> new IllegalArgumentException("응모 정보를 찾을 수 없거나 잘못된 인증 정보입니다."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_APPLICANT_NOT_FOUND));
 
         if (eventApplicant.getApplicantStatus().equals(ApplicantStatus.CONFIRMED)){
-            throw new IllegalArgumentException("이미 수령 확정한 응모를 취소할 수 없습니다.");
+            throw new BadRequestException(ErrorCode.EVENT_APPLICANT_ALREADY_CONFIRMED);
         }
 
         eventApplicantRepository.delete(eventApplicant);
@@ -99,10 +102,10 @@ public class EventApplicantService {
 
     public EventApplicantResponseDto confirmReceipt(Integer eventApplicantId, EventApplicantRequestDto requestDto) {
         EventApplicant eventApplicant = eventApplicantRepository.findById(eventApplicantId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 응모 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_APPLICANT_NOT_FOUND));
 
         if (eventApplicant.getApplicantStatus() != ApplicantStatus.WINNER) {
-            throw new IllegalArgumentException("당첨(WINNER) 상태가 아닌 유저의 수령 확정은 불가능합니다.");
+            throw new BadRequestException(ErrorCode.EVENT_APPLICANT_NOT_WINNER);
         }
 
         if (requestDto.getApplicantName() != null) {
