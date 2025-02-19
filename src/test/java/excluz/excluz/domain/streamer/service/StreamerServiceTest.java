@@ -30,6 +30,7 @@ import excluz.excluz.auth.util.JwtUtil;
 import excluz.excluz.common.datas.SharedData;
 import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.common.exception.BadRequestException;
+import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.streamer.dto.request.StreamerLoginRequestDto;
 import excluz.excluz.domain.streamer.dto.request.StreamerSignupRequestDto;
@@ -38,6 +39,7 @@ import excluz.excluz.domain.streamer.dto.response.StreamerLoginResponseDto;
 import excluz.excluz.domain.streamer.dto.response.StreamerResponseDto;
 import excluz.excluz.domain.streamer.dto.response.StreamerSummaryResponseDto;
 import excluz.excluz.domain.streamer.repository.StreamerRepository;
+import excluz.excluz.domain.user.enums.UserRole;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("StreamerService")
@@ -107,8 +109,9 @@ class StreamerServiceTest {
 	@Nested
 	@DisplayName("streamerLogin 메서드")
 	class StreamerLogin {
+
 		@Test
-		@DisplayName("success: 스트리머 토큰 생성 성공")
+		@DisplayName("success: 스트리머 로그인 성공")
 		void streamerLogin() {
 			// given
 			StreamerLoginRequestDto loginRequestDto = SharedData.STREAMER_LOGIN_REQUEST_DTO;
@@ -137,6 +140,39 @@ class StreamerServiceTest {
 				assertFalse(actualResult.getToken().isEmpty());
 				assertThat(actualResult.getToken()).startsWith(token);
 			}
+		}
+
+		@Test
+		@DisplayName("fail: 등록되지 않은 이메일로 로그인할 수 없음")
+		void streamerLoginEmailDoseNotExist() {
+			// given
+			when(streamerRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+			// when & then
+			NotFoundException exception = assertThrows(NotFoundException.class,
+				() -> streamerService.streamerLogin(SharedData.STREAMER_LOGIN_REQUEST_DTO)
+			);
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.UNAUTHORIZED_USER);
+
+			verify(jwtUtil, never()).createToken(anyString(), anyInt(), any(UserRole.class));
+		}
+
+		@Test
+		@DisplayName("fail: 입력한 비밀번호와 등록된 비밀번호가 불일치할 경우 로그인할 수 없음")
+		void streamerLoginPasswordDoseNotMatch() {
+			// given
+			StreamerLoginRequestDto loginRequestDto = SharedData.STREAMER_LOGIN_REQUEST_DTO;
+
+			when(streamerRepository.findByEmail(anyString())).thenReturn(Optional.of(SharedData.STREAMER2));
+			when(passwordEncoder.matches(eq(loginRequestDto.getPassword()), anyString())).thenReturn(false);
+
+			// when & then
+			BadRequestException exception = assertThrows(BadRequestException.class,
+				() -> streamerService.streamerLogin(loginRequestDto)
+			);
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.PASSWORD_MISMATCH);
+
+			verify(jwtUtil, never()).createToken(anyString(), anyInt(), any(UserRole.class));
 		}
 	}
 
