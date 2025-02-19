@@ -1,7 +1,9 @@
 package excluz.excluz.domain.point.pointTransaction.controller;
 
+import excluz.excluz.auth.util.SecurityContextUtil;
 import excluz.excluz.domain.point.pointTransaction.dto.response.PointTransactionResponseDto;
 import excluz.excluz.domain.point.pointTransaction.service.PointTransactionService;
+import excluz.excluz.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,16 +25,11 @@ public class PointTransactionContoller {
 
     @GetMapping("/points/transactions")
     public ResponseEntity<Page<PointTransactionResponseDto>> getPointTransactionList(
-            @AuthenticationPrincipal User user,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "5") int size
     ) {
-        Integer userOrStreamerId = Integer.parseInt(user.getUsername());
-
-        String userRole = user.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .findFirst()
-                .orElse("No role assigned");
+        Integer userOrStreamerId = SecurityContextUtil.getUserOrStreamerId();
+        UserRole userRole = SecurityContextUtil.getUserRole();
 
         Pageable pageable = PageRequest.of(page-1, size);
 
