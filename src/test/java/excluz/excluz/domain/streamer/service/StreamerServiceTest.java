@@ -354,7 +354,33 @@ class StreamerServiceTest {
 			}
 		}
 
-		// 실패: 탈퇴한 본인 계정은 조회할 수 없음
+		@Test
+		@DisplayName("fail: 등록되지 않은 계정의 정보는 조회할 수 없음")
+		void getPersonalInfoFailsWhenEmailDoesNotExist() {
+			// given
+			when(streamerRepository.findById(anyInt())).thenReturn(Optional.empty());
+
+			// when & then
+			NotFoundException exception = assertThrows(NotFoundException.class,
+				() -> streamerService.getPersonalInfo(SharedData.STREAMER_ID1)
+			);
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.UNAUTHORIZED_USER);
+		}
+
+		@Test
+		@DisplayName("fail: 탈퇴한 본인 계정은 조회할 수 없음")
+		void getPersonalInfoFailsWhenAccountIsDeleted() {
+			// given
+			Streamer mockStreamer = mock(Streamer.class);
+			when(streamerRepository.findById(anyInt())).thenReturn(Optional.of(mockStreamer));
+			when(mockStreamer.isDeleted()).thenReturn(true);
+
+			// when & then
+			NotFoundException exception = assertThrows(NotFoundException.class,
+				() -> streamerService.getPersonalInfo(SharedData.STREAMER_ID1)
+			);
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
+		}
 	}
 
 	@Nested
