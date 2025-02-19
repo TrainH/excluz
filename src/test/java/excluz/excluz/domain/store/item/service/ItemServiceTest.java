@@ -126,6 +126,19 @@ class ItemServiceTest {
 
 			verify(mockItem).updateIsDeleted(true);
 		}
+		@Test
+		@DisplayName("fail: 아이템 삭제 권한 없음 (ForbiddenException 발생)")
+		void deleteItemForbidden() {
+			// given
+			when(itemRepository.findItemByIdAndNotDeleted(anyInt())).thenReturn(Optional.of(mockItem));
+			when(mockItem.getStore()).thenReturn(mockStore);
+			when(mockStore.getStreamer()).thenReturn(mockStreamer);
+			when(mockStreamer.getId()).thenReturn(SharedData.STREAMER_ID1);
+
+			// when, then
+			assertThatThrownBy(() -> itemService.deleteItem(SharedData.ITEM_ID1, SharedData.STREAMER_ID2))
+				.isInstanceOf(ForbiddenException.class); // Only verifying exception type, no message validation
+		}
 	}
 	/**
 	 * 위 DeleteItem에 속하는 메서드지만, 위에 넣으면 setUp()과 충돌하는 이슈 발생. (아이템이 없어야 하는데, 아이템이 존재하도록 세팅돼서)
