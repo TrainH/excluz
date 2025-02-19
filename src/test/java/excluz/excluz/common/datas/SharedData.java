@@ -27,8 +27,11 @@ public class SharedData {
 	// Store 데이터
 	public final static Integer STORE_ID1 = 1;
 	public final static String ADDRESS1 = "사랑시 평화동 정의로12";
+	public final static String ADDRESS2 = "희망시 보람동 성공로12";
 	public final static String STORE_NAME1 = "테스트샵";
+	public final static String STORE_NAME2 = "업데이트샵";
 	public final static String REGISTRATION_NUMBER1 = "123-12-12345";
+	public final static String REGISTRATION_NUMBER2 = "678-67-67890";
 	public final static Store STORE1 = new Store(STREAMER1, ADDRESS1, STORE_NAME1,REGISTRATION_NUMBER1);
 
 	// Item 데이터
