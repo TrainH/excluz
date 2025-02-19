@@ -94,7 +94,23 @@ class ItemServiceTest {
 				assertThat(actualResult.getRemainingQuantity()).isEqualTo(updatedItem.getRemainingQuantity());
 			}
 		}
+		@Test
+		@DisplayName("fail: 아이템 수정 권한 없음 (예외 발생)")
+		void updateItemForbidden() {
+			// given
+			when(itemRepository.findItemByIdAndNotDeleted(anyInt())).thenReturn(Optional.of(mockItem));
+			when(mockItem.getStore()).thenReturn(mockStore);
+			when(mockStore.getStreamer()).thenReturn(mockStreamer);
+			when(mockStreamer.getId()).thenReturn(SharedData.STREAMER_ID1); // 기존 스트리머
 
+			// when, then
+			assertThatThrownBy(() -> itemService.updateItemInfo(SharedData.ITEM_UPDATE_REQUEST_DTO,
+				SharedData.ITEM_ID1,
+				SharedData.STREAMER_ID2)) // 권한 없는 스트리머 ID
+				.isInstanceOf(ForbiddenException.class); // ForbiddenException 발생 확인
+
+			verify(itemRepository, times(1)).findItemByIdAndNotDeleted(anyInt()); // findItemByIdAndNotDeleted 1번만 호출되는지 확인
+		}
 	}
 	/**
 	 * UnnecessaryStubbingException
@@ -207,6 +223,21 @@ class ItemServiceTest {
 				assertThat(actualResult.getRemainingQuantity()).isEqualTo(item.getRemainingQuantity());
 			}
 		}
+
+		@Test
+		@DisplayName("fail: 존재하지 않는 아이템 ID로 조회 시 예외 발생")
+		void getItemByIdNotFound() {
+			// given
+			when(itemRepository.findItemByIdAndNotDeleted(eq(SharedData.ITEM_ID1))).thenReturn(Optional.empty());
+
+			// when, then
+			assertThatThrownBy(() -> itemService.getItemById(SharedData.ITEM_ID1))
+				.isInstanceOf(NotFoundException.class); // 예외 발생 검증
+
+			verify(itemRepository).findItemByIdAndNotDeleted(eq(SharedData.ITEM_ID1)); // findItemByIdAndNotDeleted가 1번 실행되었는지 확인
+		}
+
+
 	}
 
 	@Nested
