@@ -11,15 +11,11 @@ import excluz.excluz.domain.point.point.dto.response.PointResponseDto;
 import excluz.excluz.domain.point.point.repository.PointRepository;
 import excluz.excluz.domain.point.pointTransaction.enums.TransactionType;
 import excluz.excluz.domain.point.pointTransaction.repository.PointTransactionRepository;
-import excluz.excluz.domain.store.store.repository.StoreRepository;
-import excluz.excluz.domain.streamer.repository.StreamerRepository;
 import excluz.excluz.domain.user.enums.UserRole;
 import excluz.excluz.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,10 +26,10 @@ public class PointService {
     private final PointTransactionRepository pointTransactionRepository;
 
     @Transactional
-    public void chargePoint(Integer userOrStreamerId, String userRole, PointChargeRequestDto requestDto) {
+    public void chargePoint(Integer userOrStreamerId, UserRole userRole, PointChargeRequestDto requestDto) {
 
         //  포인트 충전은 CUSTOMER만 가능
-        if (!userRole.equals(UserRole.CUSTOMER.getRole())) {
+        if (!userRole.equals(UserRole.CUSTOMER)) {
             throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
         }
 
@@ -58,10 +54,9 @@ public class PointService {
 
     }
 
-    public PointResponseDto getPoint(Integer userOrStreamerId, String userRole) {
-        String roleName = userRole.replace("ROLE_", "").toUpperCase();
+    public PointResponseDto getPoint(Integer userOrStreamerId, UserRole userRole) {
 
-        Point point = pointRepository.findByUserRoleAndUserOrStreamerId(UserRole.valueOf(roleName), userOrStreamerId)
+        Point point = pointRepository.findByUserRoleAndUserOrStreamerId(userRole, userOrStreamerId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.POINT_NOT_FOUND)); // 나중에 예외처리 변경
 
         return PointResponseDto.from(point);

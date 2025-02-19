@@ -26,14 +26,14 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
     @Query("SELECT oi FROM OrderItem oi " +
             "JOIN FETCH oi.order o " +
             "JOIN FETCH o.user " +
-            "WHERE o.user.id = :userId AND oi.order.id =:orderId")
-    Optional<OrderItem> getByIdAndUserId(@Param("orderId") Integer orderId,  @Param("userId") Integer userId);
+            "WHERE o.user.id = :userId AND oi.id =:orderItemId")
+    Optional<OrderItem> getByIdAndUserId(@Param("orderItemId") Integer orderItemId,  @Param("userId") Integer userId);
 
     @Query("SELECT oi FROM OrderItem oi " +
             "JOIN FETCH oi.item i " +
             "JOIN FETCH i.store s " +
             "JOIN FETCH s.streamer st " +
-            "WHERE st.id = :streamerId AND oi.order.id =:orderId")
-    Optional<OrderItem> getByIdAndStreamerId(@Param("orderId") Integer orderId, @Param("streamerId") Integer streamerId);
+            "WHERE st.id = :streamerId AND oi.id =:orderItemId")
+    Optional<OrderItem> getByIdAndStreamerId(@Param("orderItemId") Integer orderItemId, @Param("streamerId") Integer streamerId);
 
 }

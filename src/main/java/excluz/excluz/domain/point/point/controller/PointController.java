@@ -1,14 +1,13 @@
 package excluz.excluz.domain.point.point.controller;
 
+import excluz.excluz.auth.util.SecurityContextUtil;
 import excluz.excluz.domain.point.point.dto.request.PointChargeRequestDto;
 import excluz.excluz.domain.point.point.dto.response.PointResponseDto;
 import excluz.excluz.domain.point.point.service.PointService;
+import excluz.excluz.domain.user.enums.UserRole;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,15 +19,10 @@ public class PointController {
 
     @PostMapping("/points")
     public ResponseEntity<String> chargePoint(
-            @AuthenticationPrincipal User user,
             @Valid @RequestBody PointChargeRequestDto requestDto
     ) {
-        Integer userOrStreamerId = Integer.parseInt(user.getUsername());
-
-        String userRole = user.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .findFirst()
-                .orElse("No role assigned");
+        Integer userOrStreamerId = SecurityContextUtil.getUserOrStreamerId();
+        UserRole userRole = SecurityContextUtil.getUserRole();
 
         pointService.chargePoint(userOrStreamerId, userRole, requestDto);
 
@@ -37,14 +31,9 @@ public class PointController {
 
     @GetMapping("/points/my-point")
     public ResponseEntity<PointResponseDto> getPoint(
-            @AuthenticationPrincipal User user
     ){
-        Integer userOrStreamerId = Integer.parseInt(user.getUsername());
-
-        String userRole = user.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .findFirst()
-                .orElse("No role assigned");
+        Integer userOrStreamerId = SecurityContextUtil.getUserOrStreamerId();
+        UserRole userRole = SecurityContextUtil.getUserRole();
 
         return ResponseEntity.ok(pointService.getPoint(userOrStreamerId, userRole));
     }

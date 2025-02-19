@@ -20,16 +20,16 @@ public class PointTransactionService {
     @Transactional(readOnly = true)
     public Page<PointTransactionResponseDto> getPointTransactionList(
                                                                     Integer userOrStreamerId,
-                                                                    String userRole,
+                                                                    UserRole userRole,
                                                                     Pageable pageable)
 
     {
-        if (userRole.equals(UserRole.CUSTOMER.getRole())){
+        if (userRole.equals(UserRole.CUSTOMER)){
             return pointTransactionRepository.findAllByUserId(userOrStreamerId, pageable)
                     .map(PointTransactionResponseDto::from);
         }
 
-        if (userRole.equals(UserRole.STREAMER.getRole())){
+        if (userRole.equals(UserRole.STREAMER)){
             return pointTransactionRepository.finAllByStreamerId(userOrStreamerId, pageable)
                     .map(PointTransactionResponseDto::from);
         }
