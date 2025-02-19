@@ -11,7 +11,10 @@ import java.util.Optional;
 
 public interface EventRepository extends JpaRepository<Event, Integer> {
 
+//    todo: 낙관적/비관적 락 테스트
     @Lock(LockModeType.PESSIMISTIC_WRITE)
+//    @Lock(LockModeType.PESSIMISTIC_READ)
+//    @Lock(LockModeType.OPTIMISTIC)
     @Query("SELECT e FROM Event e WHERE e.generatedCode = :code")
     Optional<Event> findByGeneratedCode(@Param("code") String generatedCode);
 }

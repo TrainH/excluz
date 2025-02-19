@@ -6,6 +6,7 @@ import excluz.excluz.domain.event.event.dto.EventResponseDto;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
 import excluz.excluz.domain.event.event.repository.EventRepository;
 import excluz.excluz.domain.event.event.service.EventService;
+import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantRequestDto;
 import excluz.excluz.domain.event.eventApplicant.repository.EventApplicantRepository;
 import excluz.excluz.domain.event.eventApplicant.service.EventApplicantService;
 import excluz.excluz.domain.event.eventItem.dto.EventItemRequestDto;
@@ -116,7 +117,7 @@ public class EventConcurrentFirstComeTest {
     @Test
     public void testConcurrentApplicants_FirstComeFirstServed() throws Exception {
         // 동시성 테스트를 위한 스레드 풀과 CountDownLatch 준비
-        int numberOfThreads = 10; // 동시에 n명의 응모 시도
+        int numberOfThreads = 100; // 동시에 n명의 응모 시도
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
         CountDownLatch startLatch = new CountDownLatch(1); // 모든 스레드를 동시에 시작
         CountDownLatch finishLatch = new CountDownLatch(numberOfThreads);
@@ -135,8 +136,7 @@ public class EventConcurrentFirstComeTest {
                     // 응모 요청 (EventApplicantService.applyForEvent)
                     eventApplicantService.applyForEvent(
                             event.getGeneratedCode(),
-                            // 간단한 DTO 생성 (빌더 사용)
-                            excluz.excluz.domain.event.eventApplicant.dto.EventApplicantRequestDto.builder()
+                            EventApplicantRequestDto.builder()
                                     .email(email)
                                     .applicantName("사용자" + uniqueApplicantCode)
                                     .applicantPassword("password" + uniqueApplicantCode)
@@ -152,15 +152,13 @@ public class EventConcurrentFirstComeTest {
             });
         }
 
-        // 모든 스레드 시작
+        // 모든 스레드 시작 + 완료될 때까지 기다림
         startLatch.countDown();
-        // 모든 스레드 완료될 때까지 기다림
         finishLatch.await();
         executorService.shutdown();
 
-        // 모든 응모 처리 후, 이벤트 마감 로직 실행 (선착순 기준으로 당첨자 판별)
-        // 동시성 상황에서 저장된 응모는 createdAt 값 순으로 정렬됨.
-        var closingResponse = eventService.closeEvent(streamer.getId(), event.getId());
+        // 응모 다 처리 하고 이벤트 마감 로직 실행
+        eventService.closeEvent(streamer.getId(), event.getId());
 
         // 당첨자 수가 NUMBER_OF_WINNERS로 제한되었는지 확인
         List<EventApplicant> allApplicants = eventApplicantRepository.findByEvent(event);

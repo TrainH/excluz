@@ -15,9 +15,11 @@ import excluz.excluz.domain.event.eventApplicant.repository.EventApplicantReposi
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+
 
 @Service
 @Slf4j
@@ -27,7 +29,7 @@ public class EventApplicantService {
     private final EventApplicantRepository eventApplicantRepository;
     private final EventRepository eventRepository;
 
-    @Transactional // todo: 락 테스트
+    @Transactional(propagation=Propagation.REQUIRED) // todo: 락 테스트
     public EventApplicantResponseDto applyForEvent(String code, EventApplicantRequestDto requestDto) {
         Event event = eventRepository.findByGeneratedCode(code)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
@@ -61,6 +63,8 @@ public class EventApplicantService {
                 .build();
 
         if (event.getSelectionMethod() == SelectionMethod.FIRST_COME_FIRST_SERVED) {
+            // todo: 이 단에서만 락이 걸려야 함
+            // 선착순이 아니어도 락이 걸리는 문제....
             int numberOfCurrentWinners = eventApplicantRepository.countByEventAndApplicantStatus(event, ApplicantStatus.WINNER);
             if (numberOfCurrentWinners < event.getNumberOfWinners()) {
                 eventApplicant.updateApplicantStatus(ApplicantStatus.WINNER);
