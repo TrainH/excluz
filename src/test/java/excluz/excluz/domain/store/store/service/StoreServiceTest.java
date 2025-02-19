@@ -1,11 +1,14 @@
 package excluz.excluz.domain.store.store.service;
 
 import static org.assertj.core.api.Assertions.*;
+
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -14,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -23,6 +27,9 @@ import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.store.store.dto.request.StoreDeleteRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreRequestDto;
+import excluz.excluz.domain.store.store.dto.request.StoreUpdateRequestDto;
+import excluz.excluz.domain.store.store.dto.response.StoreResponseDto;
+import excluz.excluz.domain.store.store.dto.response.StoreUpdateResponseDto;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
 import excluz.excluz.domain.streamer.repository.StreamerRepository;
 import excluz.excluz.domain.streamer.service.StreamerService;
@@ -44,6 +51,10 @@ public class StoreServiceTest {
 	StreamerService streamerService;
 	@Mock
 	PasswordEncoder passwordEncoder;
+	@Mock
+	Store mockStore;
+	@Mock
+	Streamer mockStreamer;
 
 	@Nested
 	@DisplayName("createStore 메서드")
@@ -85,7 +96,6 @@ public class StoreServiceTest {
 		void delete_store_success() {
 			// given
 			StoreDeleteRequestDto deleteRequestDto = new StoreDeleteRequestDto(SharedData.STREAMER_PASSWORD1);
-			//Store mockStore = mock(Store.class);
 			Store spyStore = spy(SharedData.STORE1);
 
 			when(streamerService.findStreamerById(anyInt())).thenReturn(SharedData.STREAMER1);
@@ -110,5 +120,47 @@ public class StoreServiceTest {
 
 		// 실패: 비밀번호 불일치
 		// 실패: 이미 삭제된 스토어
+	}
+
+	@Nested
+	@DisplayName("updateStore 메서드")
+	class UpdateStore {
+
+		@Test
+		@DisplayName("success: 스토어 주인은 스토어 정보 수정 가능")
+		void update_store_success() {
+			// given
+			StoreUpdateRequestDto requestDto = new StoreUpdateRequestDto(SharedData.ADDRESS2, SharedData.STORE_NAME2, SharedData.REGISTRATION_NUMBER2);
+			StoreUpdateResponseDto responseDto = new StoreUpdateResponseDto(SharedData.ADDRESS2, SharedData.STORE_NAME2, SharedData.REGISTRATION_NUMBER2);
+			Store spyStore = spy(SharedData.STORE1);
+			when(storeRepository.findById(anyInt())).thenReturn(Optional.of(spyStore));
+			// 스토어 주인 검증 로직 stub
+			when(spyStore.getStreamer()).thenReturn(mockStreamer);
+			when(mockStreamer.getId()).thenReturn(SharedData.STREAMER_ID1);
+
+			// 정보 수정 전 검증
+			assertThat(spyStore.getAddress()).isEqualTo(SharedData.ADDRESS1);
+			assertThat(spyStore.getStoreName()).isEqualTo(SharedData.STORE_NAME1);
+			assertThat(spyStore.getRegistrationNumber()).isEqualTo(SharedData.REGISTRATION_NUMBER1);
+
+			try (MockedStatic<StoreUpdateResponseDto> mockedStatic = mockStatic(StoreUpdateResponseDto.class)) {
+				given(StoreUpdateResponseDto.from(spyStore)).willReturn(responseDto);
+
+				// when
+				StoreUpdateResponseDto actualResult = storeService.updateStore(SharedData.STREAMER_ID1, SharedData.STORE_ID1, requestDto);
+
+				// then
+				verify(storeRepository).findById(SharedData.STORE_ID1);
+				verify(spyStore).updateStore(SharedData.ADDRESS2, SharedData.STORE_NAME2, SharedData.REGISTRATION_NUMBER2);
+
+				// 정보 수정 후 검증
+				assertThat(actualResult.getAddress()).isEqualTo(SharedData.ADDRESS2);
+				assertThat(actualResult.getStoreName()).isEqualTo(SharedData.STORE_NAME2);
+				assertThat(actualResult.getRegistrationNumber()).isEqualTo(SharedData.REGISTRATION_NUMBER2);
+			}
+		}
+
+		// 실패: 스토어 주인이 아닐 경우 스토어 정보 수정 불가
+		// 실패: 소프트 딜리트된 스토어는 수정 불가
 	}
 }
