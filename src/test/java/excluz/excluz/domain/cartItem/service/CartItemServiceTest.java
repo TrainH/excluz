@@ -55,7 +55,7 @@ class CartItemServiceTest {
 	 */
 	@Test
 	@DisplayName("success: 장바구니 아이템 추가")
-	void addItemToCart_success() {
+	void addItemToCart() {
 		// given
 		User user = mock(User.class);
 		Item item = new Item(
@@ -99,7 +99,7 @@ class CartItemServiceTest {
 
 	@Test
 	@DisplayName("success: 요청 수량 = 재고")
-	void addItemToCart_success_matchingStockQuantity_case_1() {
+	void addItemToCartMatchingStockQuantityCase1() {
 		// given
 		User user = mock(User.class);
 		Item item = new Item(
@@ -137,7 +137,7 @@ class CartItemServiceTest {
 
 	@Test
 	@DisplayName("success: 장바구니에 있는 수량 + 추가 요청 수량 = 재고")
-	void addItemToCart_success_matchingStockQuantity_case_2() {
+	void addItemToCartMatchingStockQuantityCase2() {
 		// given
 		User user = mock(User.class);
 		Item item = new Item(
@@ -175,7 +175,7 @@ class CartItemServiceTest {
 
 	@Test
 	@DisplayName("fail: 물품 추가 시 존재하지 않는 유저 (예외 발생)")
-	void addItemToCart_fail_userNotFound() {
+	void addItemToCartUserNotFound() {
 		// given
 		Integer userId = 1;
 		UserRole userRole = UserRole.CUSTOMER;
@@ -193,7 +193,7 @@ class CartItemServiceTest {
 
 	@Test
 	@DisplayName("fail: 물품 추가 시 존재하지 않는 아이템 (예외 발생)")
-	void addItemToCart_fail_itemNotFound() {
+	void addItemToCartItemNotFound() {
 		// given
 		Integer userId = 1;
 		UserRole userRole = UserRole.CUSTOMER;
@@ -212,7 +212,7 @@ class CartItemServiceTest {
 
 	@Test
 	@DisplayName("fail: 요청 개수 > 재고 (예외 발생)")
-	void addItemToCart_fail_stockExceeded_case_1() {
+	void addItemToCartStockExceededCase1() {
 		// given
 		User user = mock(User.class);
 		Item item = new Item(
@@ -243,7 +243,7 @@ class CartItemServiceTest {
 
 	@Test
 	@DisplayName("fail: 기 요청 개수 + 새로운 요청 개수 > 재고 (예외 발생)")
-	void addItemToCart_fail_stockExceeded_case_2() {
+	void addItemToCartStockExceededCase2() {
 		// given
 		User user = mock(User.class);
 		Item item = new Item(
@@ -274,7 +274,7 @@ class CartItemServiceTest {
 
 	@Test
 	@DisplayName("fail: 유효하지 않은 유저 역할 (예외 발생)")
-	void addItemToCart_fail_invalidUserRole() {
+	void addItemToCartInvalidUserRole() {
 		// given
 		Integer userId = 1;
 		UserRole userRole = UserRole.STREAMER; // CUSTOMER가 아닌 경우
@@ -295,7 +295,7 @@ class CartItemServiceTest {
 	 */
 	@Test
 	@DisplayName("success: 장바구니 아이템 단건 조회")
-	void getCartItem_success() {
+	void getCartItem() {
 		// given
 		User user = mock(User.class);
 		Store store = mock(Store.class);
@@ -335,7 +335,7 @@ class CartItemServiceTest {
 
 	@Test
 	@DisplayName("fail: 존재하지 않는 장바구니 아이템 ID (예외 발생)")
-	void getCartItem_fail_notFound() {
+	void getCartItemNotFound() {
 		// given
 		User user = mock(User.class);
 		ReflectionTestUtils.setField(user, "id", 1); // user id 값을 1로 세팅
@@ -352,7 +352,7 @@ class CartItemServiceTest {
 
 	@Test
 	@DisplayName("fail: 유효하지 않은 유저 역할 (예외 발생)")
-	void getCartItem_fail_invalidUserRole() {
+	void getCartItemInvalidUserRole() {
 		// given
 		Integer userId = 1;
 		Integer cartItemId = 1;
@@ -365,7 +365,7 @@ class CartItemServiceTest {
 
 	@Test
 	@DisplayName("fail: 다른 유저의 장바구니 아이템 조회 시 예외 발생")
-	void getCartItem_fail_wrongUser() {
+	void getCartItemWrongUser() {
 		// given
 		User userA = User.builder()
 			.name("유저A")
@@ -425,7 +425,7 @@ class CartItemServiceTest {
 	 */
 	@Test
 	@DisplayName("success: 장바구니 아이템 목록 조회")
-	void getCartItemList_success() {
+	void getCartItemList() {
 		// given
 		User user = mock(User.class);
 		Store store = mock(Store.class);
@@ -478,7 +478,7 @@ class CartItemServiceTest {
 
 	@Test
 	@DisplayName("success: 장바구니가 비어있는 경우")
-	void getCartItemList_success_emptyCart() {
+	void getCartItemListEmptyCart() {
 		// given
 		Integer userId = 1;
 		UserRole userRole = UserRole.CUSTOMER;
@@ -497,7 +497,7 @@ class CartItemServiceTest {
 
 	@Test
 	@DisplayName("fail: 유효하지 않은 유저 역할 (예외 발생)")
-	void getCartItemList_fail_invalidUserRole() {
+	void getCartItemListInvalidUserRole() {
 		// given
 		Integer userId = 1;
 		UserRole userRole = UserRole.STREAMER; // CUSTOMER가 아닌 경우
@@ -514,7 +514,7 @@ class CartItemServiceTest {
 	 */
 	@Test
 	@DisplayName("success: 요청 개수 < 재고")
-	void updateCartItemQuantity_success() {
+	void updateCartItemQuantity() {
 		// given
 		User user = mock(User.class);
 		Item item = new Item(
@@ -552,7 +552,7 @@ class CartItemServiceTest {
 
 	@Test
 	@DisplayName("fail: 요청 개수 > 재고 (예외 발생)")
-	void updateCartItemQuantity_fail() {
+	void updateCartItemQuantityBadRequest() {
 		// given
 		User user = mock(User.class);
 		Item item = new Item(
@@ -589,7 +589,7 @@ class CartItemServiceTest {
 
 	@Test
 	@DisplayName("fail: 존재하지 않는 장바구니 아이템 (예외 발생)")
-	void updateCartItemQuantity_fail_cartItemNotFound() {
+	void updateCartItemQuantityCartItemNotFound() {
 		// given
 		Integer userId = 1;
 		UserRole userRole = UserRole.CUSTOMER;
@@ -616,7 +616,7 @@ class CartItemServiceTest {
 	 */
 	@Test
 	@DisplayName("success: 장바구니 아이템 삭제")
-	void removeCartItem_success() {
+	void removeCartItem() {
 		// given
 		User user = mock(User.class);
 		Store store = mock(Store.class);
@@ -652,7 +652,7 @@ class CartItemServiceTest {
 
 	@Test
 	@DisplayName("fail: 존재하지 않는 장바구니 아이템 삭제 (예외 발생)")
-	void removeCartItem_fail_cartItemNotFound() {
+	void removeCartItemCartItemNotFound() {
 		// given
 		Integer userId = 1;
 		UserRole userRole = UserRole.CUSTOMER;
@@ -668,7 +668,7 @@ class CartItemServiceTest {
 
 	@Test
 	@DisplayName("fail: 유효하지 않은 유저 역할 (예외 발생)")
-	void removeCartItem_fail_invalidUserRole() {
+	void removeCartItemInvalidUserRole() {
 		// given
 		Integer userId = 1;
 		Integer cartItemId = 1;
