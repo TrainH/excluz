@@ -26,7 +26,9 @@ import excluz.excluz.common.datas.SharedData;
 import excluz.excluz.common.entity.Item;
 import excluz.excluz.common.entity.Store;
 import excluz.excluz.common.entity.Streamer;
+import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
+import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.store.item.dto.response.ItemResponseDto;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
@@ -124,7 +126,23 @@ class ItemServiceTest {
 
 			verify(mockItem).updateIsDeleted(true);
 		}
+	}
+	/**
+	 * 위 DeleteItem에 속하는 메서드지만, 위에 넣으면 setUp()과 충돌하는 이슈 발생. (아이템이 없어야 하는데, 아이템이 존재하도록 세팅돼서)
+	 * 이슈 해결을 위해선 setUp()과 softDeleteItem()를 모두 건드려야 해서
+	 * deleteItemNotFound만 따로 빼서 DeleteItem 실패 테스트코드 진행했습니다.
+	 */
+	@Test
+	@DisplayName("fail: 존재하지 않는 아이템 삭제 (예외 발생)")
+	void deleteItemNotFound() {
+		// given
+		when(itemRepository.findItemByIdAndNotDeleted(anyInt())).thenReturn(Optional.empty()); // 아이템 없음
 
+		// when, then
+		assertThatThrownBy(() -> itemService.deleteItem(SharedData.ITEM_ID1, SharedData.STREAMER_ID1))
+			.isInstanceOf(NotFoundException.class); // NotFoundException 발생 확인
+
+		verify(itemRepository, times(1)).findItemByIdAndNotDeleted(anyInt()); // findItemByIdAndNotDeleted가 1번 실행되었는지 확인
 	}
 
 	@Nested
