@@ -26,12 +26,14 @@ import excluz.excluz.common.datas.SharedData;
 import excluz.excluz.common.entity.Item;
 import excluz.excluz.common.entity.Store;
 import excluz.excluz.common.entity.Streamer;
+import excluz.excluz.common.exception.NotFoundException;
+import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.store.item.dto.response.ItemResponseDto;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("ItemService의")
+@DisplayName("ItemService")
 class ItemServiceTest {
 
 	@InjectMocks
@@ -72,7 +74,8 @@ class ItemServiceTest {
 				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
 
 				// when
-				ItemResponseDto actualResult = itemService.updateItemInfo(SharedData.ITEM_UPDATE_REQUEST_DTO, SharedData.ITEM_ID1,
+				ItemResponseDto actualResult = itemService.updateItemInfo(SharedData.ITEM_UPDATE_REQUEST_DTO,
+					SharedData.ITEM_ID1,
 					SharedData.STREAMER_ID1);
 
 				// then
@@ -171,6 +174,21 @@ class ItemServiceTest {
 			verify(storeRepository).findStoreWithStreamer(anyInt());
 			verify(itemRepository).save(any(Item.class));
 		}
+
+		@Test
+		@DisplayName("fail: 존재하지 않는 스토어 (예외 발생)")
+		void createItemStoreNotFound() {
+			// given
+			Integer streamerId = 999; // 존재하지 않는 스트리머 ID
+
+			when(storeRepository.findStoreWithStreamer(streamerId)).thenReturn(Optional.empty()); // 스토어 찾을 수 없음
+
+			// when, then
+			assertThatThrownBy(() -> itemService.createItem(SharedData.ITEM_CREATE_REQUEST_DTO, streamerId))
+				.isInstanceOf(NotFoundException.class); // NotFoundException 예외 발생 확인
+
+			verify(storeRepository, times(1)).findStoreWithStreamer(streamerId); // findStoreWithStreamer()가 1번 호출되었는지 확인
+		}
 	}
 
 	@Nested
@@ -185,7 +203,8 @@ class ItemServiceTest {
 			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(5000));
 			List<Item> itemList = Collections.singletonList(SharedData.ITEM2);
 			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
-			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString())).thenReturn(itemPage);
+			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString())).thenReturn(
+				itemPage);
 
 			try (MockedStatic<ItemResponseDto> mockedStatic = mockStatic(ItemResponseDto.class)) {
 				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
@@ -215,17 +234,20 @@ class ItemServiceTest {
 			List<Item> itemList = Collections.singletonList(SharedData.ITEM2);
 			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
 			// minPrice가 Integer.MAX_VALUE일 경우 가격 범위를 '아이템 최고가 ~ Integer.MAX_VALUE'로 재설정
-			when(itemRepository.findByPriceWithItemName(pageable, 5000, Integer.MAX_VALUE, SharedData.ITEM_NAME2)).thenReturn(itemPage);
+			when(itemRepository.findByPriceWithItemName(pageable, 5000, Integer.MAX_VALUE,
+				SharedData.ITEM_NAME2)).thenReturn(itemPage);
 
 			try (MockedStatic<ItemResponseDto> mockedStatic = mockStatic(ItemResponseDto.class)) {
 				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
 
 				// when
-				Page<ItemResponseDto> actualResult = itemService.getItemList(2, 10, Integer.MAX_VALUE, 5000, SharedData.ITEM_NAME2);
+				Page<ItemResponseDto> actualResult = itemService.getItemList(2, 10, Integer.MAX_VALUE, 5000,
+					SharedData.ITEM_NAME2);
 
 				// then
 				verify(itemRepository).findHighestItemPrice();
-				verify(itemRepository).findByPriceWithItemName(pageable, 5000, Integer.MAX_VALUE, SharedData.ITEM_NAME2);
+				verify(itemRepository).findByPriceWithItemName(pageable, 5000, Integer.MAX_VALUE,
+					SharedData.ITEM_NAME2);
 			}
 		}
 
@@ -238,7 +260,8 @@ class ItemServiceTest {
 			List<Item> itemList = Collections.singletonList(SharedData.ITEM2);
 			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
 
-			when(itemRepository.findByPriceWithItemName(pageable, 1000, 6000, SharedData.ITEM_NAME2)).thenReturn(itemPage);
+			when(itemRepository.findByPriceWithItemName(pageable, 1000, 6000, SharedData.ITEM_NAME2)).thenReturn(
+				itemPage);
 
 			try (MockedStatic<ItemResponseDto> mockedStatic = mockStatic(ItemResponseDto.class)) {
 				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
