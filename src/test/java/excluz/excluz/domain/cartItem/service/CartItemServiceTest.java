@@ -666,5 +666,16 @@ class CartItemServiceTest {
 			.isInstanceOf(NotFoundException.class); // NotFoundException 예외 발생
 	}
 
+	@Test
+	@DisplayName("fail: 유효하지 않은 유저 역할 (예외 발생)")
+	void removeCartItem_fail_invalidUserRole() {
+		// given
+		Integer userId = 1;
+		Integer cartItemId = 1;
+		UserRole userRole = UserRole.STREAMER; // 유효하지 않은 유저 역할 (CUSTOMER가 아님)
 
+		// when, then
+		Assertions.assertThatThrownBy(() -> cartItemService.removeCartItem(userId, userRole, cartItemId))
+			.isInstanceOf(ForbiddenException.class); // ForbiddenException 예외 발생
+	}
 }
