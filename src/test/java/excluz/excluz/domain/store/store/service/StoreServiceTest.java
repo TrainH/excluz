@@ -8,7 +8,6 @@ import static org.mockito.BDDMockito.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,6 +24,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import excluz.excluz.common.datas.SharedData;
 import excluz.excluz.common.entity.Item;
@@ -125,8 +125,8 @@ public class StoreServiceTest {
 			assertThat(spyStore.isDeleted()).isEqualTo(true);
 		}
 
-		// 실패: 비밀번호가 불일치할 경우 스토어 삭제 불가능
-		// 실패: 이미 삭제된 스토어는 삭제 작업 불가능
+		// 실패: 비밀번호가 불일치할 경우 스토어 삭제(soft-delete)를 할 수 없음
+		// 실패: 삭제(soft-delete)된 스토어에 대해서는 삭제 작업을 할 수 없음
 	}
 
 	@Nested
@@ -168,8 +168,8 @@ public class StoreServiceTest {
 			}
 		}
 
-		// 실패: 스토어 주인이 아닐 경우 스토어 정보 수정 불가능
-		// 실패: 소프트 딜리트된 스토어는 수정 불가능
+		// 실패: 스토어 주인이 아닐 경우 스토어 정보를 수정할 수 없음
+		// 실패: 삭제(soft-delete)된 스토어는 정보를 수정할 수 없음
 	}
 
 	@Nested
@@ -228,6 +228,7 @@ public class StoreServiceTest {
 			// then
 			verify(storeRepository).findStreamerWithStore(SharedData.STORE_ID1);
 			verify(storeRepository).findById(SharedData.STORE_ID1);
+			verify(itemRepository).findByStoreId(SharedData.STORE_ID1, pageable);
 
 			// 데이터가 Dto로 바르게 변환되는지 검증
 			assertThat(actualResult.getNickName()).isEqualTo(SharedData.STREAMER1.getNickName());
@@ -237,5 +238,45 @@ public class StoreServiceTest {
 			assertThat(actualResult.getItemList()).hasSize(itemList.size());
 		}
 		// 실패: 스토어 아이디로 조회되는 유저가 없을 경우 예외 발생
+	}
+
+	@Nested
+	@DisplayName("getOwnedStoreById 메서드")
+	class GetOwnedStoreById {
+
+		@Test
+		@DisplayName("success: 사용자 아이디로 본인의 가게 조회")
+		void getOwnedStoreById() {
+			// given
+			// store 객체의 id를 SharedData.STORE_ID1로 설정
+			ReflectionTestUtils.setField(SharedData.STORE1, "id", SharedData.STORE_ID1);
+			int page = 1;
+			int size = 10;
+			Pageable pageable = PageRequest.of(page-1, size);
+			when(streamerService.findStreamerById(SharedData.STREAMER_ID1)).thenReturn(SharedData.STREAMER1);
+			when(storeRepository.findStoreWithStreamer(SharedData.STREAMER_ID1)).thenReturn(Optional.of(SharedData.STORE1));
+
+			List<Item> itemList = Collections.singletonList(SharedData.ITEM1);
+			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
+			when(itemRepository.findByStoreId(SharedData.STORE1.getId(), pageable)).thenReturn(itemPage);
+
+			// when
+			StoreDetailResponseDto actualResult = storeService.getOwnedStoreById(SharedData.STREAMER_ID1, page, size);
+
+			// then
+			verify(streamerService).findStreamerById(SharedData.STREAMER_ID1);
+			verify(storeRepository).findStoreWithStreamer(SharedData.STREAMER_ID1);
+			verify(itemRepository).findByStoreId(SharedData.STORE_ID1, pageable);
+
+			// 데이터가 Dto로 바르게 변환되는지 검증
+			assertThat(actualResult.getNickName()).isEqualTo(SharedData.STREAMER1.getNickName());
+			assertThat(actualResult.getAddress()).isEqualTo(SharedData.STORE1.getAddress());
+			assertThat(actualResult.getStoreName()).isEqualTo(SharedData.STORE1.getStoreName());
+			assertThat(actualResult.getRegistrationNumber()).isEqualTo(SharedData.STORE1.getRegistrationNumber());
+			assertThat(actualResult.getItemList()).hasSize(itemList.size());
+		}
+
+		// 실패: 탈퇴한 스트리머는 본인의 가게를 조회할 수 없음
+		// 실패: 가게가 삭제(soft-delete)된 경우 조회할 수 없음
 	}
 }
