@@ -71,7 +71,7 @@ public class OrderService {
         OrderStatus orderStatus = requestDto.getOrderStatus();  // 요청된 상태
 
         // 주문상태에 따른 변경할 수 있는 주체(CUSTOMER / STREAMER) 검증
-        if (!orderStatus.canPerformAction(userRole)) {
+        if (!orderStatus.canPerformAction("ROLE_"+userRole)) {
             throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
         }
 
