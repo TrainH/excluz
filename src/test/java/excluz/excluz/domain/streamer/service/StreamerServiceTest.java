@@ -169,6 +169,7 @@ class StreamerServiceTest {
 
 				// then
 				verify(streamerRepository).findById(SharedData.STREAMER_ID1);
+				verify(spyStreamer).isDeleted();
 				verify(spyStreamer).updateStreamer(requestDto.getName(), requestDto.getNickName(), requestDto.getPhoneNumber(), requestDto.getEmail());
 				// Dto 검증
 				assertNotNull(actualResult);
@@ -181,5 +182,44 @@ class StreamerServiceTest {
 		}
 
 		// 실패: 탈퇴한 계정의 정보는 수정할 수 없음
+	}
+
+	@Nested
+	@DisplayName("getPersonalInfo 메서드")
+	class GetPersonalInfo {
+
+		@Test
+		@DisplayName("success: 탈퇴하지 않은 스트리머 본인 정보 조회")
+		void getPersonalInfo() {
+			// given
+			StreamerResponseDto responseDto = new StreamerResponseDto(
+				SharedData.STREAMER_NAME1,
+				SharedData.STREAMER_NICKNAME1,
+				SharedData.STREAMER_PHONE_NUMBER1,
+				SharedData.STREAMER_EMAIL1);
+			Streamer spyStreamer = spy(SharedData.STREAMER1);
+
+			when(streamerRepository.findById(SharedData.STREAMER_ID1)).thenReturn(Optional.of(spyStreamer));
+
+			try (MockedStatic<StreamerResponseDto> mockedStatic = mockStatic(StreamerResponseDto.class)) {
+				given(StreamerResponseDto.from(spyStreamer)).willReturn(responseDto);
+
+				// when
+				StreamerResponseDto actualResult = streamerService.getPersonalInfo(SharedData.STREAMER_ID1);
+
+				// then
+				verify(streamerRepository).findById(SharedData.STREAMER_ID1);
+				verify(spyStreamer).isDeleted();
+				// Dto 검증
+				assertNotNull(actualResult);
+				// 조회 된 값 검증
+				assertThat(actualResult.getEmail()).isEqualTo(spyStreamer.getEmail());
+				assertThat(actualResult.getName()).isEqualTo(spyStreamer.getName());
+				assertThat(actualResult.getNickName()).isEqualTo(spyStreamer.getNickName());
+				assertThat(actualResult.getPhoneNumber()).isEqualTo(spyStreamer.getPhoneNumber());
+			}
+		}
+
+		// 실패: 탈퇴한 본인 계정은 조회할 수 없음
 	}
 }
