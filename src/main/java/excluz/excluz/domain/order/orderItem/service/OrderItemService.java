@@ -45,7 +45,7 @@ public class OrderItemService {
     private final PointTransactionRepository pointTransactionRepository;
 
     @Transactional
-    public void createOrderItemList(Integer userOrStreamerId, String userRole, List<OrderItemRequestDto> requestList) {
+    public void createOrderItemList(Integer userOrStreamerId, UserRole userRole, List<OrderItemRequestDto> requestList) {
         /**
          * [주문 조건]
          * 1. 주문은 CUSTOMER만 가능
@@ -55,7 +55,7 @@ public class OrderItemService {
          */
 
         //  1. 주문은 CUSTOMER만 가능
-        if (!userRole.equals(UserRole.CUSTOMER.getRole())) {
+        if (!userRole.equals(UserRole.CUSTOMER)) {
             throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
         }
 
@@ -172,21 +172,21 @@ public class OrderItemService {
     }
 
     @Transactional(readOnly = true)
-    public Page<OrderItemResponseDto> getOrderItemList(Integer userOrStreamerId, String userRole, Pageable pageable) {
+    public Page<OrderItemResponseDto> getOrderItemList(Integer userOrStreamerId, UserRole userRole, Pageable pageable) {
 
-        if (userRole.equals(UserRole.CUSTOMER.getRole())) {
+        if (userRole.equals(UserRole.CUSTOMER)) {
             return orderItemRepository.findByUserId(userOrStreamerId, pageable).map(OrderItemResponseDto::from);
         }
 
-        if (userRole.equals(UserRole.STREAMER.getRole())) {
+        if (userRole.equals(UserRole.STREAMER)) {
             return orderItemRepository.findByStreamerId(userOrStreamerId, pageable).map(OrderItemResponseDto::from);
         }
         throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
     }
 
     @Transactional(readOnly = true)
-    public OrderItemResponseDto getOrderItem(Integer userOrStreamerId, String userRole, Integer orderItemId) {
-        if (userRole.equals(UserRole.CUSTOMER.getRole())) {
+    public OrderItemResponseDto getOrderItem(Integer userOrStreamerId, UserRole userRole, Integer orderItemId) {
+        if (userRole.equals(UserRole.CUSTOMER)) {
             return orderItemRepository
                     .getByIdAndUserId(orderItemId, userOrStreamerId)
                     . map(OrderItemResponseDto::from).orElseThrow(
@@ -194,7 +194,7 @@ public class OrderItemService {
                     );
         }
 
-        if (userRole.equals(UserRole.STREAMER.getRole())) {
+        if (userRole.equals(UserRole.STREAMER)) {
             return orderItemRepository
                     .getByIdAndStreamerId(orderItemId, userOrStreamerId)
                     .map(OrderItemResponseDto::from).orElseThrow(
