@@ -90,7 +90,11 @@ class CartItemServiceTest {
 		CreateCartItemResponseDto result = cartItemService.addItemToCart(userId, userRole, requestDto);
 
 		// than
+		verify(userRepository, times(1)).findById(userId); // findById()가 1번만 실행되었는지 확인
+		verify(itemRepository, times(1)).findById(requestDto.getItemId()); // findById()가 1번만 실행되었는지 확인
+		verify(cartItemRepository, times(1)).findByUserIdAndItemId(userId, requestDto.getItemId()); // findByUserIdAndItemId()가 1번만 실행되었는지 확인
 		verify(cartItemRepository, times(1)).save(any(CartItem.class)); // save()가 1번만 실행되었는지 확인
+
 		Assertions.assertThat(result).isNotNull(); // 반환값이 null이 아닌지 확인
 		Assertions.assertThat(result.getQuantity()).isEqualTo(99); // 요청 수량이 맞는지 확인
 		Assertions.assertThat(result.getItemPrice()).isEqualTo(100); // 아이템 금액 맞는지 확인
@@ -128,7 +132,11 @@ class CartItemServiceTest {
 		CreateCartItemResponseDto result = cartItemService.addItemToCart(userId, userRole, requestDto);
 
 		// then
+		verify(userRepository, times(1)).findById(userId); // findById()가 1번만 실행되었는지 확인
+		verify(itemRepository, times(1)).findById(requestDto.getItemId()); // findById()가 1번만 실행되었는지 확인
+		verify(cartItemRepository, times(1)).findByUserIdAndItemId(userId, requestDto.getItemId()); // findByUserIdAndItemId()가 1번만 실행되었는지 확인
 		verify(cartItemRepository, times(1)).save(any(CartItem.class));  // save()가 1번만 실행되었는지 확인
+
 		Assertions.assertThat(result).isNotNull(); // 반환값이 null이 아닌지 확인
 		Assertions.assertThat(result.getQuantity()).isEqualTo(100); // 요청 수량이 맞는지 확인
 		Assertions.assertThat(result.getItemPrice()).isEqualTo(100); // 아이템 금액 맞는지 확인
@@ -166,7 +174,11 @@ class CartItemServiceTest {
 		CreateCartItemResponseDto result = cartItemService.addItemToCart(userId, userRole, requestDto);
 
 		// then
+		verify(userRepository, times(1)).findById(userId); // findById()가 1번만 실행되었는지 확인
+		verify(itemRepository, times(1)).findById(requestDto.getItemId()); // findById()가 1번만 실행되었는지 확인
+		verify(cartItemRepository, times(1)).findByUserIdAndItemId(userId, requestDto.getItemId()); // findByUserIdAndItemId()가 1번만 실행되었는지 확인
 		verify(cartItemRepository, times(1)).save(any(CartItem.class));  // save()가 1번만 실행되었는지 확인
+
 		Assertions.assertThat(result).isNotNull(); // 반환값이 null이 아닌지 확인
 		Assertions.assertThat(result.getQuantity()).isEqualTo(100); // 요청 수량이 맞는지 확인
 		Assertions.assertThat(result.getItemPrice()).isEqualTo(100); // 아이템 금액 맞는지 확인
@@ -189,6 +201,8 @@ class CartItemServiceTest {
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, userRole, requestDto))
 			.isInstanceOf(NotFoundException.class); // NotFoundException 예외 발생
+
+		verify(userRepository, times(1)).findById(userId); // findById()가 1번만 실행되었는지 확인
 	}
 
 	@Test
@@ -208,6 +222,9 @@ class CartItemServiceTest {
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, userRole, requestDto))
 			.isInstanceOf(NotFoundException.class); // NotFoundException 예외 발생
+
+		verify(userRepository, times(1)).findById(userId); // findById()가 1번만 실행되었는지 확인
+		verify(itemRepository, times(1)).findById(requestDto.getItemId()); // findById()가 1번만 실행되었는지 확인
 	}
 
 	@Test
@@ -239,6 +256,10 @@ class CartItemServiceTest {
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, userRole, requestDto))
 			.isInstanceOf(BadRequestException.class); // BadRequestException 예외 발생
+
+		verify(userRepository, times(1)).findById(userId); // findById()가 1번만 실행되었는지 확인
+		verify(itemRepository, times(1)).findById(requestDto.getItemId()); // findById()가 1번만 실행되었는지 확인
+		verify(cartItemRepository, times(1)).findByUserIdAndItemId(userId, requestDto.getItemId()); // findByUserIdAndItemId()가 1번만 실행되었는지 확인
 	}
 
 	@Test
@@ -270,6 +291,10 @@ class CartItemServiceTest {
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, userRole, requestDto))
 			.isInstanceOf(BadRequestException.class); // BadRequestException 예외 발생
+
+		verify(userRepository, times(1)).findById(userId); // findById()가 1번만 실행되었는지 확인
+		verify(itemRepository, times(1)).findById(requestDto.getItemId()); // findById()가 1번만 실행되었는지 확인
+		verify(cartItemRepository, times(1)).findByUserIdAndItemId(userId, requestDto.getItemId()); // findByUserIdAndItemId()가 1번만 실행되었는지 확인
 	}
 
 	@Test
@@ -287,6 +312,8 @@ class CartItemServiceTest {
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.addItemToCart(userId, userRole, requestDto))
 			.isInstanceOf(ForbiddenException.class); // ForbiddenException 예외 발생
+
+		verify(userRepository, times(1)).findById(userId); // findById()가 1번만 실행되었는지 확인
 	}
 
 
@@ -324,13 +351,13 @@ class CartItemServiceTest {
 		GetCartItemResponseDto result = cartItemService.getCartItem(user.getId(), userRole, cartItem.getId());
 
 		// then
-		verify(cartItemRepository, times(1)).findByIdAndUserId(cartItem.getId(), user.getId()); // findByIdAndUserId()가 1번 호출되었는지 확인
-
 		Assertions.assertThat(result).isNotNull(); // 반환된 응답 객체가 null이 아닌지 확인
 		Assertions.assertThat(result.getCartItemId()).isEqualTo(cartItem.getId()); // 요청한 cartItemId와 동일한지 확인
 		Assertions.assertThat(result.getQuantity()).isEqualTo(10); // 장바구니에 담긴 개수가 요청한 수량과 일치하는지 확인
 		Assertions.assertThat(result.getItemPrice()).isEqualTo(100); // 아이템의 단가가 예상 값과 일치하는지 확인
 		Assertions.assertThat(result.getTotalItemPrice()).isEqualTo(1000); // 총 가격(단가 * 개수)이 올바르게 계산되었는지 확인
+
+		verify(cartItemRepository, times(1)).findByIdAndUserId(cartItem.getId(), user.getId()); // findByIdAndUserId()가 1번 호출되었는지 확인
 	}
 
 	@Test
@@ -348,6 +375,8 @@ class CartItemServiceTest {
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.getCartItem(user.getId(), userRole, cartItemId))
 			.isInstanceOf(NotFoundException.class); // NotFoundException 예외 발생
+
+		verify(cartItemRepository, times(1)).findByIdAndUserId(cartItemId, user.getId()); // findByIdAndUserId()가 1번 호출되었는지 확인
 	}
 
 	@Test
@@ -417,6 +446,8 @@ class CartItemServiceTest {
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.getCartItem(userA.getId(), userRole, cartItem.getId()))
 			.isInstanceOf(NotFoundException.class); // NotFoundException 예외 발생
+
+		verify(cartItemRepository, times(1)).findByIdAndUserId(1, 1); // findByIdAndUserId()가 1번 호출되었는지 확인
 	}
 
 
@@ -469,6 +500,8 @@ class CartItemServiceTest {
 		CartItemListResponseDto result = cartItemService.getCartItemList(user.getId(), userRole);
 
 		// then
+		verify(cartItemRepository, times(1)).findByUserId(user.getId()); // findByUserId()가 1번 호출되었는지 확인
+
 		Assertions.assertThat(result).isNotNull(); // 결과가 null이 아닌지 확인
 		Assertions.assertThat(result.getCartItemList()).hasSize(2); // 장바구니에 2개 아이템 있는지 확인
 		Assertions.assertThat(result.getTotalPrice()).isEqualTo(800); // (100*2 + 200*3) = 800 확인
@@ -493,6 +526,8 @@ class CartItemServiceTest {
 		Assertions.assertThat(result).isNotNull();
 		Assertions.assertThat(result.getCartItemList()).isEmpty(); // 빈 리스트인지 확인
 		Assertions.assertThat(result.getTotalPrice()).isEqualTo(0); // 총 가격이 0인지 확인
+
+		verify(cartItemRepository, times(1)).findByUserId(userId); // findByUserId()가 1번 호출되었는지 확인
 	}
 
 	@Test
@@ -547,6 +582,8 @@ class CartItemServiceTest {
 				requestDto // 업데이트할 장바구니 아이템 정보
 			))
 			.doesNotThrowAnyException(); // 예외 발생하지 않아야 함
+
+		verify(cartItemRepository, times(1)).findByIdAndUserId(cartItem.getId(), user.getId()); // findByIdAndUserId()가 1번 호출되었는지 확인
 		verify(cartItemRepository, times(1)).save(any(CartItem.class));  // save()가 1번만 실행되었는지 확인
 	}
 
@@ -585,6 +622,8 @@ class CartItemServiceTest {
 				requestDto // 업데이트할 장바구니 아이템 정보
 			))
 			.isInstanceOf(BadRequestException.class); // BadRequestException 예외 발생
+
+		verify(cartItemRepository, times(1)).findByIdAndUserId(cartItem.getId(), user.getId()); // findByIdAndUserId()가 1번 호출되었는지 확인
 	}
 
 	@Test
@@ -608,6 +647,8 @@ class CartItemServiceTest {
 				requestDto
 			))
 			.isInstanceOf(NotFoundException.class); // NotFoundException 예외 발생
+
+		verify(cartItemRepository, times(1)).findByIdAndUserId(cartItemId, userId); // findByIdAndUserId()가 1번 호출되었는지 확인
 	}
 
 
@@ -647,6 +688,7 @@ class CartItemServiceTest {
 		cartItemService.removeCartItem(userId, userRole, cartItemId);
 
 		// then
+		verify(cartItemRepository, times(1)).findByIdAndUserId(cartItemId, userId); // findByIdAndUserId()가 1번 호출되었는지 확인
 		verify(cartItemRepository, times(1)).delete(cartItem); // delete() 메서드가 1번 호출되었는지 확인
 	}
 
@@ -664,6 +706,8 @@ class CartItemServiceTest {
 		// when, then
 		Assertions.assertThatThrownBy(() -> cartItemService.removeCartItem(userId, userRole, cartItemId))
 			.isInstanceOf(NotFoundException.class); // NotFoundException 예외 발생
+
+		verify(cartItemRepository, times(1)).findByIdAndUserId(cartItemId, userId); // findByIdAndUserId()가 1번 호출되었는지 확인
 	}
 
 	@Test
