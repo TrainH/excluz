@@ -649,4 +649,22 @@ class CartItemServiceTest {
 		// then
 		verify(cartItemRepository, times(1)).delete(cartItem); // delete() 메서드가 1번 호출되었는지 확인
 	}
+
+	@Test
+	@DisplayName("fail: 존재하지 않는 장바구니 아이템 삭제 (예외 발생)")
+	void removeCartItem_fail_cartItemNotFound() {
+		// given
+		Integer userId = 1;
+		UserRole userRole = UserRole.CUSTOMER;
+		Integer cartItemId = 999; // 존재하지 않는 ID
+
+		when(cartItemRepository.findByIdAndUserId(cartItemId, userId))
+			.thenReturn(Optional.empty()); // 해당 장바구니 아이템 없음
+
+		// when, then
+		Assertions.assertThatThrownBy(() -> cartItemService.removeCartItem(userId, userRole, cartItemId))
+			.isInstanceOf(NotFoundException.class); // NotFoundException 예외 발생
+	}
+
+
 }
