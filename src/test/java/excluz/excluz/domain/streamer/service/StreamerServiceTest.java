@@ -29,6 +29,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 import excluz.excluz.auth.util.JwtUtil;
 import excluz.excluz.common.datas.SharedData;
 import excluz.excluz.common.entity.Streamer;
+import excluz.excluz.common.exception.BadRequestException;
+import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.streamer.dto.request.StreamerLoginRequestDto;
 import excluz.excluz.domain.streamer.dto.request.StreamerSignupRequestDto;
 import excluz.excluz.domain.streamer.dto.request.StreamerUpdateRequestDto;
@@ -77,6 +79,28 @@ class StreamerServiceTest {
 			assertThat(streamer.getNickName()).isEqualTo(signupRequestDto.getNickName());
 			assertThat(streamer.getPhoneNumber()).isEqualTo(signupRequestDto.getPhoneNumber());
 			assertThat(streamer.getPassword()).isEqualTo("encodedPassword");
+		}
+
+		@Test
+		@DisplayName("fail: 재입력 비밀번호 불일치 시 회원가입할 수 없음")
+		void streamerSignupPasswordMismatch() {
+			// given
+			StreamerSignupRequestDto signupRequestDto = new StreamerSignupRequestDto(
+				SharedData.STREAMER_NAME1,
+				SharedData.STREAMER_NICKNAME1,
+				SharedData.STREAMER_PHONE_NUMBER1,
+				SharedData.STREAMER_EMAIL1,
+				SharedData.STREAMER_PASSWORD1,
+				SharedData.STREAMER_PASSWORD2);
+
+			// when & then
+			BadRequestException exception = assertThrows(BadRequestException.class,
+				() -> streamerService.streamerSignup(signupRequestDto)
+			);
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.PASSWORD_MISMATCH);
+
+			// 예외 발생시 save 메서드가 호출되지 않음을 검증
+			verify(streamerRepository, never()).save(any(Streamer.class));
 		}
 	}
 
