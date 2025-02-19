@@ -94,6 +94,28 @@ class ItemServiceTest {
 				assertThat(actualResult.getRemainingQuantity()).isEqualTo(updatedItem.getRemainingQuantity());
 			}
 		}
+
+	}
+	/**
+	 * UnnecessaryStubbingException
+	 * 위 UpdateItem에 속하는 메서드지만, 위에 넣으면 setUp()과 충돌하는 이슈 발생. (아이템이 없어야 하는데, 아이템이 존재하도록 세팅돼서)
+	 * 이슈 해결을 위해선 setUp()과 updateItemInfo()를 모두 건드려야 해서
+	 * updateItemNotFound()만 따로 빼서 UpdateItem 실패 테스트코드 진행했습니다.
+	 */
+	@Test
+	@DisplayName("fail: 존재하지 않는 아이템 수정 시도 (예외 발생)")
+	void updateItemNotFound() {
+		// given
+		when(itemRepository.findItemByIdAndNotDeleted(anyInt())).thenReturn(Optional.empty()); // 아이템이 존재하지 않음
+
+		// when, then
+		assertThatThrownBy(() -> itemService.updateItemInfo(
+			SharedData.ITEM_UPDATE_REQUEST_DTO,
+			SharedData.ITEM_ID1,
+			SharedData.STREAMER_ID1
+		)).isInstanceOf(NotFoundException.class); // NotFoundException 발생 확인
+
+		verify(itemRepository, times(1)).findItemByIdAndNotDeleted(anyInt()); // findItemByIdAndNotDeleted 1번만 호출되는지 확인
 	}
 
 	@Nested
@@ -141,9 +163,10 @@ class ItemServiceTest {
 		}
 	}
 	/**
+	 * UnnecessaryStubbingException
 	 * 위 DeleteItem에 속하는 메서드지만, 위에 넣으면 setUp()과 충돌하는 이슈 발생. (아이템이 없어야 하는데, 아이템이 존재하도록 세팅돼서)
 	 * 이슈 해결을 위해선 setUp()과 softDeleteItem()를 모두 건드려야 해서
-	 * deleteItemNotFound만 따로 빼서 DeleteItem 실패 테스트코드 진행했습니다.
+	 * deleteItemNotFound()만 따로 빼서 DeleteItem 실패 테스트코드 진행했습니다.
 	 */
 	@Test
 	@DisplayName("fail: 존재하지 않는 아이템 삭제 (예외 발생)")
