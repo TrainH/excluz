@@ -24,6 +24,7 @@ public class EventApplicantService {
     private final EventApplicantRepository eventApplicantRepository;
     private final EventRepository eventRepository;
 
+    @Transactional // todo: 락 테스트
     public EventApplicantResponseDto applyForEvent(String code, EventApplicantRequestDto requestDto) {
         Event event = eventRepository.findByGeneratedCode(code)
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 이벤트 코드입니다."));
