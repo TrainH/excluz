@@ -202,7 +202,36 @@ class StreamerServiceTest {
 			verify(streamerRepository).findById(SharedData.STREAMER_ID1);
 			verify(passwordEncoder).matches(SharedData.STREAMER_PASSWORD1, spyStreamer.getPassword());
 		}
-		// 실패: 비밀번호 불일치(=본인의 계정이 아님)인 경우 계정 탈퇴 불가능
+
+		@Test
+		@DisplayName("fail: 조회되지 않는 계정(=등록되지 않은 계정)은 탈퇴 불가능")
+		void deleteStreamerNotFound() {
+			// given
+			when(streamerRepository.findById(anyInt())).thenReturn(Optional.empty());
+
+			// when & then
+			NotFoundException exception = assertThrows(NotFoundException.class,
+				() -> streamerService.deleteStreamer(SharedData.STREAMER_ID1, SharedData.STREAMER_PASSWORD1)
+			);
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.UNAUTHORIZED_USER);
+		}
+
+		@Test
+		@DisplayName("fail: 비밀번호 불일치(=본인의 계정이 아님)인 경우 계정 탈퇴 불가능")
+		void deleteStreamerPasswordMismatch() {
+			// given
+			Streamer spyStreamer = spy(SharedData.STREAMER2);
+			when(streamerRepository.findById(anyInt())).thenReturn(Optional.of(spyStreamer));
+			when(passwordEncoder.matches(eq(SharedData.STREAMER_PASSWORD1), anyString())).thenReturn(false);
+
+			// when & then
+			BadRequestException exception = assertThrows(BadRequestException.class,
+				() -> streamerService.deleteStreamer(SharedData.STREAMER_ID1, SharedData.STREAMER_PASSWORD1)
+			);
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.PASSWORD_MISMATCH);
+
+			verify(spyStreamer, never()).updateStreamerStatus(true);
+		}
 	}
 
 	@Nested
