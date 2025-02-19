@@ -23,6 +23,7 @@ public class SharedData {
 	public final static String STREAMER_EMAIL1 = "test12@test.com";
 	public final static String STREAMER_EMAIL2 = "test77@test.com";
 	public final static String STREAMER_PASSWORD1 = "Qwer1234!!!!";
+	public final static String STREAMER_PASSWORD2 = "Qwer5678!!!!";
 	public final static String STREAMER_REENTER_PASSWORD1 = "Qwer1234!!!!";
 	public final static Streamer STREAMER1 = new Streamer(STREAMER_NAME1, STREAMER_NICKNAME1, STREAMER_PHONE_NUMBER1, STREAMER_EMAIL1, STREAMER_PASSWORD1);
 	public final static Streamer STREAMER2 = new Streamer(STREAMER_NAME2, STREAMER_NICKNAME2, STREAMER_PHONE_NUMBER2, STREAMER_EMAIL2, STREAMER_PASSWORD1);
