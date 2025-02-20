@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import excluz.excluz.common.datas.SharedData;
 import excluz.excluz.common.entity.Item;
@@ -92,6 +93,7 @@ class ItemServiceTest {
 				assertThat(actualResult.getExplanation()).isEqualTo(updatedItem.getExplanation());
 				assertThat(actualResult.getPrice()).isEqualTo(updatedItem.getPrice());
 				assertThat(actualResult.getRemainingQuantity()).isEqualTo(updatedItem.getRemainingQuantity());
+				assertThat(actualResult.getItemId()).isEqualTo(SharedData.ITEM_ID1);
 			}
 		}
 
@@ -252,15 +254,17 @@ class ItemServiceTest {
 		@DisplayName("success: 아이템 생성 기능 정상 수행")
 		void createItemSuccess() {
 			// given
+			ReflectionTestUtils.setField(SharedData.ITEM1, "id", 1);
 			when(storeRepository.findStoreWithStreamer(anyInt())).thenReturn(Optional.of(SharedData.STORE1));
 			when(itemRepository.save(any(Item.class))).thenReturn(SharedData.ITEM1);
 
 			// when
-			itemService.createItem(SharedData.ITEM_CREATE_REQUEST_DTO, 1);
+			ItemResponseDto actualResult = itemService.createItem(SharedData.ITEM_CREATE_REQUEST_DTO, 1);
 
 			// then
 			verify(storeRepository).findStoreWithStreamer(anyInt());
 			verify(itemRepository).save(any(Item.class));
+			assertThat(actualResult.getItemId()).isEqualTo(1);
 		}
 
 		@Test

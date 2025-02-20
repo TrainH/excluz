@@ -25,15 +25,15 @@ public class ItemV1Controller {
 
 	@PostMapping()
 	@PreAuthorize("hasRole('STREAMER')")
-	public ResponseEntity<Void> createItem(
+	public ResponseEntity<ItemResponseDto> createItem(
 		@AuthenticationPrincipal User user,
 		@Valid @RequestBody ItemCreateRequestDto createRequestDto
 	) {
 		Integer streamerId = Integer.valueOf(user.getUsername());
 
-		itemService.createItem(createRequestDto, streamerId);
+		ItemResponseDto responseDto = itemService.createItem(createRequestDto, streamerId);
 
-		return new ResponseEntity<>(HttpStatus.CREATED);
+		return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/{itemsId}/soft")

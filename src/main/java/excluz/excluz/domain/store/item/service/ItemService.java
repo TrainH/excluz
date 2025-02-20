@@ -28,7 +28,7 @@ public class ItemService {
 	private final StoreRepository storeRepository;
 
 	@Transactional
-	public void createItem(ItemCreateRequestDto createRequestDto, Integer streamerId) {
+	public ItemResponseDto createItem(ItemCreateRequestDto createRequestDto, Integer streamerId) {
 		Store store = storeRepository.findStoreWithStreamer(streamerId).orElseThrow(
 			() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND)
 		);
@@ -41,7 +41,9 @@ public class ItemService {
 			.remainingQuantity(createRequestDto.getRemainingQuantity())
 			.build();
 
-		itemRepository.save(item);
+		Item savedItem = itemRepository.save(item);
+
+		return ItemResponseDto.from(savedItem);
 	}
 
 	@Transactional
