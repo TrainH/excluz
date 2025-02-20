@@ -134,7 +134,7 @@ class PointTransactionServiceTest {
         Page<PointTransaction> transactionPage = new PageImpl<>(transactions, pageable, transactions.size());
 
         Integer userOrStreamerId = 1;
-        String userRole = UserRole.CUSTOMER.getRole();
+        UserRole userRole = UserRole.CUSTOMER;
 
         // When
         Mockito.when(pointTransactionRepository.findAllByUserId(userOrStreamerId, pageable))

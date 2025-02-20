@@ -38,7 +38,7 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class EventServiceUnitTest {
+public class EventServiceDbTest {
     @Autowired
     private StreamerRepository streamerRepository;
 

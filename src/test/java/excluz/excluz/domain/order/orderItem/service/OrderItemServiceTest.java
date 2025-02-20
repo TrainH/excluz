@@ -171,7 +171,7 @@ class OrderItemServiceTest {
                 new OrderItemRequestDto(2, 1, "Test Address"));
 
 
-        orderItemService.createOrderItemList(1, UserRole.CUSTOMER.getRole(), requestList);
+        orderItemService.createOrderItemList(1, UserRole.CUSTOMER, requestList);
 
 
         ArgumentCaptor<CartItem> captorCartItem = ArgumentCaptor.forClass(CartItem.class);
@@ -274,7 +274,7 @@ class OrderItemServiceTest {
 
         Integer userOrStreamerId = 1;
         Integer orderItemId = 1;
-        String userRole = UserRole.CUSTOMER.getRole();
+        UserRole userRole = UserRole.CUSTOMER;
 
         Order order= new Order(user, OrderStatus.ORDERED, "address");
 
@@ -343,7 +343,7 @@ class OrderItemServiceTest {
 
         Integer userOrStreamerId = 1;
         Integer orderItemId = 1;
-        String userRole = UserRole.STREAMER.getRole();
+        UserRole userRole = UserRole.STREAMER;
 
         Order order= new Order(user, OrderStatus.ORDERED, "address");
 
