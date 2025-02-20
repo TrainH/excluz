@@ -20,7 +20,7 @@ public interface StoreRepository extends JpaRepository<Store, Integer> {
 	Optional<Streamer> findStreamerWithStore(@Param("storeId") Integer storeId);
 
 	@Query("SELECT s FROM Store s " +
-		"WHERE s.storeName LIKE CONCAT('%', :storeName, '%') " +
+		"WHERE (:storeName IS NULL OR s.storeName LIKE CONCAT('%', :storeName, '%')) " +
 		"AND s.isDeleted=false " +
 		"ORDER BY s.id DESC")
 	Page<Store> findByStoreName(Pageable pageable, @Param("storeName") String storeName);
