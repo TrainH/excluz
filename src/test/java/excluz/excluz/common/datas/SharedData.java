@@ -13,7 +13,7 @@ import excluz.excluz.domain.user.dto.request.UserSignupRequestDto;
 /* 공유 데이터 */
 public class SharedData {
 
-	// Streamer 데이터
+	// Streamer 데이터 1
 	public final static Integer STREAMER_ID1 = 1;
 	public final static String STREAMER_NAME1 = "홍길동";
 	public final static String STREAMER_NAME2 = "김첨지";
@@ -30,6 +30,18 @@ public class SharedData {
 	public final static Streamer STREAMER2 = new Streamer(STREAMER_NAME2, STREAMER_NICKNAME2, STREAMER_PHONE_NUMBER2, STREAMER_EMAIL2, STREAMER_PASSWORD1);
 	public final static StreamerSignupRequestDto STREAMER_SIGNUP_REQUEST_DTO = new StreamerSignupRequestDto(STREAMER_NAME1, STREAMER_NICKNAME1, STREAMER_PHONE_NUMBER1, STREAMER_EMAIL1, STREAMER_PASSWORD1, STREAMER_REENTER_PASSWORD1);
 	public final static StreamerLoginRequestDto STREAMER_LOGIN_REQUEST_DTO = new StreamerLoginRequestDto(STREAMER_EMAIL1, STREAMER_PASSWORD1);
+
+	// Streamer 데이터 2
+	public final static Integer STREAMER_ID2 = 2;
+	public final static String STREAMER_NAME2 = "이순신";
+	public final static String STREAMER_NICKNAME2 = "거북선";
+	public final static String STREAMER_PHONE_NUMBER2 = "010-5678-5678";
+	public final static String STREAMER_EMAIL2 = "test34@test.com";
+	public final static String STREAMER_PASSWORD2 = "Asdf5678!!!!";
+	public final static String STREAMER_REENTER_PASSWORD2 = "Asdf5678!!!!";
+	public final static Streamer STREAMER2 = new Streamer(STREAMER_NAME2, STREAMER_NICKNAME2, STREAMER_PHONE_NUMBER2, STREAMER_EMAIL2, STREAMER_PASSWORD2);
+	public final static StreamerSignupRequestDto STREAMER_SIGNUP_REQUEST_DTO2 = new StreamerSignupRequestDto(STREAMER_NAME2, STREAMER_NICKNAME2, STREAMER_PHONE_NUMBER2, STREAMER_EMAIL2, STREAMER_PASSWORD2, STREAMER_REENTER_PASSWORD2);
+	public final static StreamerLoginRequestDto STREAMER_LOGIN_REQUEST_DTO2 = new StreamerLoginRequestDto(STREAMER_EMAIL2, STREAMER_PASSWORD2);
 
 	// Store 데이터
 	public final static Integer STORE_ID1 = 1;
