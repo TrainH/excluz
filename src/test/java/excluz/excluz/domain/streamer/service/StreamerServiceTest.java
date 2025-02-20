@@ -444,5 +444,32 @@ class StreamerServiceTest {
 			}
 		}
 
+		@Test
+		@DisplayName("fail: 존재하지 않는 계정은 조회할 수 없음")
+		void getStreamerFailsWhenUserDoesNotExist() {
+			// given
+			when(streamerRepository.findById(anyInt())).thenReturn(Optional.empty());
+
+			// when & then
+			NotFoundException exception = assertThrows(NotFoundException.class,
+				() -> streamerService.getStreamer(SharedData.STREAMER_ID1)
+			);
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
+		}
+
+		@Test
+		@DisplayName("fail: 탈퇴한 계정은 조회할 수 없음")
+		void getStreamerFailsWhenAccountIsDeleted() {
+			// given
+			Streamer mockStreamer = mock(Streamer.class);
+			when(streamerRepository.findById(anyInt())).thenReturn(Optional.of(mockStreamer));
+			when(mockStreamer.isDeleted()).thenReturn(true);
+
+			// when & then
+			NotFoundException exception = assertThrows(NotFoundException.class,
+				() -> streamerService.getStreamer(SharedData.STREAMER_ID1)
+			);
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
+		}
 	}
 }
