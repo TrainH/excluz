@@ -125,7 +125,7 @@ class OrderServiceTest {
     void getOrderListAsCustomer() throws Exception {
         // Given
         Integer userId = 1;
-        String userRole = UserRole.CUSTOMER.getRole();
+        UserRole userRole = UserRole.CUSTOMER;
         Pageable pageable = PageRequest.of(0, 10);
         List<Order> orders = List.of(order1, order2); // Mock 데이터
 
@@ -152,7 +152,7 @@ class OrderServiceTest {
     void getOrderList_Streamer() throws Exception {
         // Given
         Integer streamerId = 1;
-        String userRole = UserRole.STREAMER.getRole();
+        UserRole userRole = UserRole.STREAMER;
         Pageable pageable = PageRequest.of(0, 10);
         List<Order> orderList = List.of(order1, order2); // Mock 데이터
 
@@ -180,7 +180,7 @@ class OrderServiceTest {
     void getOrderAsCustomer() throws Exception {
         // Given
         Integer userOrStreamerId = 1;
-        String userRole = UserRole.CUSTOMER.getRole();
+        UserRole userRole = UserRole.CUSTOMER;
         Integer orderId = 1;
 
         // Mock: 주문 조회
@@ -206,7 +206,7 @@ class OrderServiceTest {
     void getOrderAsStreamer() throws Exception {
         // Given
         Integer userOrStreamerId = 1;
-        String userRole = UserRole.STREAMER.getRole();
+        UserRole userRole = UserRole.STREAMER;
         Integer orderId = 1;
 
         // Mock: 주문 조회
@@ -232,7 +232,7 @@ class OrderServiceTest {
     void getOrderNotFoundAsCustomer() {
         // Given
         Integer userOrStreamerId = 1;
-        String userRole = UserRole.CUSTOMER.getRole();
+        UserRole userRole = UserRole.CUSTOMER;
         Integer orderId = 1;
 
         // Mock: 주문이 존재하지 않음
@@ -254,7 +254,7 @@ class OrderServiceTest {
     void getOrderNotFoundAsStreamer() {
         // Given
         Integer userOrStreamerId = 1;
-        String userRole = UserRole.STREAMER.getRole();
+        UserRole userRole = UserRole.STREAMER;
         Integer orderId = 1;
 
         // Mock: 주문이 존재하지 않음
@@ -274,7 +274,7 @@ class OrderServiceTest {
     void updateOrderAsCustomer() throws Exception {
         // Given
         Integer userOrStreamerId = 1;
-        String userRole = "CUSTOMER";
+        UserRole userRole = UserRole.CUSTOMER;
         Integer orderId = 1;
         OrderUpdateRequestDto requestDto = new OrderUpdateRequestDto(OrderStatus.CANCELED, "address11");
 
@@ -301,7 +301,7 @@ class OrderServiceTest {
     void updateOrderAsStreamer() throws Exception {
         // Given
         Integer userOrStreamerId = 1;
-        String userRole = "STREAMER";
+        UserRole userRole = UserRole.STREAMER;
         Integer orderId = 1;
         OrderUpdateRequestDto requestDto = new OrderUpdateRequestDto(OrderStatus.CANCELED, "address11");
 

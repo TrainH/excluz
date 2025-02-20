@@ -80,7 +80,7 @@ class PointServiceTest  {
         // given: 테스트 데이터 준비
         Integer amount = 1000; // 충전금액
         Integer userOrStreamerId = 1;
-        String userRole = UserRole.CUSTOMER.getRole();
+        UserRole userRole = UserRole.CUSTOMER;
         PointChargeRequestDto requestDto = new PointChargeRequestDto(amount);
 
 
@@ -118,7 +118,7 @@ class PointServiceTest  {
     void getPoint() throws Exception {
         // given: 테스트 데이터 준비
         Integer userOrStreamerId = 1;
-        String userRole = UserRole.CUSTOMER.getRole();
+        UserRole userRole = UserRole.CUSTOMER;
 
         Point point = new Point(UserRole.CUSTOMER, userOrStreamerId, 2000); // 포인트 1000
 
