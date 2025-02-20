@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class StoreDetailResponseDto {
 
+	private Integer storeId;
 	private String nickName;
 	private String address;
 	private String storeName;
@@ -22,12 +23,14 @@ public class StoreDetailResponseDto {
 
 	@Builder
 	public StoreDetailResponseDto(
+		Integer storeId,
 		String nickName,
 		String address,
 		String storeName,
 		String registrationNumber,
 		Page<ItemResponseDto> itemList
 	) {
+		this.storeId = storeId;
 		this.nickName = nickName;
 		this.address = address;
 		this.storeName = storeName;
@@ -41,6 +44,7 @@ public class StoreDetailResponseDto {
 		Page<ItemResponseDto> itemList
 	) {
 		return StoreDetailResponseDto.builder()
+			.storeId(store.getId())
 			.nickName(nickName)
 			.address(store.getAddress())
 			.storeName(store.getStoreName())
