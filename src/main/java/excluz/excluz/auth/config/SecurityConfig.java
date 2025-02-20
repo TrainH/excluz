@@ -40,7 +40,6 @@ public class SecurityConfig {
 					"/api/v1/streamers/login", // 판매자 로그인
 					"/api/v1/users/signup", // 일반 유저 회원가입
 					"/api/v1/streamers/signup", // 판매자 회원가입
-					"/api/v1/events/applicants",// 이벤트 응모 및 조회(단, @RequestParam 코드가 맞을 때)
 					"/api/v1/users/{userId}",
 					"/api/v1/streamers/{streamerId}",
 					"/api/v1/items/{itemsId}",
