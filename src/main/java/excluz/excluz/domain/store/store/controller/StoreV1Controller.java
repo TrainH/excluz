@@ -4,8 +4,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -16,14 +14,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import excluz.excluz.auth.util.SecurityContextUtil;
 import excluz.excluz.domain.store.store.dto.request.StoreDeleteRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreUpdateRequestDto;
 import excluz.excluz.domain.store.store.dto.response.StoreDetailResponseDto;
+import excluz.excluz.domain.store.store.dto.response.StoreNameResponseDto;
 import excluz.excluz.domain.store.store.dto.response.StoreResponseDto;
-import excluz.excluz.domain.store.store.dto.response.StoreUpdateResponseDto;
 import excluz.excluz.domain.store.store.service.StoreService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -36,26 +34,23 @@ public class StoreV1Controller {
 
 	@PostMapping()
 	@PreAuthorize("hasRole('STREAMER')")
-	public ResponseEntity<Void> createStore(
-		@AuthenticationPrincipal User user,
+	public ResponseEntity<StoreResponseDto> createStore(
 		@Valid @RequestBody StoreRequestDto storeRequestDto
 	) {
-		Integer streamerId = Integer.valueOf(user.getUsername());
+		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
 
-		storeService.createStore(storeRequestDto, streamerId);
+		StoreResponseDto responseDto = storeService.createStore(storeRequestDto, streamerId);
 
-		return new ResponseEntity<>(HttpStatus.CREATED);
+		return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/{storeId}/soft")
 	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<Void> deleteStore(
-		@AuthenticationPrincipal User user,
 		@PathVariable Integer storeId,
 		@Valid @RequestBody StoreDeleteRequestDto deleteRequestDto
 	) {
-
-		Integer streamerId = Integer.valueOf(user.getUsername());
+		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
 
 		storeService.deleteStore(deleteRequestDto, streamerId, storeId);
 
@@ -64,26 +59,24 @@ public class StoreV1Controller {
 
 	@PatchMapping("/{storeId}")
 	@PreAuthorize("hasRole('STREAMER')")
-	public ResponseEntity<StoreUpdateResponseDto> updateStore(
-		@AuthenticationPrincipal User user,
+	public ResponseEntity<StoreResponseDto> updateStore(
 		@PathVariable Integer storeId,
-		@RequestBody StoreUpdateRequestDto requestDto
+		@RequestBody(required = false) StoreUpdateRequestDto requestDto
 	) {
-		Integer userId = Integer.valueOf(user.getUsername());
+		Integer userId = SecurityContextUtil.getUserOrStreamerId();
 
-		StoreUpdateResponseDto responseDto = storeService.updateStore(userId, storeId, requestDto);
+		StoreResponseDto responseDto = storeService.updateStore(userId, storeId, requestDto);
 
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 
 	@GetMapping()
-	public ResponseEntity<Page<StoreResponseDto>> getStoreList(
+	public ResponseEntity<Page<StoreNameResponseDto>> getStoreList(
 		@RequestParam(required = false) String storeName,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size
 	) {
-
-		Page<StoreResponseDto> responseDtoList = storeService.getStoreList(storeName, page, size);
+		Page<StoreNameResponseDto> responseDtoList = storeService.getStoreList(storeName, page, size);
 
 		return new ResponseEntity<>(responseDtoList, HttpStatus.OK);
 	}
@@ -94,7 +87,6 @@ public class StoreV1Controller {
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size
 	) {
-
 		StoreDetailResponseDto responseDto = storeService.getStoreById(storeId, page, size);
 
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
@@ -102,11 +94,10 @@ public class StoreV1Controller {
 
 	@GetMapping("/my-store")
 	public ResponseEntity<StoreDetailResponseDto> getOwnedStore(
-		@AuthenticationPrincipal User user,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size
 	) {
-		Integer streamerId = Integer.valueOf(user.getUsername());
+		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
 
 		StoreDetailResponseDto responseDto = storeService.getOwnedStoreById(streamerId, page, size);
 

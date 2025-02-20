@@ -47,7 +47,9 @@ public class SecurityConfig {
 					"/api/v1/stores/{storeId}/?page=&size=",
 					"/api/v1/stores?storeName=&page=&size=",
 					"/api/v1/streamers?nickName=&page=&size="
-
+					"/api/v1/events/applicants", // 이벤트 응모 및 조회(단, @RequestParam 코드가 맞을 때)
+					"/api/v1/events/applicants/**"
+          
 					).permitAll()
 				.requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // 관리자
 				.requestMatchers("/api/v1/users/**").hasRole("CUSTOMER") // 일반 회원

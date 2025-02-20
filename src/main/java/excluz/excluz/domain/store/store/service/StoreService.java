@@ -1,6 +1,10 @@
 package excluz.excluz.domain.store.store.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,8 +24,8 @@ import excluz.excluz.domain.store.store.dto.request.StoreDeleteRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreUpdateRequestDto;
 import excluz.excluz.domain.store.store.dto.response.StoreDetailResponseDto;
+import excluz.excluz.domain.store.store.dto.response.StoreNameResponseDto;
 import excluz.excluz.domain.store.store.dto.response.StoreResponseDto;
-import excluz.excluz.domain.store.store.dto.response.StoreUpdateResponseDto;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
 import excluz.excluz.domain.streamer.service.StreamerService;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +40,7 @@ public class StoreService {
 	private final PasswordEncoder passwordEncoder;
 
 	@Transactional
-	public void createStore(StoreRequestDto storeRequestDto, Integer streamerId) {
+	public StoreResponseDto createStore(StoreRequestDto storeRequestDto, Integer streamerId) {
 		Streamer streamer = getStreamerByIdAndNotDeleted(streamerId);
 
 		Store store = Store.builder()
@@ -46,7 +50,7 @@ public class StoreService {
 			.registrationNumber(storeRequestDto.getRegistrationNumber())
 			.build();
 
-		storeRepository.save(store);
+		return StoreResponseDto.from(storeRepository.save(store));
 	}
 
 	@Transactional
@@ -69,7 +73,7 @@ public class StoreService {
 	}
 
 	@Transactional
-	public StoreUpdateResponseDto updateStore(Integer userId, Integer storeId, StoreUpdateRequestDto requestDto) {
+	public StoreResponseDto updateStore(Integer userId, Integer storeId, StoreUpdateRequestDto requestDto) {
 		Store store = getStoreByIdAndNotDeleted(storeId);
 
 		// 스토어 주인 검증 로직
@@ -81,16 +85,16 @@ public class StoreService {
 			requestDto.getStoreName(),
 			requestDto.getRegistrationNumber());
 
-		return StoreUpdateResponseDto.from(store);
+		return StoreResponseDto.from(store);
 	}
 
 	@Transactional(readOnly = true)
-	public Page<StoreResponseDto> getStoreList(String storeName, int page, int size) {
+	public Page<StoreNameResponseDto> getStoreList(String storeName, int page, int size) {
 		Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
 
 		Page<Store> storeList = storeRepository.findByStoreName(pageable, storeName);
 
-		return storeList.map(store -> new StoreResponseDto(store.getStoreName()));
+		return storeList.map(store -> new StoreNameResponseDto(store.getStoreName(), store.getId()));
 	}
 
 	@Transactional(readOnly = true)
@@ -103,8 +107,10 @@ public class StoreService {
 		Store store = getStoreByIdAndNotDeleted(storeId);
 
 		Page<Item> itemList = itemRepository.findByStoreId(storeId, pageable);
+		List<ItemResponseDto> itemResponseList = itemList.stream().map(ItemResponseDto::from).toList();
+		Page<ItemResponseDto> itemResponsePage = new PageImpl<>(itemResponseList, pageable, itemList.getTotalElements());
 
-		return StoreDetailResponseDto.of(streamer.getNickName(), store, itemList.map(item -> new ItemResponseDto()));
+		return StoreDetailResponseDto.of(streamer.getNickName(), store, itemResponsePage);
 	}
 
 	@Transactional(readOnly = true)

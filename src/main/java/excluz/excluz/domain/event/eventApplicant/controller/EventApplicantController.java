@@ -25,7 +25,7 @@ public class EventApplicantController {
         return eventApplicantService.applyForEvent(code, requestDto);
     }
 
-    @GetMapping
+    @PostMapping("/myinfo")
     public EventApplicantResponseDto getEventApplication(@RequestParam("code") String code,
                                                          @Valid @RequestBody EventApplicantReadRequestDto requestDto) {
         return eventApplicantService.getEventApplication(code, requestDto.getEmail(), requestDto.getApplicantPassword());
