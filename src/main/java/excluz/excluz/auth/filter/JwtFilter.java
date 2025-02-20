@@ -30,7 +30,8 @@ public class JwtFilter implements Filter {
 	private static final String[] SIGN_UP_URI = {
 		"/api/v1/users/signup",
 		"/api/v1/streamers/signup",
-		"/api/v1/events/applicants"
+		"/api/v1/events/applicants",
+		"/api/v1/events/applicants/**"
 	};
 
 	private static final String[] SIGN_IN_URI = {
