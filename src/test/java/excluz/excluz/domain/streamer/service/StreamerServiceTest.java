@@ -394,7 +394,7 @@ class StreamerServiceTest {
 			int page = 1;
 			int size = 10;
 			Pageable pageable = PageRequest.of(page - 1, size);
-			StreamerSummaryResponseDto responseDto = new StreamerSummaryResponseDto(SharedData.STREAMER_NICKNAME1);
+			StreamerSummaryResponseDto responseDto = new StreamerSummaryResponseDto(SharedData.STREAMER_NICKNAME1, SharedData.STREAMER_ID1);
 
 			List<Streamer> streamerList = Collections.singletonList(SharedData.STREAMER1);
 			Page<Streamer> streamerPage = new PageImpl<>(streamerList, pageable, streamerList.size());
@@ -426,7 +426,7 @@ class StreamerServiceTest {
 		void getStreamer() {
 			// given
 			Streamer spyStreamer = spy(SharedData.STREAMER1);
-			StreamerSummaryResponseDto responseDto = new StreamerSummaryResponseDto(SharedData.STREAMER_NICKNAME1);
+			StreamerSummaryResponseDto responseDto = new StreamerSummaryResponseDto(SharedData.STREAMER_NICKNAME1, SharedData.STREAMER_ID1);
 			when(streamerRepository.findById(SharedData.STREAMER_ID1)).thenReturn(Optional.of(spyStreamer));
 
 			try (MockedStatic<StreamerSummaryResponseDto> mockedStatic = mockStatic(StreamerSummaryResponseDto.class)) {
