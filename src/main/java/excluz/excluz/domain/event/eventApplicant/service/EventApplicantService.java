@@ -79,6 +79,7 @@ public class EventApplicantService {
         return EventApplicantResponseDto.from(savedApplicant);
     }
 
+    @Transactional
     public EventApplicantResponseDto getEventApplication(String code, String email, String applicantPassword) {
         Event event = eventRepository.findByGeneratedCode(code)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
@@ -110,6 +111,10 @@ public class EventApplicantService {
 
         if (eventApplicant.getApplicantStatus() != ApplicantStatus.WINNER) {
             throw new BadRequestException(ErrorCode.EVENT_APPLICANT_NOT_WINNER);
+        }
+
+        if (eventApplicant.getEvent().getIsDeleted()) {
+            throw new BadRequestException(ErrorCode.EVENT_ALREADY_CANCELED);
         }
 
         if (requestDto.getApplicantName() != null) {

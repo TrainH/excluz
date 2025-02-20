@@ -5,6 +5,7 @@ import excluz.excluz.common.entity.Event;
 import excluz.excluz.domain.event.event.dto.EventClosingResponseDto;
 import excluz.excluz.domain.event.event.dto.EventRequestDto;
 import excluz.excluz.domain.event.event.dto.EventResponseDto;
+import excluz.excluz.domain.event.event.dto.EventWithApplicantsResponseDto;
 import excluz.excluz.domain.event.event.service.EventService;
 import excluz.excluz.domain.user.enums.UserRole;
 import jakarta.validation.Valid;
@@ -52,16 +53,19 @@ public class EventController {
     }
 
 
-    //    공개된 조회 로직
     @GetMapping()
+    @PreAuthorize("hasRole('STREAMER')")
     public ResponseEntity<List<EventResponseDto>> getAllEvents() {
-        List<EventResponseDto> eventResponseDtoList = eventService.getAllEvents();
+        Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
+        List<EventResponseDto> eventResponseDtoList = eventService.getAllEvents(streamerId);
         return ResponseEntity.ok(eventResponseDtoList);
     }
 
     @GetMapping("/{eventId}")
-    public ResponseEntity<EventResponseDto> getEvent(@PathVariable Integer eventId) {
-        EventResponseDto eventResponseDto = eventService.getEvent(eventId);
+    @PreAuthorize("hasRole('STREAMER')")
+    public ResponseEntity<EventWithApplicantsResponseDto> getEvent(@PathVariable Integer eventId) {
+        Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
+        EventWithApplicantsResponseDto eventResponseDto = eventService.getEvent(streamerId, eventId);
         return ResponseEntity.ok(eventResponseDto);
     }
 
