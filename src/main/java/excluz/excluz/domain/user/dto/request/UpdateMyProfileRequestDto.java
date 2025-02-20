@@ -9,7 +9,6 @@ public class UpdateMyProfileRequestDto {
 	private final String nickName;
 	private final String phoneNumber;
 	private final String address;
-	private final String email;
 	private final String password;
 
 	@Builder
@@ -17,12 +16,10 @@ public class UpdateMyProfileRequestDto {
 			String nickName,
 			String phoneNumber,
 			String address,
-			String email,
 			String password) {
 		this.nickName = nickName;
 		this.phoneNumber = phoneNumber;
 		this.address = address;
-		this.email = email;
 		this.password = password;
 	}
 }

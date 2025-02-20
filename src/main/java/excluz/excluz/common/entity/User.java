@@ -89,11 +89,9 @@ public class User extends BaseEntity{
 	public void updateUserProfile(
 			String nickName,
 			String phoneNumber,
-			String address,
-			String email ) {
-		this.nickName = nickName;
-		this.phoneNumber = phoneNumber;
-		this.address = address;
-		this.email = email;
+			String address) {
+		if(nickName != null) {this.nickName = nickName;}
+		if(phoneNumber != null) {this.phoneNumber = phoneNumber;}
+		if(address != null) {this.address = address;}
 	}
 }

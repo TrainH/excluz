@@ -8,11 +8,19 @@ import lombok.Getter;
 @Getter
 public class UserSignupResponseDto {
 
-	private final String message;
+	private final String name;
+	private final String nickName;
+	private final String phoneNumber;
+	private final String address;
+	private final String email;
 	private final LocalDateTime createdAt;
 
-	public UserSignupResponseDto(String message, User user) {
-		this.message = message;
+	public UserSignupResponseDto(User user) {
+		this.name = user.getName();
+		this.nickName = user.getNickName();
+		this.phoneNumber = user.getPhoneNumber();
+		this.address = user.getAddress();
+		this.email = user.getEmail();
 		this.createdAt = user.getCreatedAt();
 	}
 }

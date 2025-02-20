@@ -8,11 +8,9 @@ import lombok.Getter;
 @Getter
 public class UpdatePasswordResponseDto {
 
-	private final String message;
 	private final LocalDateTime updatedAt;
 
-	public UpdatePasswordResponseDto(String message, User user) {
-		this.message = message;
+	public UpdatePasswordResponseDto(User user) {
 		this.updatedAt = user.getUpdatedAt();
 	}
 }

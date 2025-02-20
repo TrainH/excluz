@@ -8,12 +8,16 @@ import lombok.Getter;
 @Getter
 public class UpdateMyProfileResponseDto {
 
-	private final String message;
+	private final String nickname;
+	private final String phoneNumber;
+	private final String address;
 	private final LocalDateTime updatedAt;
 
-	public UpdateMyProfileResponseDto(String message, User user) {
+	public UpdateMyProfileResponseDto(User user) {
 
-		this.message = message;
+		this.nickname = user.getNickName();
+		this.phoneNumber = user.getPhoneNumber();
+		this.address = user.getAddress();
 		this.updatedAt = user.getUpdatedAt();
 
 	}
