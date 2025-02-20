@@ -35,8 +35,8 @@ import excluz.excluz.domain.store.store.dto.request.StoreDeleteRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreUpdateRequestDto;
 import excluz.excluz.domain.store.store.dto.response.StoreDetailResponseDto;
+import excluz.excluz.domain.store.store.dto.response.StoreNameResponseDto;
 import excluz.excluz.domain.store.store.dto.response.StoreResponseDto;
-import excluz.excluz.domain.store.store.dto.response.StoreUpdateResponseDto;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
 import excluz.excluz.domain.streamer.repository.StreamerRepository;
 import excluz.excluz.domain.streamer.service.StreamerService;
@@ -138,7 +138,7 @@ public class StoreServiceTest {
 		void updateStore() {
 			// given
 			StoreUpdateRequestDto requestDto = new StoreUpdateRequestDto(SharedData.ADDRESS2, SharedData.STORE_NAME2, SharedData.REGISTRATION_NUMBER2);
-			StoreUpdateResponseDto responseDto = new StoreUpdateResponseDto(SharedData.ADDRESS2, SharedData.STORE_NAME2, SharedData.REGISTRATION_NUMBER2);
+			StoreResponseDto responseDto = new StoreResponseDto(SharedData.STORE_ID1, SharedData.ADDRESS2, SharedData.STORE_NAME2, SharedData.REGISTRATION_NUMBER2);
 			Store spyStore = spy(SharedData.STORE1);
 			when(storeRepository.findById(anyInt())).thenReturn(Optional.of(spyStore));
 			// 스토어 주인 검증 로직 stub
@@ -150,11 +150,11 @@ public class StoreServiceTest {
 			assertThat(spyStore.getStoreName()).isEqualTo(SharedData.STORE_NAME1);
 			assertThat(spyStore.getRegistrationNumber()).isEqualTo(SharedData.REGISTRATION_NUMBER1);
 
-			try (MockedStatic<StoreUpdateResponseDto> mockedStatic = mockStatic(StoreUpdateResponseDto.class)) {
-				given(StoreUpdateResponseDto.from(spyStore)).willReturn(responseDto);
+			try (MockedStatic<StoreResponseDto> mockedStatic = mockStatic(StoreResponseDto.class)) {
+				given(StoreResponseDto.from(spyStore)).willReturn(responseDto);
 
 				// when
-				StoreUpdateResponseDto actualResult = storeService.updateStore(SharedData.STREAMER_ID1, SharedData.STORE_ID1, requestDto);
+				StoreResponseDto actualResult = storeService.updateStore(SharedData.STREAMER_ID1, SharedData.STORE_ID1, requestDto);
 
 				// then
 				verify(storeRepository).findById(SharedData.STORE_ID1);
@@ -190,13 +190,13 @@ public class StoreServiceTest {
 			when(storeRepository.findByStoreName(pageable, SharedData.STORE_NAME1)).thenReturn(storePage);
 
 			// when
-			Page<StoreResponseDto> actualResult = storeService.getStoreList(SharedData.STORE_NAME1, page, size);
+			Page<StoreNameResponseDto> actualResult = storeService.getStoreList(SharedData.STORE_NAME1, page, size);
 
 			// then
 			verify(storeRepository).findByStoreName(pageable, SharedData.STORE_NAME1);
 
 			assertThat(actualResult).isNotNull();
-			StoreResponseDto storeResponseDto = actualResult.getContent().get(0);
+			StoreNameResponseDto storeResponseDto = actualResult.getContent().get(0);
 			assertThat(storeResponseDto.getStoreName()).isEqualTo(store.getStoreName());
 		}
 
