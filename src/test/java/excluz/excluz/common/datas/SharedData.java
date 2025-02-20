@@ -68,7 +68,7 @@ public class SharedData {
 	public final static Item ITEM2 = new Item(STORE1, ITEM_NAME2, EXPLANATION2, PRICE2, REMAINING_QUANTITY2);
 	public final static ItemCreateRequestDto ITEM_CREATE_REQUEST_DTO = new ItemCreateRequestDto(ITEM_NAME1, EXPLANATION1, PRICE1, REMAINING_QUANTITY1);
 	public final static ItemUpdateRequestDto ITEM_UPDATE_REQUEST_DTO = new ItemUpdateRequestDto(ITEM_NAME2, EXPLANATION2, PRICE2, REMAINING_QUANTITY2);
-	public final static ItemResponseDto ITEM_RESPONSE_DTO = new ItemResponseDto(ITEM_NAME2, EXPLANATION2, PRICE2, REMAINING_QUANTITY2);
+	public final static ItemResponseDto ITEM_RESPONSE_DTO = new ItemResponseDto(ITEM_ID1, ITEM_NAME2, EXPLANATION2, PRICE2, REMAINING_QUANTITY2);
 
 	// User 데이터
 	public final static Integer USER_ID = 1;
