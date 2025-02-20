@@ -1,7 +1,6 @@
 package excluz.excluz.domain.store.store.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -129,8 +128,10 @@ public class StoreService {
 		}
 
 		Page<Item> itemList = itemRepository.findByStoreId(store.getId(), pageable);
+		List<ItemResponseDto> itemResponseList = itemList.stream().map(ItemResponseDto::from).toList();
+		Page<ItemResponseDto> itemResponsePage = new PageImpl<>(itemResponseList, pageable, itemList.getTotalElements());
 
-		return StoreDetailResponseDto.of(streamer.getNickName(), store, itemList.map(item -> new ItemResponseDto()));
+		return StoreDetailResponseDto.of(streamer.getNickName(), store, itemResponsePage);
 	}
 
 	// 탈퇴하지 않은 스트리머만 반환
