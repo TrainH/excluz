@@ -3,6 +3,7 @@ package excluz.excluz.domain.store.item.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -26,12 +27,14 @@ import excluz.excluz.common.datas.SharedData;
 import excluz.excluz.common.entity.Item;
 import excluz.excluz.common.entity.Store;
 import excluz.excluz.common.entity.Streamer;
+import excluz.excluz.common.exception.ForbiddenException;
+import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.domain.store.item.dto.response.ItemResponseDto;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("ItemService의")
+@DisplayName("ItemService")
 class ItemServiceTest {
 
 	@InjectMocks
@@ -72,7 +75,8 @@ class ItemServiceTest {
 				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
 
 				// when
-				ItemResponseDto actualResult = itemService.updateItemInfo(SharedData.ITEM_UPDATE_REQUEST_DTO, SharedData.ITEM_ID1,
+				ItemResponseDto actualResult = itemService.updateItemInfo(SharedData.ITEM_UPDATE_REQUEST_DTO,
+					SharedData.ITEM_ID1,
 					SharedData.STREAMER_ID1);
 
 				// then
@@ -90,6 +94,47 @@ class ItemServiceTest {
 				assertThat(actualResult.getRemainingQuantity()).isEqualTo(updatedItem.getRemainingQuantity());
 			}
 		}
+
+		@Test
+		@DisplayName("fail: 아이템 수정 권한 없음 (예외 발생)")
+		void updateItemForbidden() {
+			// given
+			when(itemRepository.findItemByIdAndNotDeleted(anyInt())).thenReturn(Optional.of(mockItem));
+			when(mockItem.getStore()).thenReturn(mockStore);
+			when(mockStore.getStreamer()).thenReturn(mockStreamer);
+			when(mockStreamer.getId()).thenReturn(SharedData.STREAMER_ID1); // 기존 스트리머
+
+			// when, then
+			assertThatThrownBy(() -> itemService.updateItemInfo(SharedData.ITEM_UPDATE_REQUEST_DTO,
+				SharedData.ITEM_ID1,
+				SharedData.STREAMER_ID2)) // 권한 없는 스트리머 ID
+				.isInstanceOf(ForbiddenException.class); // ForbiddenException 발생 확인
+
+			verify(itemRepository, times(1)).findItemByIdAndNotDeleted(
+				anyInt()); // findItemByIdAndNotDeleted 1번만 호출되는지 확인
+		}
+	}
+
+	/**
+	 * UnnecessaryStubbingException
+	 * 위 UpdateItem에 속하는 메서드지만, 위에 넣으면 setUp()과 충돌하는 이슈 발생. (아이템이 없어야 하는데, 아이템이 존재하도록 세팅돼서)
+	 * 이슈 해결을 위해선 setUp()과 updateItemInfo()를 모두 건드려야 해서
+	 * updateItemNotFound()만 따로 빼서 UpdateItem 실패 테스트코드 진행했습니다.
+	 */
+	@Test
+	@DisplayName("fail: 존재하지 않는 아이템 수정 시도 (예외 발생)")
+	void updateItemNotFound() {
+		// given
+		when(itemRepository.findItemByIdAndNotDeleted(anyInt())).thenReturn(Optional.empty()); // 아이템이 존재하지 않음
+
+		// when, then
+		assertThatThrownBy(() -> itemService.updateItemInfo(
+			SharedData.ITEM_UPDATE_REQUEST_DTO,
+			SharedData.ITEM_ID1,
+			SharedData.STREAMER_ID1
+		)).isInstanceOf(NotFoundException.class); // NotFoundException 발생 확인
+
+		verify(itemRepository, times(1)).findItemByIdAndNotDeleted(anyInt()); // findItemByIdAndNotDeleted 1번만 호출되는지 확인
 	}
 
 	@Nested
@@ -123,6 +168,38 @@ class ItemServiceTest {
 			verify(mockItem).updateIsDeleted(true);
 		}
 
+		@Test
+		@DisplayName("fail: 아이템 삭제 권한 없음 (ForbiddenException 발생)")
+		void deleteItemForbidden() {
+			// given
+			when(itemRepository.findItemByIdAndNotDeleted(anyInt())).thenReturn(Optional.of(mockItem));
+			when(mockItem.getStore()).thenReturn(mockStore);
+			when(mockStore.getStreamer()).thenReturn(mockStreamer);
+			when(mockStreamer.getId()).thenReturn(SharedData.STREAMER_ID1);
+
+			// when, then
+			assertThatThrownBy(() -> itemService.deleteItem(SharedData.ITEM_ID1, SharedData.STREAMER_ID2))
+				.isInstanceOf(ForbiddenException.class); // Only verifying exception type, no message validation
+		}
+	}
+
+	/**
+	 * UnnecessaryStubbingException
+	 * 위 DeleteItem에 속하는 메서드지만, 위에 넣으면 setUp()과 충돌하는 이슈 발생. (아이템이 없어야 하는데, 아이템이 존재하도록 세팅돼서)
+	 * 이슈 해결을 위해선 setUp()과 softDeleteItem()를 모두 건드려야 해서
+	 * deleteItemNotFound()만 따로 빼서 DeleteItem 실패 테스트코드 진행했습니다.
+	 */
+	@Test
+	@DisplayName("fail: 존재하지 않는 아이템 삭제 (예외 발생)")
+	void deleteItemNotFound() {
+		// given
+		when(itemRepository.findItemByIdAndNotDeleted(anyInt())).thenReturn(Optional.empty()); // 아이템 없음
+
+		// when, then
+		assertThatThrownBy(() -> itemService.deleteItem(SharedData.ITEM_ID1, SharedData.STREAMER_ID1))
+			.isInstanceOf(NotFoundException.class); // NotFoundException 발생 확인
+
+		verify(itemRepository, times(1)).findItemByIdAndNotDeleted(anyInt()); // findItemByIdAndNotDeleted가 1번 실행되었는지 확인
 	}
 
 	@Nested
@@ -151,6 +228,20 @@ class ItemServiceTest {
 				assertThat(actualResult.getRemainingQuantity()).isEqualTo(item.getRemainingQuantity());
 			}
 		}
+
+		@Test
+		@DisplayName("fail: 존재하지 않는 아이템 ID로 조회 시 예외 발생")
+		void getItemByIdNotFound() {
+			// given
+			when(itemRepository.findItemByIdAndNotDeleted(eq(SharedData.ITEM_ID1))).thenReturn(Optional.empty());
+
+			// when, then
+			assertThatThrownBy(() -> itemService.getItemById(SharedData.ITEM_ID1))
+				.isInstanceOf(NotFoundException.class); // 예외 발생 검증
+
+			verify(itemRepository).findItemByIdAndNotDeleted(
+				eq(SharedData.ITEM_ID1)); // findItemByIdAndNotDeleted가 1번 실행되었는지 확인
+		}
 	}
 
 	@Nested
@@ -171,6 +262,22 @@ class ItemServiceTest {
 			verify(storeRepository).findStoreWithStreamer(anyInt());
 			verify(itemRepository).save(any(Item.class));
 		}
+
+		@Test
+		@DisplayName("fail: 존재하지 않는 스토어 (예외 발생)")
+		void createItemStoreNotFound() {
+			// given
+			Integer streamerId = 999; // 존재하지 않는 스트리머 ID
+
+			when(storeRepository.findStoreWithStreamer(streamerId)).thenReturn(Optional.empty()); // 스토어 찾을 수 없음
+
+			// when, then
+			assertThatThrownBy(() -> itemService.createItem(SharedData.ITEM_CREATE_REQUEST_DTO, streamerId))
+				.isInstanceOf(NotFoundException.class); // NotFoundException 예외 발생 확인
+
+			verify(storeRepository, times(1)).findStoreWithStreamer(
+				streamerId); // findStoreWithStreamer()가 1번 호출되었는지 확인
+		}
 	}
 
 	@Nested
@@ -185,7 +292,8 @@ class ItemServiceTest {
 			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(5000));
 			List<Item> itemList = Collections.singletonList(SharedData.ITEM2);
 			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
-			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString())).thenReturn(itemPage);
+			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString())).thenReturn(
+				itemPage);
 
 			try (MockedStatic<ItemResponseDto> mockedStatic = mockStatic(ItemResponseDto.class)) {
 				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
@@ -215,17 +323,20 @@ class ItemServiceTest {
 			List<Item> itemList = Collections.singletonList(SharedData.ITEM2);
 			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
 			// minPrice가 Integer.MAX_VALUE일 경우 가격 범위를 '아이템 최고가 ~ Integer.MAX_VALUE'로 재설정
-			when(itemRepository.findByPriceWithItemName(pageable, 5000, Integer.MAX_VALUE, SharedData.ITEM_NAME2)).thenReturn(itemPage);
+			when(itemRepository.findByPriceWithItemName(pageable, 5000, Integer.MAX_VALUE,
+				SharedData.ITEM_NAME2)).thenReturn(itemPage);
 
 			try (MockedStatic<ItemResponseDto> mockedStatic = mockStatic(ItemResponseDto.class)) {
 				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
 
 				// when
-				Page<ItemResponseDto> actualResult = itemService.getItemList(2, 10, Integer.MAX_VALUE, 5000, SharedData.ITEM_NAME2);
+				Page<ItemResponseDto> actualResult = itemService.getItemList(2, 10, Integer.MAX_VALUE, 5000,
+					SharedData.ITEM_NAME2);
 
 				// then
 				verify(itemRepository).findHighestItemPrice();
-				verify(itemRepository).findByPriceWithItemName(pageable, 5000, Integer.MAX_VALUE, SharedData.ITEM_NAME2);
+				verify(itemRepository).findByPriceWithItemName(pageable, 5000, Integer.MAX_VALUE,
+					SharedData.ITEM_NAME2);
 			}
 		}
 
@@ -238,7 +349,8 @@ class ItemServiceTest {
 			List<Item> itemList = Collections.singletonList(SharedData.ITEM2);
 			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
 
-			when(itemRepository.findByPriceWithItemName(pageable, 1000, 6000, SharedData.ITEM_NAME2)).thenReturn(itemPage);
+			when(itemRepository.findByPriceWithItemName(pageable, 1000, 6000, SharedData.ITEM_NAME2)).thenReturn(
+				itemPage);
 
 			try (MockedStatic<ItemResponseDto> mockedStatic = mockStatic(ItemResponseDto.class)) {
 				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
@@ -250,6 +362,53 @@ class ItemServiceTest {
 				// then
 				verify(itemRepository).findHighestItemPrice();
 				verify(itemRepository).findByPriceWithItemName(pageable, 1000, 6000, SharedData.ITEM_NAME2);
+			}
+		}
+
+		@Test
+		@DisplayName("success: 아이템이 없을 경우 빈 페이지 반환")
+		void getItemListWhenNoItems() {
+			// given
+			Pageable pageable = PageRequest.of(0, 10);
+			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(5000));
+			Page<Item> emptyPage = Page.empty();
+			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString())).thenReturn(
+				emptyPage);
+
+			// when
+			Page<ItemResponseDto> actualResult = itemService.getItemList(1, 10, 1000, 5000, SharedData.ITEM_NAME2);
+
+			// then
+			verify(itemRepository).findHighestItemPrice();
+			verify(itemRepository).findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString());
+
+			assertThat(actualResult).isNotNull();
+			assertThat(actualResult.getTotalElements()).isEqualTo(0);
+		}
+
+		@Test
+		@DisplayName("success: itemName이 null일 때 전체 목록 반환")
+		void getItemListWhenItemNameIsNull() {
+			// given
+			Pageable pageable = PageRequest.of(0, 10);
+			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(5000));
+			List<Item> itemList = Arrays.asList(SharedData.ITEM1, SharedData.ITEM2);
+			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
+
+			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), isNull())).thenReturn(
+				itemPage);
+
+			try (MockedStatic<ItemResponseDto> mockedStatic = mockStatic(ItemResponseDto.class)) {
+				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
+
+				// when
+				Page<ItemResponseDto> actualResult = itemService.getItemList(1, 10, 1000, 5000, null);
+
+				// then
+				verify(itemRepository).findHighestItemPrice();
+				verify(itemRepository).findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), isNull());
+
+				assertThat(actualResult.getTotalElements()).isEqualTo(itemList.size());
 			}
 		}
 	}
