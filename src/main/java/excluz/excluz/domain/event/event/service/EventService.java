@@ -48,7 +48,7 @@ public class EventService {
         Streamer streamer = streamerRepository.findById(streamerId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
-        if (!streamer.getId().equals(streamerId)){
+        if (!streamer.getId().equals(store.getStreamer().getId())){
             throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
         }
 
