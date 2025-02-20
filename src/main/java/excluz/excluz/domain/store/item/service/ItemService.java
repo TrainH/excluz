@@ -43,7 +43,7 @@ public class ItemService {
 
 		Item savedItem = itemRepository.save(item);
 
-		return ItemResponseDto.from(savedItem); /* TODO 테스트코드 수정 */
+		return ItemResponseDto.from(savedItem);
 	}
 
 	@Transactional
