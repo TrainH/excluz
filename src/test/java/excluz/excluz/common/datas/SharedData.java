@@ -16,12 +16,18 @@ public class SharedData {
 	// Streamer 데이터
 	public final static Integer STREAMER_ID1 = 1;
 	public final static String STREAMER_NAME1 = "홍길동";
+	public final static String STREAMER_NAME2 = "김첨지";
 	public final static String STREAMER_NICKNAME1 = "암행어사";
+	public final static String STREAMER_NICKNAME2 = "운수좋은날";
 	public final static String STREAMER_PHONE_NUMBER1 = "010-1234-1234";
+	public final static String STREAMER_PHONE_NUMBER2 = "010-7777-7777";
 	public final static String STREAMER_EMAIL1 = "test12@test.com";
+	public final static String STREAMER_EMAIL2 = "test77@test.com";
 	public final static String STREAMER_PASSWORD1 = "Qwer1234!!!!";
+	public final static String STREAMER_PASSWORD2 = "Qwer5678!!!!";
 	public final static String STREAMER_REENTER_PASSWORD1 = "Qwer1234!!!!";
 	public final static Streamer STREAMER1 = new Streamer(STREAMER_NAME1, STREAMER_NICKNAME1, STREAMER_PHONE_NUMBER1, STREAMER_EMAIL1, STREAMER_PASSWORD1);
+	public final static Streamer STREAMER2 = new Streamer(STREAMER_NAME2, STREAMER_NICKNAME2, STREAMER_PHONE_NUMBER2, STREAMER_EMAIL2, STREAMER_PASSWORD1);
 	public final static StreamerSignupRequestDto STREAMER_SIGNUP_REQUEST_DTO = new StreamerSignupRequestDto(STREAMER_NAME1, STREAMER_NICKNAME1, STREAMER_PHONE_NUMBER1, STREAMER_EMAIL1, STREAMER_PASSWORD1, STREAMER_REENTER_PASSWORD1);
 	public final static StreamerLoginRequestDto STREAMER_LOGIN_REQUEST_DTO = new StreamerLoginRequestDto(STREAMER_EMAIL1, STREAMER_PASSWORD1);
 
