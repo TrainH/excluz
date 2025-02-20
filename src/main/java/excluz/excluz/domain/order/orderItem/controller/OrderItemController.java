@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -42,7 +43,7 @@ public class OrderItemController {
         Integer userOrStreamerId = SecurityContextUtil.getUserOrStreamerId();
         UserRole userRole = SecurityContextUtil.getUserRole();
 
-        Pageable pageable = PageRequest.of(page  ,size);
+        Pageable pageable = PageRequest.of(page  ,size, Sort.by(Sort.Order.desc("id")));
 
         return ResponseEntity.ok(orderItemService.getOrderItemList(userOrStreamerId, userRole, pageable));
     }
