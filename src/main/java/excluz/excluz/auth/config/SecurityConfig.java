@@ -44,8 +44,8 @@ public class SecurityConfig {
 					"/api/v1/users/{userId}",
 					"/api/v1/streamers/{streamerId}",
 					"/api/v1/items/{itemsId}",
-					"/api/v1/stores?storeName=&page=&size=",
 					"/api/v1/stores/*/?page=&size=",
+					"/api/v1/stores?storeName=&page=&size=",
 					"/api/v1/streamers?nickName=&page=&size="
 
 					).permitAll()

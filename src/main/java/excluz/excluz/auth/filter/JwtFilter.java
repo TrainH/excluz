@@ -37,8 +37,8 @@ public class JwtFilter implements Filter {
 		"/api/v1/stores?storeName=&page=&size=",
 		"/api/v1/stores/{storeId}?page=&size=",
 		"/api/v1/items?minPrice=&maxPrice=&itemName=&page=&size=",
-		"/api/v1/items/*",
 		"/api/v1/streamers/*",
+		"/api/v1/items/*",
 		"/api/v1/streamers?nickName=&page=&size="
 	};
 
