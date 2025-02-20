@@ -51,6 +51,9 @@ public class Event extends BaseEntity  {
     @Column(name = "is_deleted",  nullable = false)
     private Boolean isDeleted;
 
+//    //    todo: 낙관적 락 테스트
+//    @Version
+//    private Integer version;
 
     // 생성자: 매개변수 4개 이상이므로 @Builder 패턴 사용
     @Builder

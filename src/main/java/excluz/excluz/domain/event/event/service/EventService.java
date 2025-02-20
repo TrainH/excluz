@@ -25,10 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -52,7 +49,7 @@ public class EventService {
                 .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         if (!streamer.getId().equals(streamerId)){
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_USER);
+            throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
         }
 
         if (eventRequestDto.getEndDatetime().isBefore(LocalDateTime.now())) {
@@ -126,7 +123,7 @@ public class EventService {
         Streamer streamer = streamerRepository.findById(streamerId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
-        if (!streamer.getId().equals(streamerId)){
+        if (!event.getStore().getStreamer().getId().equals(streamer.getId())) {
             throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
         }
 
@@ -150,6 +147,7 @@ public class EventService {
     }
 
     // 이벤트 마감 메서드 추가
+    @Transactional
     public EventClosingResponseDto closeEvent(Integer streamerId, Integer eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
@@ -157,7 +155,7 @@ public class EventService {
         Streamer streamer = streamerRepository.findById(streamerId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
-        if (!streamer.getId().equals(streamerId)){
+        if (!event.getStore().getStreamer().getId().equals(streamer.getId())) {
             throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
         }
 
@@ -171,17 +169,16 @@ public class EventService {
 
         // 이벤트 응모자 조회
         List<EventApplicant> applicantList = eventApplicantRepository.findByEvent(event);
-//        if (applicantList.isEmpty()) {
-//            throw new IllegalStateException("해당 이벤트에 응모자가 없습니다.");
-//        }
 
-        // 당첨자 선정 로직
+        // 당첨자 수
         int numberOfWinners = event.getNumberOfWinners();
+        // 실제 응모자 수
+        int actualApplicants = applicantList.size();
         if (event.getSelectionMethod() == SelectionMethod.RANDOM_DRAW) {
-            // 무작위 추첨
+            // 무작위 섞기
             Collections.shuffle(applicantList);
-            List<EventApplicant> winners = applicantList.subList(0, Math.min(numberOfWinners, applicantList.size()));
-
+            // 후보 리스트 중 최대 numberOfWinners명만 WINNER로
+            List<EventApplicant> winners = applicantList.subList(0, Math.min(numberOfWinners, actualApplicants));
             for (EventApplicant applicant : applicantList) {
                 if (winners.contains(applicant)) {
                     applicant.updateApplicantStatus(ApplicantStatus.WINNER);
@@ -189,25 +186,39 @@ public class EventService {
                     applicant.updateApplicantStatus(ApplicantStatus.LOSER);
                 }
             }
-        } else if (event.getSelectionMethod() == SelectionMethod.FIRST_COME_FIRST_SERVED) {
-//      응모시에 이미 WINNER/LOSER 구분 완료
-        } else {
+        }
+        else if (event.getSelectionMethod() == SelectionMethod.FIRST_COME_FIRST_SERVED) {
+            // 선착순은 이미 응모 로직에서 WINNER/LOSER 설정이 되었을 것으로 가정
+        }
+        else {
             throw new BadRequestException(ErrorCode.EVENT_METHOD_NOT_SUPPORTED);
         }
+
+        if (actualApplicants < numberOfWinners) {
+            int leftover = numberOfWinners - actualApplicants; // 미달 인원 수
+            List<EventItem> eventItems = eventItemRepository.findByEvent(event);
+            for (EventItem eventItem : eventItems) {
+                Item item = eventItem.getItem();
+                int returnQuantity = leftover * eventItem.getQuantity();
+                item.addRemainingQuantity(returnQuantity);
+                // 변경사항 저장 (영속성 컨텍스트 때문에 saveAll 대신 최종적으로 flush 되면 반영됨)
+                itemRepository.save(item);
+            }
+        }
+
 
         event.completeEvent();
 
         eventRepository.save(event);
         eventApplicantRepository.saveAll(applicantList);
 
-        List<EventItem> eventItems = eventItemRepository.findByEvent(event);
+        List<EventItem> eventItemList = eventItemRepository.findByEvent(event);
 
-        return EventClosingResponseDto.from(event, eventItems, applicantList);
+        return EventClosingResponseDto.from(event, eventItemList, applicantList);
     }
 
     private String generateUniqueCode() {
-        // todo: 고유 코드 생성 로직 구현 (예제용 코드)
-        return "UNIQUE_CODE" + eventRepository.count();
+        return "EVENT_" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
 
