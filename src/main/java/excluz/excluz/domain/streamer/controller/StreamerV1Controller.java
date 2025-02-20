@@ -4,10 +4,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
+import excluz.excluz.auth.util.SecurityContextUtil;
 import excluz.excluz.domain.streamer.dto.request.*;
 import excluz.excluz.domain.streamer.dto.response.*;
 import excluz.excluz.domain.streamer.service.StreamerService;
@@ -40,10 +39,9 @@ public class StreamerV1Controller {
 	@DeleteMapping("/soft")
 	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<Void> deleteStreamer(
-		@AuthenticationPrincipal User user,
 		@RequestBody StreamerDeleteRequestDto deleteRequestDto
 	) {
-		Integer streamerId = Integer.valueOf(user.getUsername());
+		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
 
 		streamerService.deleteStreamer(streamerId, deleteRequestDto.getPassword());
 
@@ -53,10 +51,9 @@ public class StreamerV1Controller {
 	@PatchMapping()
 	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<StreamerResponseDto> updateStreamer(
-		@AuthenticationPrincipal User user,
 		@RequestBody StreamerUpdateRequestDto requestDto
 	) {
-		Integer streamerId = Integer.valueOf(user.getUsername());
+		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
 
 		StreamerResponseDto responseDto = streamerService.updateStreamer(streamerId, requestDto);
 
@@ -66,10 +63,8 @@ public class StreamerV1Controller {
 	// 스트리머 본인 조회
 	@GetMapping("/my-page")
 	@PreAuthorize("hasRole('STREAMER')")
-	public ResponseEntity<StreamerResponseDto> getPersonalInfo(
-		@AuthenticationPrincipal User user
-	) {
-		Integer streamerId = Integer.valueOf(user.getUsername());
+	public ResponseEntity<StreamerResponseDto> getPersonalInfo() {
+		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
 
 		StreamerResponseDto responseDto = streamerService.getPersonalInfo(streamerId);
 

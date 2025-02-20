@@ -4,8 +4,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -37,10 +35,9 @@ public class StoreV1Controller {
 	@PostMapping()
 	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<StoreResponseDto> createStore(
-		@AuthenticationPrincipal User user,
 		@Valid @RequestBody StoreRequestDto storeRequestDto
 	) {
-		Integer streamerId = Integer.valueOf(user.getUsername());
+		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
 
 		StoreResponseDto responseDto = storeService.createStore(storeRequestDto, streamerId);
 
@@ -50,11 +47,10 @@ public class StoreV1Controller {
 	@DeleteMapping("/{storeId}/soft")
 	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<Void> deleteStore(
-		@AuthenticationPrincipal User user,
 		@PathVariable Integer storeId,
 		@Valid @RequestBody StoreDeleteRequestDto deleteRequestDto
 	) {
-		Integer streamerId = Integer.valueOf(user.getUsername());
+		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
 
 		storeService.deleteStore(deleteRequestDto, streamerId, storeId);
 

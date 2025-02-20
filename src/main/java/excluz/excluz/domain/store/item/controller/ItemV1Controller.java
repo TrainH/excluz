@@ -4,10 +4,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
+import excluz.excluz.auth.util.SecurityContextUtil;
 import excluz.excluz.domain.store.item.dto.request.ItemCreateRequestDto;
 import excluz.excluz.domain.store.item.dto.request.ItemUpdateRequestDto;
 import excluz.excluz.domain.store.item.dto.response.ItemResponseDto;
@@ -26,10 +25,9 @@ public class ItemV1Controller {
 	@PostMapping()
 	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<ItemResponseDto> createItem(
-		@AuthenticationPrincipal User user,
 		@Valid @RequestBody ItemCreateRequestDto createRequestDto
 	) {
-		Integer streamerId = Integer.valueOf(user.getUsername());
+		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
 
 		ItemResponseDto responseDto = itemService.createItem(createRequestDto, streamerId);
 
@@ -38,11 +36,8 @@ public class ItemV1Controller {
 
 	@DeleteMapping("/{itemsId}/soft")
 	@PreAuthorize("hasRole('STREAMER')")
-	public ResponseEntity<Void> deleteItem(
-		@PathVariable Integer itemsId,
-		@AuthenticationPrincipal User user
-	) {
-		Integer streamerId = Integer.valueOf(user.getUsername());
+	public ResponseEntity<Void> deleteItem(@PathVariable Integer itemsId) {
+		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
 
 		itemService.deleteItem(itemsId, streamerId);
 
@@ -52,11 +47,10 @@ public class ItemV1Controller {
 	@PatchMapping("/{itemsId}")
 	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<ItemResponseDto> updateItemInfo(
-		@AuthenticationPrincipal User user,
 		@PathVariable Integer itemsId,
 		@RequestBody(required = false) ItemUpdateRequestDto itemUpdateRequestDto
 	) {
-		Integer streamerId = Integer.valueOf(user.getUsername());
+		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
 
 		ItemResponseDto responseDto = itemService.updateItemInfo(itemUpdateRequestDto, itemsId, streamerId);
 
