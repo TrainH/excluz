@@ -27,15 +27,13 @@ public class JwtFilter implements Filter {
 
 	private final JwtUtil jwtUtil;
 
-	private static final String[] SIGN_UP_URI = {
+	private static final String[] WHITE_LIST = {
 		"/api/v1/users/signup",
 		"/api/v1/streamers/signup",
-		"/api/v1/events/applicants"
-	};
-
-	private static final String[] SIGN_IN_URI = {
+		"/api/v1/events/applicants",
 		"/api/v1/users/login",
-		"/api/v1/streamers/login"
+		"/api/v1/streamers/login",
+		"/api/v1/users/*"
 	};
 
 	@Override
@@ -46,7 +44,7 @@ public class JwtFilter implements Filter {
 		HttpServletResponse httpResponse = (HttpServletResponse) response;
 		String requestURI = httpRequest.getRequestURI();
 
-		if (isSignUpURI(requestURI) || isSignInURI(requestURI)) {
+		if (whiteListURI(requestURI)) {
 			chain.doFilter(request, response);
 			return;
 		}
@@ -76,14 +74,7 @@ public class JwtFilter implements Filter {
 	}
 
 	// requestURI가 회원가입 URI인지 확인
-	public boolean isSignUpURI(String requestURI) {
-		return PatternMatchUtils.simpleMatch(SIGN_UP_URI, requestURI);
+	public boolean whiteListURI(String requestURI) {
+		return PatternMatchUtils.simpleMatch(WHITE_LIST, requestURI);
 	}
-
-	// requestURI가 로그인 URI인지 확인
-	public boolean isSignInURI(String requestURI) {
-		return PatternMatchUtils.simpleMatch(SIGN_IN_URI, requestURI);
-	}
-
-
 }
