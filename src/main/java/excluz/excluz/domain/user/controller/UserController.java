@@ -77,6 +77,7 @@ public class UserController {
 	}
 
 	@GetMapping("/profile")
+	@PreAuthorize("hasRole('CUSTOMER')")
 	public ResponseEntity<MyProfileResponseDto> myPageGetAPI() {
 
 		Integer userId = SecurityContextUtil.getUserOrStreamerId();
@@ -87,6 +88,7 @@ public class UserController {
 	}
 
 	@PatchMapping("/profile")
+	@PreAuthorize("hasRole('CUSTOMER')")
 	public ResponseEntity<UpdateMyProfileResponseDto> userProfileUpdateAPI(
 		@RequestBody UpdateMyProfileRequestDto updateMyProfileRequest) {
 
@@ -98,6 +100,7 @@ public class UserController {
 	}
 
 	@PutMapping("/password")
+	@PreAuthorize("hasRole('CUSTOMER')")
 	public ResponseEntity<UpdatePasswordResponseDto> userUpdatePasswordAPU(
 		@RequestBody UpdatePasswordRequestDto updatePasswordRequest) {
 

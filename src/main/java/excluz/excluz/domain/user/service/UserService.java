@@ -22,7 +22,6 @@ import excluz.excluz.domain.user.dto.response.UpdatePasswordResponseDto;
 import excluz.excluz.domain.user.dto.response.UserLoginResponseDto;
 import excluz.excluz.domain.user.dto.response.UserProfileResponseDto;
 import excluz.excluz.domain.user.dto.response.UserSignupResponseDto;
-import excluz.excluz.domain.user.dto.response.UserWithdrawResponseDto;
 import excluz.excluz.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 

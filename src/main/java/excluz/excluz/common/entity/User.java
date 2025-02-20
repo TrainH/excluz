@@ -90,8 +90,8 @@ public class User extends BaseEntity{
 			String nickName,
 			String phoneNumber,
 			String address) {
-		this.nickName = nickName;
-		this.phoneNumber = phoneNumber;
-		this.address = address;
+		if(nickName != null) {this.nickName = nickName;}
+		if(phoneNumber != null) {this.phoneNumber = phoneNumber;}
+		if(address != null) {this.address = address;}
 	}
 }
