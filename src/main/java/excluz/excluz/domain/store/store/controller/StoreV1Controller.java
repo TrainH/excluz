@@ -16,14 +16,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import excluz.excluz.auth.util.SecurityContextUtil;
 import excluz.excluz.domain.store.store.dto.request.StoreDeleteRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreRequestDto;
 import excluz.excluz.domain.store.store.dto.request.StoreUpdateRequestDto;
 import excluz.excluz.domain.store.store.dto.response.StoreDetailResponseDto;
+import excluz.excluz.domain.store.store.dto.response.StoreNameResponseDto;
 import excluz.excluz.domain.store.store.dto.response.StoreResponseDto;
-import excluz.excluz.domain.store.store.dto.response.StoreUpdateResponseDto;
 import excluz.excluz.domain.store.store.service.StoreService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -36,15 +36,15 @@ public class StoreV1Controller {
 
 	@PostMapping()
 	@PreAuthorize("hasRole('STREAMER')")
-	public ResponseEntity<Void> createStore(
+	public ResponseEntity<StoreResponseDto> createStore(
 		@AuthenticationPrincipal User user,
 		@Valid @RequestBody StoreRequestDto storeRequestDto
 	) {
 		Integer streamerId = Integer.valueOf(user.getUsername());
 
-		storeService.createStore(storeRequestDto, streamerId);
+		StoreResponseDto responseDto = storeService.createStore(storeRequestDto, streamerId);
 
-		return new ResponseEntity<>(HttpStatus.CREATED);
+		return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/{storeId}/soft")
@@ -54,7 +54,6 @@ public class StoreV1Controller {
 		@PathVariable Integer storeId,
 		@Valid @RequestBody StoreDeleteRequestDto deleteRequestDto
 	) {
-
 		Integer streamerId = Integer.valueOf(user.getUsername());
 
 		storeService.deleteStore(deleteRequestDto, streamerId, storeId);
@@ -64,26 +63,24 @@ public class StoreV1Controller {
 
 	@PatchMapping("/{storeId}")
 	@PreAuthorize("hasRole('STREAMER')")
-	public ResponseEntity<StoreUpdateResponseDto> updateStore(
-		@AuthenticationPrincipal User user,
+	public ResponseEntity<StoreResponseDto> updateStore(
 		@PathVariable Integer storeId,
-		@RequestBody StoreUpdateRequestDto requestDto
+		@RequestBody(required = false) StoreUpdateRequestDto requestDto
 	) {
-		Integer userId = Integer.valueOf(user.getUsername());
+		Integer userId = SecurityContextUtil.getUserOrStreamerId();
 
-		StoreUpdateResponseDto responseDto = storeService.updateStore(userId, storeId, requestDto);
+		StoreResponseDto responseDto = storeService.updateStore(userId, storeId, requestDto);
 
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 
 	@GetMapping()
-	public ResponseEntity<Page<StoreResponseDto>> getStoreList(
+	public ResponseEntity<Page<StoreNameResponseDto>> getStoreList(
 		@RequestParam(required = false) String storeName,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size
 	) {
-
-		Page<StoreResponseDto> responseDtoList = storeService.getStoreList(storeName, page, size);
+		Page<StoreNameResponseDto> responseDtoList = storeService.getStoreList(storeName, page, size);
 
 		return new ResponseEntity<>(responseDtoList, HttpStatus.OK);
 	}
@@ -94,7 +91,6 @@ public class StoreV1Controller {
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size
 	) {
-
 		StoreDetailResponseDto responseDto = storeService.getStoreById(storeId, page, size);
 
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
@@ -102,11 +98,10 @@ public class StoreV1Controller {
 
 	@GetMapping("/my-store")
 	public ResponseEntity<StoreDetailResponseDto> getOwnedStore(
-		@AuthenticationPrincipal User user,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size
 	) {
-		Integer streamerId = Integer.valueOf(user.getUsername());
+		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
 
 		StoreDetailResponseDto responseDto = storeService.getOwnedStoreById(streamerId, page, size);
 
