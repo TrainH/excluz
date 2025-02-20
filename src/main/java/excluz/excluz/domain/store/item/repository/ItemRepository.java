@@ -33,7 +33,7 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 	Optional<Item> findItemByIdAndNotDeleted(@Param("itemsId") Integer itemsId);
 
 	@Query("SELECT i FROM Item i " +
-	"WHERE i.store = :storeId " +
+	"WHERE i.store.id = :storeId " +
 	"AND (i.isDeleted = FALSE ) " +
 	"ORDER BY i.id DESC")
 	Page<Item> findByStoreId(@Param("storeId") Integer storeId, Pageable pageable);
