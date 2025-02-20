@@ -31,7 +31,7 @@ public class JwtFilter implements Filter {
 		"/api/v1/users/signup",
 		"/api/v1/streamers/signup",
 		"/api/v1/events/applicants",
-		"/api/v1/events/applicants/**"
+		"/api/v1/events/applicants/**",
 		"/api/v1/users/login",
 		"/api/v1/streamers/login",
 		"/api/v1/users/*",
