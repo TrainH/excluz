@@ -7,6 +7,7 @@ import excluz.excluz.domain.point.point.service.PointService;
 import excluz.excluz.domain.user.enums.UserRole;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +27,7 @@ public class PointController {
 
         pointService.chargePoint(userOrStreamerId, userRole, requestDto);
 
-        return ResponseEntity.ok("충전되었습니다.");
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/points/my-point")
