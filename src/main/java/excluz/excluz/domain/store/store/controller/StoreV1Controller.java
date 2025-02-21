@@ -44,15 +44,14 @@ public class StoreV1Controller {
 		return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
 	}
 
-	@DeleteMapping("/{storeId}/soft")
+	@DeleteMapping("/my-store/soft")
 	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<Void> deleteStore(
-		@PathVariable Integer storeId,
 		@Valid @RequestBody StoreDeleteRequestDto deleteRequestDto
 	) {
 		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
 
-		storeService.deleteStore(deleteRequestDto, streamerId, storeId);
+		storeService.deleteStore(deleteRequestDto, streamerId);
 
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
