@@ -32,7 +32,7 @@ public class Store extends BaseEntity {
 	@Column(length = 30, unique = true, nullable = false)
 	private String storeName;
 
-	@Column(length = 30, unique = true, nullable = false)
+	@Column(length = 30, nullable = false)
 	private String registrationNumber;
 
 	@Column(name = "is_deleted")
