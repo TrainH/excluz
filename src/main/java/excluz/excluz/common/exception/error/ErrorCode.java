@@ -30,6 +30,7 @@ public enum ErrorCode {
 	//스토어 관련 예외 코드
 	STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "스토어 정보를 찾을 수 없습니다."),
 	STORE_NOT_MATCH(HttpStatus.BAD_REQUEST, "스토어에 대한 권한이 없습니다"),
+	DUPLICATE_REGISTRATION_NUMBER(HttpStatus.CONFLICT, "다른 스토어와 중복되는 사업자 등록번호입니다."),
 
 	// 포인트 관련 예외 코드
 	POINT_NOT_FOUND(HttpStatus.NOT_FOUND, "포인트를 충전해주세요."),
