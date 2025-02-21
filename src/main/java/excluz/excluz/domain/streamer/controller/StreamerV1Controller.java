@@ -21,12 +21,12 @@ public class StreamerV1Controller {
 	private final StreamerService streamerService;
 
 	@PostMapping("/signup")
-	public ResponseEntity<Void> streamerSignup(
+	public ResponseEntity<StreamerResponseDto> streamerSignup(
 		@Valid @RequestBody StreamerSignupRequestDto signupRequestDto
 	) {
-		streamerService.streamerSignup(signupRequestDto);
+		StreamerResponseDto responseDto = streamerService.streamerSignup(signupRequestDto);
 
-		return new ResponseEntity<>(HttpStatus.CREATED);
+		return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
 	}
 
 	@PostMapping("/login")
