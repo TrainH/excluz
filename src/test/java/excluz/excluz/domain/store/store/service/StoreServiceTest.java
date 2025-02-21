@@ -102,20 +102,19 @@ public class StoreServiceTest {
 
 			when(streamerService.findStreamerById(anyInt())).thenReturn(SharedData.STREAMER1);
 			when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
-			when(storeRepository.findById(SharedData.STORE_ID1)).thenReturn(Optional.of(spyStore));
+			when(storeRepository.findStoreWithStreamer(SharedData.STREAMER_ID1)).thenReturn(Optional.of(spyStore));
 
 			// 삭제 상태 변경 전 검증
 			assertThat(spyStore.isDeleted()).isEqualTo(false);
 
 			// when
-			storeService.deleteStore(deleteRequestDto, SharedData.STREAMER_ID1, SharedData.STORE_ID1);
+			storeService.deleteStore(deleteRequestDto, SharedData.STREAMER_ID1);
 
 			// then
 			verify(streamerService).findStreamerById(SharedData.STREAMER_ID1);
 			verify(passwordEncoder).matches(SharedData.STREAMER_PASSWORD1, SharedData.STREAMER_PASSWORD1);
-			verify(storeRepository).findById(SharedData.STORE_ID1);
+			verify(storeRepository).findStoreWithStreamer(SharedData.STREAMER_ID1);
 			verify(spyStore).updateIsDeleted(true);
-
 			// 삭제 상태 변경 후 검증
 			assertThat(spyStore.isDeleted()).isEqualTo(true);
 		}
@@ -129,7 +128,7 @@ public class StoreServiceTest {
 	class UpdateStore {
 
 		@Test
-		@DisplayName("success: 스토어 주인은 스토어 정보 수정 가능")
+		@DisplayName("success: 스토어 주인만 스토어 정보 수정 가능")
 		void updateStore() {
 			// given
 			StoreUpdateRequestDto requestDto = new StoreUpdateRequestDto(SharedData.ADDRESS2, SharedData.STORE_NAME2, SharedData.REGISTRATION_NUMBER2);
