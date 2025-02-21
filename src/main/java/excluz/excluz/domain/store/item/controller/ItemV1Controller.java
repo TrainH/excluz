@@ -1,6 +1,5 @@
 package excluz.excluz.domain.store.item.controller;
 
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -10,6 +9,7 @@ import excluz.excluz.auth.util.SecurityContextUtil;
 import excluz.excluz.domain.store.item.dto.request.ItemCreateRequestDto;
 import excluz.excluz.domain.store.item.dto.request.ItemUpdateRequestDto;
 import excluz.excluz.domain.store.item.dto.response.ItemResponseDto;
+import excluz.excluz.domain.store.item.dto.response.GetItemListResponseDto;
 import excluz.excluz.domain.store.item.service.ItemService;
 
 import jakarta.validation.Valid;
@@ -66,15 +66,15 @@ public class ItemV1Controller {
 	}
 
 	@GetMapping()
-	public ResponseEntity<Page<ItemResponseDto>> getItemList(
+	public ResponseEntity<GetItemListResponseDto> getItemList(
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size,
-		@RequestParam(required = false, defaultValue = "0") Integer minPrice,
-		@RequestParam(required = false, defaultValue = "-1") Integer maxPrice,
+		@RequestParam(defaultValue = "0") Integer minPrice,
+		@RequestParam(defaultValue = "-1") Integer maxPrice,
 		@RequestParam(required = false) String itemName
 	) {
-		Page<ItemResponseDto> itemResponseDtoList = itemService.getItemList(page, size, minPrice, maxPrice, itemName);
+		GetItemListResponseDto responseDto = itemService.getItemList(page, size, Math.max(minPrice, 0), maxPrice, itemName);
 
-		return new ResponseEntity<>(itemResponseDtoList, HttpStatus.OK);
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 }
