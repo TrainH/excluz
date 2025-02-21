@@ -67,7 +67,7 @@ public class ItemV1Controller {
 
 	@GetMapping()
 	public ResponseEntity<Page<ItemResponseDto>> getItemList(
-		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size,
 		@RequestParam(required = false, defaultValue = "0") Integer minPrice,
 		@RequestParam(required = false, defaultValue = "-1") Integer maxPrice,

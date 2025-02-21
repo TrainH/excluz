@@ -82,7 +82,7 @@ public class ItemService {
 	@Transactional(readOnly = true)
 	public Page<ItemResponseDto> getItemList(int page, int size, Integer minPrice, Integer maxPrice, String itemName) {
 
-		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
+		Pageable pageable = PageRequest.of(Math.max(page, 0), size);
 		int newMinPrice=minPrice, newMaxPrice=maxPrice;
 		Optional<Integer> highestPrice = itemRepository.findHighestItemPrice();
 

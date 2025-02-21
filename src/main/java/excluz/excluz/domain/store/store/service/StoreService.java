@@ -99,7 +99,7 @@ public class StoreService {
 
 	@Transactional(readOnly = true)
 	public Page<StoreNameResponseDto> getStoreList(String storeName, int page, int size) {
-		Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
+		Pageable pageable = PageRequest.of(Math.max(0, page), size);
 
 		Page<Store> storeList = storeRepository.findByStoreName(pageable, storeName);
 
@@ -108,7 +108,7 @@ public class StoreService {
 
 	@Transactional(readOnly = true)
 	public StoreDetailResponseDto getStoreById(Integer storeId, int page, int size) {
-		Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
+		Pageable pageable = PageRequest.of(Math.max(0, page), size);
 		Streamer streamer = storeRepository.findStreamerWithStore(storeId).orElseThrow(
 			() -> new NotFoundException(ErrorCode.USER_NOT_FOUND)
 		);
@@ -124,7 +124,7 @@ public class StoreService {
 
 	@Transactional(readOnly = true)
 	public StoreDetailResponseDto getOwnedStoreById(Integer streamerId, int page, int size) {
-		Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
+		Pageable pageable = PageRequest.of(Math.max(0, page), size);
 		// 스트리머 삭제 회원 여부 확인
 		Streamer streamer = getStreamerByIdAndNotDeleted(streamerId);
 

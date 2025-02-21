@@ -74,7 +74,7 @@ public class StreamerV1Controller {
 	@GetMapping()
 	public ResponseEntity<Page<StreamerSummaryResponseDto>> getStreamerList(
 		@RequestParam(required = false) String nickName,
-		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size
 	) {
 		Page<StreamerSummaryResponseDto> responseDtoList = streamerService.getStreamerList(page, size, nickName);

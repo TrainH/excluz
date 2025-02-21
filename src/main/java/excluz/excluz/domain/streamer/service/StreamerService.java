@@ -104,7 +104,7 @@ public class StreamerService {
 
 	@Transactional(readOnly = true)
 	public Page<StreamerSummaryResponseDto> getStreamerList(int page, int size, String nickName) {
-		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
+		Pageable pageable = PageRequest.of(Math.max(page, 0), size);
 
 		Page<Streamer> streamerList = streamerRepository.findByNickName(pageable, nickName);
 

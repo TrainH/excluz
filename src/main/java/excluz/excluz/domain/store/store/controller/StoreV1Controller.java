@@ -73,7 +73,7 @@ public class StoreV1Controller {
 	@GetMapping()
 	public ResponseEntity<Page<StoreNameResponseDto>> getStoreList(
 		@RequestParam(required = false) String storeName,
-		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size
 	) {
 		Page<StoreNameResponseDto> responseDtoList = storeService.getStoreList(storeName, page, size);
@@ -84,7 +84,7 @@ public class StoreV1Controller {
 	@GetMapping("/{storeId}")
 	public ResponseEntity<StoreDetailResponseDto> getStoreById(
 		@PathVariable Integer storeId,
-		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size
 	) {
 		StoreDetailResponseDto responseDto = storeService.getStoreById(storeId, page, size);
@@ -94,7 +94,7 @@ public class StoreV1Controller {
 
 	@GetMapping("/my-store")
 	public ResponseEntity<StoreDetailResponseDto> getOwnedStore(
-		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size
 	) {
 		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
