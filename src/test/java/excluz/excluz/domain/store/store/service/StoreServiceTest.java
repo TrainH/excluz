@@ -38,7 +38,6 @@ import excluz.excluz.domain.store.store.dto.response.StoreDetailResponseDto;
 import excluz.excluz.domain.store.store.dto.response.StoreNameResponseDto;
 import excluz.excluz.domain.store.store.dto.response.StoreResponseDto;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
-import excluz.excluz.domain.streamer.repository.StreamerRepository;
 import excluz.excluz.domain.streamer.service.StreamerService;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,13 +52,9 @@ public class StoreServiceTest {
 	@Mock
 	ItemRepository itemRepository;
 	@Mock
-	StreamerRepository streamerRepository;
-	@Mock
 	StreamerService streamerService;
 	@Mock
 	PasswordEncoder passwordEncoder;
-	@Mock
-	Store mockStore;
 	@Mock
 	Streamer mockStreamer;
 
@@ -182,7 +177,7 @@ public class StoreServiceTest {
 			// given
 			int page = 1;
 			int size = 10;
-			Pageable pageable = PageRequest.of(page-1, size);
+			Pageable pageable = PageRequest.of(page, size);
 			Store store = SharedData.STORE1;
 			List<Store> storeList = Collections.singletonList(store);
 			Page<Store> storePage = new PageImpl<>(storeList, pageable, storeList.size());
@@ -213,7 +208,7 @@ public class StoreServiceTest {
 			// given
 			int page = 1;
 			int size = 10;
-			Pageable pageable = PageRequest.of(page-1, size);
+			Pageable pageable = PageRequest.of(page, size);
 			when(storeRepository.findStreamerWithStore(anyInt())).thenReturn(Optional.of(SharedData.STREAMER1));
 
 			when(storeRepository.findById(SharedData.STORE_ID1)).thenReturn(Optional.of(SharedData.STORE1));
@@ -252,7 +247,7 @@ public class StoreServiceTest {
 			ReflectionTestUtils.setField(SharedData.STORE1, "id", SharedData.STORE_ID1);
 			int page = 1;
 			int size = 10;
-			Pageable pageable = PageRequest.of(page-1, size);
+			Pageable pageable = PageRequest.of(page, size);
 			when(streamerService.findStreamerById(SharedData.STREAMER_ID1)).thenReturn(SharedData.STREAMER1);
 			when(storeRepository.findStoreWithStreamer(SharedData.STREAMER_ID1)).thenReturn(Optional.of(SharedData.STORE1));
 
