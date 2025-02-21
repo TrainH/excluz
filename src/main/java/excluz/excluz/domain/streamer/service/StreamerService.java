@@ -30,7 +30,7 @@ public class StreamerService {
 	private final JwtUtil jwtUtil;
 
 	@Transactional
-	public void streamerSignup(StreamerSignupRequestDto signupRequestDto) {
+	public StreamerResponseDto streamerSignup(StreamerSignupRequestDto signupRequestDto) {
 		if (!signupRequestDto.getPassword().equals(signupRequestDto.getReEnterPassword())) {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
@@ -45,7 +45,7 @@ public class StreamerService {
 			.password(encodedPassword)
 			.build();
 
-		streamerRepository.save(streamer);
+		return StreamerResponseDto.from(streamerRepository.save(streamer));
 	}
 
 	public StreamerLoginResponseDto streamerLogin(StreamerLoginRequestDto loginRequestDto) {
@@ -104,7 +104,7 @@ public class StreamerService {
 
 	@Transactional(readOnly = true)
 	public Page<StreamerSummaryResponseDto> getStreamerList(int page, int size, String nickName) {
-		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
+		Pageable pageable = PageRequest.of(Math.max(page, 0), size);
 
 		Page<Streamer> streamerList = streamerRepository.findByNickName(pageable, nickName);
 
