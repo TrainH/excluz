@@ -15,6 +15,7 @@ import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.store.item.dto.request.ItemCreateRequestDto;
 import excluz.excluz.domain.store.item.dto.request.ItemUpdateRequestDto;
+import excluz.excluz.domain.store.item.dto.response.GetItemListResponseDto;
 import excluz.excluz.domain.store.item.dto.response.ItemResponseDto;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
@@ -80,7 +81,7 @@ public class ItemService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<ItemResponseDto> getItemList(int page, int size, Integer minPrice, Integer maxPrice, String itemName) {
+	public GetItemListResponseDto getItemList(int page, int size, Integer minPrice, Integer maxPrice, String itemName) {
 
 		Pageable pageable = PageRequest.of(Math.max(page, 0), size);
 		int newMinPrice=minPrice, newMaxPrice=maxPrice;
@@ -93,12 +94,12 @@ public class ItemService {
 		}
 		else if (maxPrice <= minPrice) {
 			newMaxPrice = highestPrice.orElse(minPrice + 1);
-			newMinPrice = maxPrice;
 		}
 
 		Page<Item> items = itemRepository.findByPriceWithItemName(pageable, newMinPrice, newMaxPrice, itemName);
+		Page<ItemResponseDto> responseDtoPage = items.map(ItemResponseDto::from);
 
-		return items.map(ItemResponseDto::from);
+		return new GetItemListResponseDto(newMinPrice, newMaxPrice, responseDtoPage);
 	}
 
 	// 삭제 되지 않은 아이템만 조회하는 메서드
