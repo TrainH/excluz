@@ -24,4 +24,9 @@ public interface StoreRepository extends JpaRepository<Store, Integer> {
 		"AND s.isDeleted=false " +
 		"ORDER BY s.id DESC")
 	Page<Store> findByStoreName(Pageable pageable, @Param("storeName") String storeName);
+
+	@Query("SELECT s FROM Store s " +
+		"WHERE (s.registrationNumber LIKE :registrationNumber) " +
+		"AND s.isDeleted = false")
+	Optional<Store> findByRegistrationNumber(@Param("registrationNumber") String registrationNumber);
 }

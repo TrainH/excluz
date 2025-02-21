@@ -1,6 +1,7 @@
 package excluz.excluz.domain.store.store.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import excluz.excluz.common.entity.Item;
 import excluz.excluz.common.entity.Store;
 import excluz.excluz.common.entity.Streamer;
+import excluz.excluz.common.exception.ConflictException;
 import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
@@ -41,6 +43,9 @@ public class StoreService {
 	@Transactional
 	public StoreResponseDto createStore(StoreRequestDto storeRequestDto, Integer streamerId) {
 		Streamer streamer = getStreamerByIdAndNotDeleted(streamerId);
+
+		// 삭제 되지 않은 가게 중 중복된 사업자 등록 번호가 있을경우 예외 처리
+		isDuplicatedRegistrationNumber(storeRequestDto.getRegistrationNumber());
 
 		Store store = Store.builder()
 			.streamer(streamer)
@@ -78,6 +83,11 @@ public class StoreService {
 		// 스토어 주인 검증 로직
 		if (!store.getStreamer().getId().equals(userId)) {
 			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+		}
+
+		// 삭제 되지 않은 가게 중 중복된 사업자 등록 번호가 있을경우 예외 처리
+		if (requestDto.getRegistrationNumber() != null) {
+			isDuplicatedRegistrationNumber(requestDto.getRegistrationNumber());
 		}
 
 		store.updateStore(requestDto.getAddress(),
@@ -154,5 +164,14 @@ public class StoreService {
 			throw new NotFoundException(ErrorCode.STORE_NOT_FOUND);
 		}
 		return store;
+	}
+
+	// 삭제 되지 않은 가게 중 중복된 사업자 등록 번호가 있을경우 예외 처리
+	private void isDuplicatedRegistrationNumber(String registrationNumber) {
+		Optional<Store> duplicateStore = storeRepository.findByRegistrationNumber(registrationNumber);
+
+		if (duplicateStore.isPresent()) {
+			throw new ConflictException(ErrorCode.DUPLICATE_REGISTRATION_NUMBER);
+		}
 	}
 }
