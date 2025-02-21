@@ -91,7 +91,7 @@ public class OrderItemService {
                 .collect(Collectors.toSet());
 
         if (storeSet.size() != 1) {
-            throw new BadRequestException(ErrorCode.ITEM_NOT_FOUND);
+            throw new BadRequestException(ErrorCode.ORDER_ITEM_STORE_MISMATCH);
         }
 
         Store store = storeSet.iterator().next();
@@ -158,28 +158,29 @@ public class OrderItemService {
         ).orElseGet(() -> new Point(store.getStreamer().getUserRole(), store.getStreamer().getId(), 0));
 
 
-        // 포인트 추가
+        // 구매 시, 고객 차감 / 스트리머 충전
         userPoint.disChargeAmount(totalAmount);
         streamerPoint.chargeAmount(totalAmount);
 
         // 데이터 저장
+        pointRepository.save(userPoint);
+        pointRepository.save(streamerPoint);
+
         cartItemRepository.deleteAllInBatch(deleteCartItemList);
         orderRepository.save(order);
-        pointRepository.save(streamerPoint);
         orderItemRepository.saveAll(orderItemList);
         pointTransactionRepository.save(pointTransaction);
-
     }
 
     @Transactional(readOnly = true)
     public Page<OrderItemResponseDto> getOrderItemList(Integer userOrStreamerId, UserRole userRole, Pageable pageable) {
 
         if (userRole.equals(UserRole.CUSTOMER)) {
-            return orderItemRepository.findByUserId(userOrStreamerId, pageable).map(OrderItemResponseDto::from);
+            return orderItemRepository.findByUserId(userOrStreamerId, pageable);
         }
 
         if (userRole.equals(UserRole.STREAMER)) {
-            return orderItemRepository.findByStreamerId(userOrStreamerId, pageable).map(OrderItemResponseDto::from);
+            return orderItemRepository.findByStreamerId(userOrStreamerId, pageable);
         }
         throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
     }
