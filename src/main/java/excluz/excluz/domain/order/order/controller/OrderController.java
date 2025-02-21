@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,13 +27,13 @@ public class OrderController {
 
     @GetMapping("/orders")
     public ResponseEntity<Page<OrderResponseDto>> getOrderList(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "5") int size){
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
 
         Integer userOrStreamerId = SecurityContextUtil.getUserOrStreamerId();
         UserRole userRole = SecurityContextUtil.getUserRole();
 
-        Pageable pageable = PageRequest.of(page-1, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("updatedAt")));
 
         return ResponseEntity.ok(orderService.getOrderList(userOrStreamerId, userRole, pageable));
     }
@@ -55,6 +57,6 @@ public class OrderController {
         UserRole userRole = SecurityContextUtil.getUserRole();
 
         orderService.updateOrder(userOrStreamerId, userRole, orderId, requestDto);
-        return ResponseEntity.ok("변경이 완료되었습니다.");
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

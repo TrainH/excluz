@@ -9,6 +9,7 @@ import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.event.event.dto.EventClosingResponseDto;
 import excluz.excluz.domain.event.event.dto.EventRequestDto;
 import excluz.excluz.domain.event.event.dto.EventResponseDto;
+import excluz.excluz.domain.event.event.dto.EventWithApplicantsResponseDto;
 import excluz.excluz.domain.event.event.enums.ParticipantCondition;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
 import excluz.excluz.domain.event.event.repository.EventRepository;
@@ -366,8 +367,11 @@ public class EventServiceTest {
         List<Event> events = Arrays.asList(event1, event2);
         when(eventRepository.findAll()).thenReturn(events);
 
+        List<Event> eventResponseList = Arrays.asList(event1, event2);
+        when(eventRepository.findAll()).thenReturn(eventResponseList);
+
         // when
-        List<EventResponseDto> eventList = eventService.getAllEvents();
+        List<EventResponseDto> eventList = eventService.getAllEvents(testStreamer.getId());
 
         // then
         Assertions.assertThat(eventList).isNotNull();
@@ -381,13 +385,12 @@ public class EventServiceTest {
         Event event = createTestEvent();
         ReflectionTestUtils.setField(event, "id", 1);
         // stubbing: 이벤트 단건 조회
-        when(eventRepository.findById(1)).thenReturn(Optional.of(event));
-        // stubbing: 이벤트 아이템 조회 (간단히 빈 리스트)
+        when(eventRepository.findById(10)).thenReturn(Optional.of(event));
+// Mock : eventItemRepository.findByEvent(event) 호출 시 비어있는 리스트 반환
         when(eventItemRepository.findByEvent(event)).thenReturn(new ArrayList<>());
 
-        // when
-        EventResponseDto fetchedEvent = eventService.getEvent(1);
-
+// when : eventService.getEvent(streamerId, eventId) 호출
+        EventWithApplicantsResponseDto fetchedEvent = eventService.getEvent(testStreamer.getId(), 10);
         // then
         Assertions.assertThat(fetchedEvent).isNotNull();
         Assertions.assertThat(fetchedEvent.getId()).isEqualTo(1);
@@ -401,9 +404,9 @@ public class EventServiceTest {
         when(eventRepository.findById(-999)).thenReturn(Optional.empty());
 
         // when, then
-        Assertions.assertThatThrownBy(() -> {
-                    eventService.getEvent(-999);
-                })
+        Assertions.assertThatThrownBy(() ->
+                        eventService.getEvent(testStreamer.getId(), -999) // 스트리머 ID와 없는 이벤트 ID
+                )
                 .isInstanceOf(NotFoundException.class)
                 .satisfies(ex -> {
                     NotFoundException nfe = (NotFoundException) ex;

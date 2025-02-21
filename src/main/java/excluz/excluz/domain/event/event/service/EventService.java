@@ -6,6 +6,7 @@ import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.UnauthorizedException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.event.event.dto.EventClosingResponseDto;
+import excluz.excluz.domain.event.event.dto.EventWithApplicantsResponseDto;
 import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantResponseDto;
 import excluz.excluz.domain.event.eventApplicant.enums.ApplicantStatus;
 import excluz.excluz.domain.event.eventApplicant.repository.EventApplicantRepository;
@@ -48,7 +49,7 @@ public class EventService {
         Streamer streamer = streamerRepository.findById(streamerId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
-        if (!streamer.getId().equals(streamerId)){
+        if (!streamer.getId().equals(store.getStreamer().getId())){
             throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
         }
 
@@ -93,26 +94,40 @@ public class EventService {
 
 
     // 이벤트 전체 조회 서비스 로직
-    public List<EventResponseDto> getAllEvents() {
-        // 이벤트 전체 조회
-        List<Event> events = eventRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<EventResponseDto> getAllEvents(Integer streamerId) {
+        Streamer streamer = streamerRepository.findById(streamerId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
+        List<Event> events = eventRepository.findAll().stream()
+                .filter(event -> event.getStore().getStreamer().getId().equals(streamer.getId()))
+                .toList();
+
+        // EventResponseDto로 변환하여 반환
         return events.stream()
                 .map(EventResponseDto::fromWithoutItems)
                 .collect(Collectors.toList());
     }
 
-    // 이벤트 단건 조회 서비스 로직
-    public EventResponseDto getEvent(Integer eventId) {
-        // 이벤트 단건 조회
+
+    @Transactional(readOnly = true)
+    public EventWithApplicantsResponseDto getEvent(Integer streamerId, Integer eventId) {
+        Streamer streamer = streamerRepository.findById(streamerId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
 
-        // EventResponseDto로 변환하여 반환
-        List<EventItem> eventItems = eventItemRepository.findByEvent(event);
+        if (!event.getStore().getStreamer().getId().equals(streamer.getId())) {
+            throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
+        }
 
-        return EventResponseDto.fromWithItems(event, eventItems);
+        List<EventItem> eventItems = eventItemRepository.findByEvent(event);
+        List<EventApplicant> eventApplicants = eventApplicantRepository.findByEvent(event);
+
+        return EventWithApplicantsResponseDto.from(event, eventItems, eventApplicants);
     }
+
 
     // 이벤트 취소 시 재고 복구 및 이벤트 상태 변경 (예: 이벤트 취소 플래그 추가 등으로 확장 가능)
     @Transactional
@@ -141,6 +156,13 @@ public class EventService {
             Item item = eventItem.getItem();
             item.addRemainingQuantity(eventItem.getQuantity() * event.getNumberOfWinners());
         }
+
+//      응모자를 전원 낙첨 상태로 변경
+        List<EventApplicant> applicantList = eventApplicantRepository.findByEvent(event);
+        for (EventApplicant applicant : applicantList) {
+            applicant.updateApplicantStatus(ApplicantStatus.LOSER);
+        }
+        eventApplicantRepository.saveAll(applicantList);
 
         event.updateIsDeleted(true);
         eventRepository.save(event);

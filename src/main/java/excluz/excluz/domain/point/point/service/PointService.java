@@ -57,7 +57,7 @@ public class PointService {
     public PointResponseDto getPoint(Integer userOrStreamerId, UserRole userRole) {
 
         Point point = pointRepository.findByUserRoleAndUserOrStreamerId(userRole, userOrStreamerId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.POINT_NOT_FOUND)); // 나중에 예외처리 변경
+                .orElseThrow(() -> new NotFoundException(ErrorCode.POINT_NOT_FOUND));
 
         return PointResponseDto.from(point);
     }
