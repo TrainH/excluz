@@ -1,7 +1,6 @@
 package excluz.excluz.domain.order.order.enums;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public enum OrderStatus {
@@ -39,5 +38,20 @@ public enum OrderStatus {
 
     public String[] getActorList() {
         return actorList;
+    }
+
+    private static final Map<OrderStatus, List<OrderStatus>> validTransitions = new HashMap<>();
+
+    static {
+        validTransitions.put(ORDERED, List.of(PREPARING, CANCELED));   // ORDERED → PREPARING 또는 CANCELED
+        validTransitions.put(PREPARING, List.of(SHIPPING));  // PREPARING → SHIPPING 또는 CANCELED
+        validTransitions.put(SHIPPING, List.of(DELIVERED));            // SHIPPING → DELIVERED
+        validTransitions.put(DELIVERED, Collections.emptyList());            // DELIVERED 이후는 상태 변경 불가
+        validTransitions.put(CANCELED, Collections.emptyList());             // CANCELED 이후는 상태 변경 불가
+    }
+
+    // ✅ 특정 상태에서 새로운 상태로 변경 가능한지 확인
+    public boolean canChangeTo(OrderStatus newStatus) {
+        return validTransitions.getOrDefault(this, Collections.emptyList()).contains(newStatus);
     }
 }
