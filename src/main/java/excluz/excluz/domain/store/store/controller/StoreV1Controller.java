@@ -44,15 +44,14 @@ public class StoreV1Controller {
 		return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
 	}
 
-	@DeleteMapping("/{storeId}/soft")
+	@DeleteMapping("/my-store/soft")
 	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<Void> deleteStore(
-		@PathVariable Integer storeId,
 		@Valid @RequestBody StoreDeleteRequestDto deleteRequestDto
 	) {
 		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
 
-		storeService.deleteStore(deleteRequestDto, streamerId, storeId);
+		storeService.deleteStore(deleteRequestDto, streamerId);
 
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
@@ -73,7 +72,7 @@ public class StoreV1Controller {
 	@GetMapping()
 	public ResponseEntity<Page<StoreNameResponseDto>> getStoreList(
 		@RequestParam(required = false) String storeName,
-		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size
 	) {
 		Page<StoreNameResponseDto> responseDtoList = storeService.getStoreList(storeName, page, size);
@@ -84,7 +83,7 @@ public class StoreV1Controller {
 	@GetMapping("/{storeId}")
 	public ResponseEntity<StoreDetailResponseDto> getStoreById(
 		@PathVariable Integer storeId,
-		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size
 	) {
 		StoreDetailResponseDto responseDto = storeService.getStoreById(storeId, page, size);
@@ -94,7 +93,7 @@ public class StoreV1Controller {
 
 	@GetMapping("/my-store")
 	public ResponseEntity<StoreDetailResponseDto> getOwnedStore(
-		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size
 	) {
 		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();

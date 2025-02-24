@@ -1,6 +1,7 @@
 package excluz.excluz.domain.store.store.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import excluz.excluz.common.entity.Item;
 import excluz.excluz.common.entity.Store;
 import excluz.excluz.common.entity.Streamer;
+import excluz.excluz.common.exception.ConflictException;
 import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
@@ -42,6 +44,16 @@ public class StoreService {
 	public StoreResponseDto createStore(StoreRequestDto storeRequestDto, Integer streamerId) {
 		Streamer streamer = getStreamerByIdAndNotDeleted(streamerId);
 
+		// 비즈니스 요구사항: 스트리머:스토어 = 1:1 관계
+		// 운영중인 스토어가 있을 경우 예외처리
+		Optional<Store> activeStore = storeRepository.findStoreByStreamerIdAndNotDeleted(streamerId);
+		if(activeStore.isPresent()){
+			throw new ConflictException(ErrorCode.STORE_ALREADY_EXIST);
+		}
+
+		// 삭제 되지 않은 가게 중 중복된 사업자 등록 번호가 있을경우 예외 처리
+		isDuplicatedRegistrationNumber(storeRequestDto.getRegistrationNumber());
+
 		Store store = Store.builder()
 			.streamer(streamer)
 			.address(storeRequestDto.getAddress())
@@ -53,20 +65,16 @@ public class StoreService {
 	}
 
 	@Transactional
-	public void deleteStore(StoreDeleteRequestDto deleteRequestDto, Integer streamerId, Integer storeId) {
+	public void deleteStore(StoreDeleteRequestDto deleteRequestDto, Integer streamerId) {
 		Streamer streamer = getStreamerByIdAndNotDeleted(streamerId);
 
 		if (!passwordEncoder.matches(deleteRequestDto.getPassword(), streamer.getPassword())) {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
 
-		Store store = storeRepository.findById(storeId).orElseThrow(
+		Store store = storeRepository.findStoreWithStreamer(streamerId).orElseThrow(
 			() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND)
 		);
-
-		if (store.isDeleted()) {
-			throw new NotFoundException(ErrorCode.STORE_NOT_FOUND);
-		}
 
 		store.updateIsDeleted(true);
 	}
@@ -80,6 +88,11 @@ public class StoreService {
 			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
 		}
 
+		// 삭제 되지 않은 가게 중 중복된 사업자 등록 번호가 있을경우 예외 처리
+		if (requestDto.getRegistrationNumber() != null) {
+			isDuplicatedRegistrationNumber(requestDto.getRegistrationNumber());
+		}
+
 		store.updateStore(requestDto.getAddress(),
 			requestDto.getStoreName(),
 			requestDto.getRegistrationNumber());
@@ -89,7 +102,7 @@ public class StoreService {
 
 	@Transactional(readOnly = true)
 	public Page<StoreNameResponseDto> getStoreList(String storeName, int page, int size) {
-		Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
+		Pageable pageable = PageRequest.of(Math.max(0, page), size);
 
 		Page<Store> storeList = storeRepository.findByStoreName(pageable, storeName);
 
@@ -98,7 +111,7 @@ public class StoreService {
 
 	@Transactional(readOnly = true)
 	public StoreDetailResponseDto getStoreById(Integer storeId, int page, int size) {
-		Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
+		Pageable pageable = PageRequest.of(Math.max(0, page), size);
 		Streamer streamer = storeRepository.findStreamerWithStore(storeId).orElseThrow(
 			() -> new NotFoundException(ErrorCode.USER_NOT_FOUND)
 		);
@@ -114,7 +127,7 @@ public class StoreService {
 
 	@Transactional(readOnly = true)
 	public StoreDetailResponseDto getOwnedStoreById(Integer streamerId, int page, int size) {
-		Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
+		Pageable pageable = PageRequest.of(Math.max(0, page), size);
 		// 스트리머 삭제 회원 여부 확인
 		Streamer streamer = getStreamerByIdAndNotDeleted(streamerId);
 
@@ -154,5 +167,14 @@ public class StoreService {
 			throw new NotFoundException(ErrorCode.STORE_NOT_FOUND);
 		}
 		return store;
+	}
+
+	// 삭제 되지 않은 가게 중 중복된 사업자 등록 번호가 있을경우 예외 처리
+	private void isDuplicatedRegistrationNumber(String registrationNumber) {
+		Optional<Store> duplicateStore = storeRepository.findByRegistrationNumber(registrationNumber);
+
+		if (duplicateStore.isPresent()) {
+			throw new ConflictException(ErrorCode.DUPLICATE_REGISTRATION_NUMBER);
+		}
 	}
 }

@@ -25,13 +25,11 @@ public class PointTransactionService {
 
     {
         if (userRole.equals(UserRole.CUSTOMER)){
-            return pointTransactionRepository.findAllByUserId(userOrStreamerId, pageable)
-                    .map(PointTransactionResponseDto::from);
+            return pointTransactionRepository.findAllByUserRoleAndUserId(userRole, userOrStreamerId, pageable);
         }
 
         if (userRole.equals(UserRole.STREAMER)){
-            return pointTransactionRepository.finAllByStreamerId(userOrStreamerId, pageable)
-                    .map(PointTransactionResponseDto::from);
+            return pointTransactionRepository.findAllByUserRoleAndStreamerId(userRole, userOrStreamerId, pageable);
         }
 
         throw new NotFoundException(ErrorCode.FORBIDDEN_USER_ACCESS) ;

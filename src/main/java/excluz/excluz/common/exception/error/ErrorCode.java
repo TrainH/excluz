@@ -30,6 +30,8 @@ public enum ErrorCode {
 	//스토어 관련 예외 코드
 	STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "스토어 정보를 찾을 수 없습니다."),
 	STORE_NOT_MATCH(HttpStatus.BAD_REQUEST, "스토어에 대한 권한이 없습니다"),
+	DUPLICATE_REGISTRATION_NUMBER(HttpStatus.CONFLICT, "다른 스토어와 중복되는 사업자 등록번호입니다."),
+	STORE_ALREADY_EXIST(HttpStatus.CONFLICT, "운영중인 스토어가 이미 존재합니다."),
 
 	// 포인트 관련 예외 코드
 	POINT_NOT_FOUND(HttpStatus.NOT_FOUND, "포인트를 충전해주세요."),
@@ -39,10 +41,11 @@ public enum ErrorCode {
 	// 주운 아이템 관련 예외 코드
 	ORDER_ITEM_ADDRESS_MISMATCH(HttpStatus.BAD_REQUEST, "주문 배달 주소는 모두 동일해야합니다."),
 	ORDER_ITEM_CART_ITEM_QUANTITIES_MISMATCH(HttpStatus.BAD_REQUEST,"요청된 주문 아이템 수량과 장바구니의 아이템수량이 일치 않습니다."),
+	ORDER_ITEM_STORE_MISMATCH(HttpStatus.BAD_REQUEST, "주문된 아이템들의 가게가 동일해야합니다."),
 
 	// 주문 관련 예외 코드
 	ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문 정보를 찾을 수 없습니다."),
-
+	ORDER_STATUS_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "주문 상태 변경이 불가능합니다."),
 
 	//	이벤트 관련 예외 코드
 	EVENT_ENDDATETIME_TOO_EARLY(HttpStatus.BAD_REQUEST, "이벤트 종료일이 현재 시간보다 과거일 수 없습니다."),
