@@ -18,4 +18,6 @@ public interface PointTransactionRepository extends JpaRepository<PointTransacti
             "LEFT JOIN FETCH s.streamer " + // Streamer 엔티티를 그 후 조인
             "WHERE s.streamer.id = :streamerId")
     Page<PointTransaction> finAllByStreamerId(@Param("streamerId") Integer streamerId, Pageable pageable);
+
+
 }

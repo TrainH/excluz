@@ -44,8 +44,22 @@ public class StoreRevenue extends BaseEntity {
 		this.totalRevenue = totalRevenue;
 	}
 
-	// 매출 증가
+	// 매출 증가 메서드
 	public void addRevenue(Long amount) {
-		this.totalRevenue += amount;
+		if (amount != null && amount > 0) {
+			this.totalRevenue += amount;
+		}
+	}
+
+	// 매출 초기화 (예: 월별 리셋)
+	public void resetRevenue() {
+		this.totalRevenue = 0L;
+	}
+
+	// 특정 금액으로 매출 업데이트 (환불 처리 등)
+	public void updateRevenue(Long newTotal) {
+		if (newTotal != null && newTotal >= 0) {
+			this.totalRevenue = newTotal;
+		}
 	}
 }
