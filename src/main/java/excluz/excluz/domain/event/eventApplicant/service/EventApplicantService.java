@@ -102,6 +102,10 @@ public class EventApplicantService {
             throw new BadRequestException(ErrorCode.EVENT_APPLICANT_ALREADY_CONFIRMED);
         }
 
+        if (event.getIsCompleted()) {
+            throw new BadRequestException(ErrorCode.EVENT_ALREADY_CLOSED);
+        }
+
         eventApplicantRepository.delete(eventApplicant);
     }
 

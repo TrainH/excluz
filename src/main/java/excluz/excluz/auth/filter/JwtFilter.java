@@ -40,7 +40,10 @@ public class JwtFilter implements Filter {
 		"/api/v1/items?minPrice=&maxPrice=&itemName=&page=&size=",
 		"/api/v1/streamers/*",
 		"/api/v1/items/*",
-		"/api/v1/streamers?nickName=&page=&size="
+		"/api/v1/streamers?nickName=&page=&size=",
+		"/oauth/kakao",
+		"/oauth/kakao/**",
+		"/kakao/**"
 	};
 
 	@Override
