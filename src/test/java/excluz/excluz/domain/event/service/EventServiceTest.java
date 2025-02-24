@@ -35,6 +35,10 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
@@ -365,17 +369,26 @@ public class EventServiceTest {
         Event event2 = createTestEvent();
         ReflectionTestUtils.setField(event2, "id", 2);
         List<Event> events = Arrays.asList(event1, event2);
-        when(eventRepository.findAll()).thenReturn(events);
+        // EventResponseDto로 변환하여 리스트 준비
+        List<EventResponseDto> dtoList = new ArrayList<>();
+        for (Event event : events) {
+            dtoList.add(EventResponseDto.fromWithoutItems(event));
+        }
 
-        List<Event> eventResponseList = Arrays.asList(event1, event2);
-        when(eventRepository.findAll()).thenReturn(eventResponseList);
+// 페이징 객체 준비 (예: page=0, size=10)
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<EventResponseDto> page = new PageImpl<>(dtoList, pageable, dtoList.size());
 
-        // when
-        List<EventResponseDto> eventList = eventService.getAllEvents(testStreamer.getId());
+// 변경된 Repository 메서드( findByStreamerId )를 stub 처리합니다.
+        when(eventRepository.findByStreamerId(eq(testStreamer.getId()), any(Pageable.class)))
+                .thenReturn(page);
 
-        // then
-        Assertions.assertThat(eventList).isNotNull();
-        Assertions.assertThat(eventList.size()).isGreaterThanOrEqualTo(2);
+// when
+        Page<EventResponseDto> eventListPage = eventService.getEventList(testStreamer.getId(), 0, 10);
+
+// then
+        Assertions.assertThat(eventListPage).isNotNull();
+        Assertions.assertThat(eventListPage.getContent().size()).isGreaterThanOrEqualTo(2);
     }
 
     @Test
