@@ -38,7 +38,6 @@ import excluz.excluz.domain.store.store.dto.response.StoreDetailResponseDto;
 import excluz.excluz.domain.store.store.dto.response.StoreNameResponseDto;
 import excluz.excluz.domain.store.store.dto.response.StoreResponseDto;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
-import excluz.excluz.domain.streamer.repository.StreamerRepository;
 import excluz.excluz.domain.streamer.service.StreamerService;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,13 +52,9 @@ public class StoreServiceTest {
 	@Mock
 	ItemRepository itemRepository;
 	@Mock
-	StreamerRepository streamerRepository;
-	@Mock
 	StreamerService streamerService;
 	@Mock
 	PasswordEncoder passwordEncoder;
-	@Mock
-	Store mockStore;
 	@Mock
 	Streamer mockStreamer;
 
@@ -107,20 +102,19 @@ public class StoreServiceTest {
 
 			when(streamerService.findStreamerById(anyInt())).thenReturn(SharedData.STREAMER1);
 			when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
-			when(storeRepository.findById(SharedData.STORE_ID1)).thenReturn(Optional.of(spyStore));
+			when(storeRepository.findStoreWithStreamer(SharedData.STREAMER_ID1)).thenReturn(Optional.of(spyStore));
 
 			// 삭제 상태 변경 전 검증
 			assertThat(spyStore.isDeleted()).isEqualTo(false);
 
 			// when
-			storeService.deleteStore(deleteRequestDto, SharedData.STREAMER_ID1, SharedData.STORE_ID1);
+			storeService.deleteStore(deleteRequestDto, SharedData.STREAMER_ID1);
 
 			// then
 			verify(streamerService).findStreamerById(SharedData.STREAMER_ID1);
 			verify(passwordEncoder).matches(SharedData.STREAMER_PASSWORD1, SharedData.STREAMER_PASSWORD1);
-			verify(storeRepository).findById(SharedData.STORE_ID1);
+			verify(storeRepository).findStoreWithStreamer(SharedData.STREAMER_ID1);
 			verify(spyStore).updateIsDeleted(true);
-
 			// 삭제 상태 변경 후 검증
 			assertThat(spyStore.isDeleted()).isEqualTo(true);
 		}
@@ -134,7 +128,7 @@ public class StoreServiceTest {
 	class UpdateStore {
 
 		@Test
-		@DisplayName("success: 스토어 주인은 스토어 정보 수정 가능")
+		@DisplayName("success: 스토어 주인만 스토어 정보 수정 가능")
 		void updateStore() {
 			// given
 			StoreUpdateRequestDto requestDto = new StoreUpdateRequestDto(SharedData.ADDRESS2, SharedData.STORE_NAME2, SharedData.REGISTRATION_NUMBER2);
@@ -182,7 +176,7 @@ public class StoreServiceTest {
 			// given
 			int page = 1;
 			int size = 10;
-			Pageable pageable = PageRequest.of(page-1, size);
+			Pageable pageable = PageRequest.of(page, size);
 			Store store = SharedData.STORE1;
 			List<Store> storeList = Collections.singletonList(store);
 			Page<Store> storePage = new PageImpl<>(storeList, pageable, storeList.size());
@@ -213,7 +207,7 @@ public class StoreServiceTest {
 			// given
 			int page = 1;
 			int size = 10;
-			Pageable pageable = PageRequest.of(page-1, size);
+			Pageable pageable = PageRequest.of(page, size);
 			when(storeRepository.findStreamerWithStore(anyInt())).thenReturn(Optional.of(SharedData.STREAMER1));
 
 			when(storeRepository.findById(SharedData.STORE_ID1)).thenReturn(Optional.of(SharedData.STORE1));
@@ -252,7 +246,7 @@ public class StoreServiceTest {
 			ReflectionTestUtils.setField(SharedData.STORE1, "id", SharedData.STORE_ID1);
 			int page = 1;
 			int size = 10;
-			Pageable pageable = PageRequest.of(page-1, size);
+			Pageable pageable = PageRequest.of(page, size);
 			when(streamerService.findStreamerById(SharedData.STREAMER_ID1)).thenReturn(SharedData.STREAMER1);
 			when(storeRepository.findStoreWithStreamer(SharedData.STREAMER_ID1)).thenReturn(Optional.of(SharedData.STORE1));
 

@@ -64,23 +64,30 @@ class StreamerServiceTest {
 		void streamerSignup() {
 			// given
 			StreamerSignupRequestDto signupRequestDto = SharedData.STREAMER_SIGNUP_REQUEST_DTO;
+			StreamerResponseDto responseDto = new StreamerResponseDto(SharedData.STREAMER_ID1, SharedData.STREAMER_NAME1, SharedData.STREAMER_NICKNAME1, SharedData.STREAMER_PHONE_NUMBER1, SharedData.STREAMER_EMAIL1);
 			when(passwordEncoder.encode(signupRequestDto.getPassword())).thenReturn("encodedPassword");
+			when(streamerRepository.save(any(Streamer.class))).thenReturn(SharedData.STREAMER1);
 
-			// when
-			streamerService.streamerSignup(signupRequestDto);
+			try (MockedStatic<StreamerResponseDto> mockedStatic = mockStatic(StreamerResponseDto.class)) {
+				mockedStatic.when(()->StreamerResponseDto.from(any(Streamer.class))).thenReturn(responseDto);
 
-			// then
-			verify(passwordEncoder).encode(signupRequestDto.getPassword());
-			// save() 인자 캡쳐
-			ArgumentCaptor<Streamer> streamerCaptor = ArgumentCaptor.forClass(Streamer.class);
-			verify(streamerRepository).save(streamerCaptor.capture());
-			Streamer streamer = streamerCaptor.getValue();
-			// save() 인자 검증
-			assertThat(streamer.getEmail()).isEqualTo(signupRequestDto.getEmail());
-			assertThat(streamer.getName()).isEqualTo(signupRequestDto.getName());
-			assertThat(streamer.getNickName()).isEqualTo(signupRequestDto.getNickName());
-			assertThat(streamer.getPhoneNumber()).isEqualTo(signupRequestDto.getPhoneNumber());
-			assertThat(streamer.getPassword()).isEqualTo("encodedPassword");
+				// when
+				StreamerResponseDto actualResult = streamerService.streamerSignup(signupRequestDto);
+
+				// then
+				verify(passwordEncoder).encode(signupRequestDto.getPassword());
+
+				assertThat(actualResult.getEmail()).isEqualTo(signupRequestDto.getEmail());
+				assertThat(actualResult.getName()).isEqualTo(signupRequestDto.getName());
+				assertThat(actualResult.getNickName()).isEqualTo(signupRequestDto.getNickName());
+				assertThat(actualResult.getPhoneNumber()).isEqualTo(signupRequestDto.getPhoneNumber());
+				// save() 인자 캡쳐
+				ArgumentCaptor<Streamer> streamerCaptor = ArgumentCaptor.forClass(Streamer.class);
+				verify(streamerRepository).save(streamerCaptor.capture());
+				Streamer streamer = streamerCaptor.getValue();
+				// save() 인자 중 password 검증
+				assertThat(streamer.getPassword()).isEqualTo("encodedPassword");
+			}
 		}
 
 		@Test
@@ -124,7 +131,7 @@ class StreamerServiceTest {
 			when(jwtUtil.createToken(SharedData.STREAMER1.getEmail(), SharedData.STREAMER1.getId(),	SharedData.STREAMER1.getUserRole())).thenReturn(token);
 
 			try (MockedStatic<StreamerLoginResponseDto> mockedStatic = mockStatic(StreamerLoginResponseDto.class)) {
-				given(StreamerLoginResponseDto.from(anyString())).willReturn(loginResponseDto);
+				mockedStatic.when(()->StreamerLoginResponseDto.from(anyString())).thenReturn(loginResponseDto);
 
 				// when
 				StreamerLoginResponseDto actualResult = streamerService.streamerLogin(loginRequestDto);
@@ -249,6 +256,7 @@ class StreamerServiceTest {
 				SharedData.STREAMER_EMAIL2,
 				SharedData.STREAMER_PASSWORD1);
 			StreamerResponseDto responseDto = new StreamerResponseDto(
+				SharedData.STREAMER_ID1,
 				SharedData.STREAMER_NAME2,
 				SharedData.STREAMER_NICKNAME2,
 				SharedData.STREAMER_PHONE_NUMBER2,
@@ -270,6 +278,7 @@ class StreamerServiceTest {
 				// Dto 검증
 				assertNotNull(actualResult);
 				// 수정 된 값 검증
+				assertThat(actualResult.getStreamerId()).isEqualTo(SharedData.STREAMER_ID1);
 				assertThat(actualResult.getEmail()).isEqualTo(requestDto.getEmail());
 				assertThat(actualResult.getName()).isEqualTo(requestDto.getName());
 				assertThat(actualResult.getNickName()).isEqualTo(requestDto.getNickName());
@@ -327,6 +336,7 @@ class StreamerServiceTest {
 		void getPersonalInfo() {
 			// given
 			StreamerResponseDto responseDto = new StreamerResponseDto(
+				SharedData.STREAMER_ID1,
 				SharedData.STREAMER_NAME1,
 				SharedData.STREAMER_NICKNAME1,
 				SharedData.STREAMER_PHONE_NUMBER1,
@@ -347,6 +357,7 @@ class StreamerServiceTest {
 				// Dto 검증
 				assertNotNull(actualResult);
 				// 조회 된 값 검증
+				assertThat(actualResult.getStreamerId()).isEqualTo(SharedData.STREAMER_ID1);
 				assertThat(actualResult.getEmail()).isEqualTo(spyStreamer.getEmail());
 				assertThat(actualResult.getName()).isEqualTo(spyStreamer.getName());
 				assertThat(actualResult.getNickName()).isEqualTo(spyStreamer.getNickName());
@@ -393,7 +404,7 @@ class StreamerServiceTest {
 			// given
 			int page = 1;
 			int size = 10;
-			Pageable pageable = PageRequest.of(page - 1, size);
+			Pageable pageable = PageRequest.of(page, size);
 			StreamerSummaryResponseDto responseDto = new StreamerSummaryResponseDto(SharedData.STREAMER_NICKNAME1, SharedData.STREAMER_ID1);
 
 			List<Streamer> streamerList = Collections.singletonList(SharedData.STREAMER1);

@@ -65,6 +65,8 @@ public class CartItemService {
 
 		return CreateCartItemResponseDto.builder()
 			.cartItemId(cartItem.getId())
+			.itemId(cartItem.getItem().getId())
+			.storeId(cartItem.getItem().getStore().getId())
 			.quantity(cartItem.getQuantity())
 			.itemPrice(cartItem.getItem().getPrice())
 			.build();
@@ -83,6 +85,8 @@ public class CartItemService {
 
 		return GetCartItemResponseDto.builder()
 			.cartItemId(cartItem.getId())
+			.itemId(cartItem.getItem().getId())
+			.storeId(cartItem.getItem().getStore().getId())
 			.quantity(cartItem.getQuantity())
 			.itemPrice(cartItem.getItem().getPrice())
 			.build();
@@ -100,6 +104,8 @@ public class CartItemService {
 		List<GetCartItemResponseDto> cartItemList = cartItems.stream()
 			.map(item -> GetCartItemResponseDto.builder()
 				.cartItemId(item.getId())
+				.itemId(item.getItem().getId())
+				.storeId(item.getItem().getStore().getId())
 				.quantity(item.getQuantity())
 				.itemPrice(item.getItem().getPrice())
 				.build()
@@ -143,6 +149,8 @@ public class CartItemService {
 
 		return GetCartItemResponseDto.builder()
 			.cartItemId(cartItem.getId())
+			.itemId(cartItem.getItem().getId())
+			.storeId(cartItem.getItem().getStore().getId())
 			.quantity(cartItem.getQuantity())
 			.itemPrice(cartItem.getItem().getPrice())
 			.build();
