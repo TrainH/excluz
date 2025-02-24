@@ -22,6 +22,9 @@ import excluz.excluz.domain.event.event.dto.EventResponseDto;
 import excluz.excluz.domain.streamer.repository.StreamerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -95,18 +98,15 @@ public class EventService {
 
     // 이벤트 전체 조회 서비스 로직
     @Transactional(readOnly = true)
-    public List<EventResponseDto> getAllEvents(Integer streamerId) {
+    public Page<EventResponseDto> getEventList(Integer streamerId, int page, int size) {
+        // 스트리머 존재 여부 확인 (없으면 예외)
         Streamer streamer = streamerRepository.findById(streamerId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
-        List<Event> events = eventRepository.findAll().stream()
-                .filter(event -> event.getStore().getStreamer().getId().equals(streamer.getId()))
-                .toList();
+        Pageable pageable = PageRequest.of(Math.max(0, page), size);
 
-        // EventResponseDto로 변환하여 반환
-        return events.stream()
-                .map(EventResponseDto::fromWithoutItems)
-                .collect(Collectors.toList());
+        // 스트리머에 해당하는 이벤트를 직접 조회 (페이지 적용)
+        return eventRepository.findByStreamerId(streamer.getId(), pageable);
     }
 
 
