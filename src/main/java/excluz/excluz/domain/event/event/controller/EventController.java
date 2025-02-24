@@ -10,6 +10,7 @@ import excluz.excluz.domain.event.event.service.EventService;
 import excluz.excluz.domain.user.enums.UserRole;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -55,9 +56,10 @@ public class EventController {
 
     @GetMapping()
     @PreAuthorize("hasRole('STREAMER')")
-    public ResponseEntity<List<EventResponseDto>> getAllEvents() {
+    public ResponseEntity<Page<EventResponseDto>> getAllEvents(@RequestParam(defaultValue = "0") int page,
+                                                               @RequestParam(defaultValue = "10") int size) {
         Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
-        List<EventResponseDto> eventResponseDtoList = eventService.getAllEvents(streamerId);
+        Page<EventResponseDto> eventResponseDtoList = eventService.getEventList(streamerId, page, size);
         return ResponseEntity.ok(eventResponseDtoList);
     }
 
