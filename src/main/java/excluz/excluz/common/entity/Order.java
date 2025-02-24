@@ -1,6 +1,7 @@
 package excluz.excluz.common.entity;
 
-import excluz.excluz.domain.order.order.dto.request.OrderUpdateRequestDto;
+import excluz.excluz.common.exception.BadRequestException;
+import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.order.order.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -35,8 +36,15 @@ public class Order extends BaseEntity {
         this.address = address;
     }
 
-    public void updateWith(OrderUpdateRequestDto requestDto){
-        this.orderStatus = requestDto.getOrderStatus();
-        this.address = requestDto.getAddress();
+    public void updateWith(OrderStatus orderStatus, String address) {
+        if(orderStatus!=null) this.changeStatus(orderStatus);
+        if(address!=null) this.address=address;
+    }
+
+    public void changeStatus(OrderStatus newStatus) {
+        if (!this.orderStatus.canChangeTo(newStatus)) {
+            throw new BadRequestException(ErrorCode.ORDER_STATUS_NOT_ALLOWED);
+        }
+        this.orderStatus = newStatus;
     }
 }

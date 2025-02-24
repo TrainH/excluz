@@ -41,10 +41,11 @@ public enum ErrorCode {
 	// 주운 아이템 관련 예외 코드
 	ORDER_ITEM_ADDRESS_MISMATCH(HttpStatus.BAD_REQUEST, "주문 배달 주소는 모두 동일해야합니다."),
 	ORDER_ITEM_CART_ITEM_QUANTITIES_MISMATCH(HttpStatus.BAD_REQUEST,"요청된 주문 아이템 수량과 장바구니의 아이템수량이 일치 않습니다."),
+	ORDER_ITEM_STORE_MISMATCH(HttpStatus.BAD_REQUEST, "주문된 아이템들의 가게가 동일해야합니다."),
 
 	// 주문 관련 예외 코드
 	ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문 정보를 찾을 수 없습니다."),
-
+	ORDER_STATUS_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "주문 상태 변경이 불가능합니다."),
 
 	//	이벤트 관련 예외 코드
 	EVENT_ENDDATETIME_TOO_EARLY(HttpStatus.BAD_REQUEST, "이벤트 종료일이 현재 시간보다 과거일 수 없습니다."),

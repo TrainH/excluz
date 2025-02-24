@@ -11,10 +11,11 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Integer> {
-    @Query("SELECT o FROM Order o " +
-            "JOIN FETCH o.user " +
+    @Query("SELECT new excluz.excluz.domain.order.order.dto.response.OrderResponseDto(" +
+            "o.id, o.orderStatus, o.address, o.updatedAt) " +
+            "FROM Order o " +
             "WHERE o.user.id = :userId")
-    Page<Order> findByUserId(@Param("userId") Integer userId, Pageable pageable);
+    Page<OrderResponseDto> findByUserId(@Param("userId") Integer userId, Pageable pageable);
 
     @Query("SELECT new excluz.excluz.domain.order.order.dto.response.OrderResponseDto(" +
             "o.id, o.orderStatus, o.address, o.updatedAt) " +
