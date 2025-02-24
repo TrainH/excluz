@@ -50,10 +50,20 @@ public class OrderService {
     @Transactional(readOnly = true)
     public OrderResponseDto getOrder(Integer userOrStreamerId, UserRole userRole, Integer orderId) {
 
-        Order order = orderRepository.findByIdAndUserId(orderId, userOrStreamerId).orElseThrow(
-                () -> new NotFoundException(ErrorCode.ORDER_NOT_FOUND)
-        );
-        return OrderResponseDto.from(order);
+        if (userRole.equals(UserRole.CUSTOMER)) {
+            Order order = orderRepository.findByIdAndUserId(orderId, userOrStreamerId).orElseThrow(
+                    () -> new NotFoundException(ErrorCode.ORDER_NOT_FOUND)
+            );
+            return OrderResponseDto.from(order);
+        }
+
+        if (userRole.equals(UserRole.STREAMER)) {
+            Order order = orderRepository.findByIdAndStreamerId(orderId, userOrStreamerId).orElseThrow(
+                    () -> new NotFoundException(ErrorCode.ORDER_NOT_FOUND)
+            );
+            return OrderResponseDto.from(order);
+        }
+        throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
     }
 
     @Transactional
@@ -66,9 +76,16 @@ public class OrderService {
             throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
         }
 
-        Order order = orderRepository.findByIdAndUserId(orderId, userOrStreamerId).orElseThrow(
-                () -> new NotFoundException(ErrorCode.ORDER_NOT_FOUND)
-        );
+        Order order = switch (userRole) {
+            case CUSTOMER -> orderRepository.findByIdAndUserId(orderId, userOrStreamerId)
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.ORDER_NOT_FOUND));
+
+            case STREAMER -> orderRepository.findByIdAndStreamerId(orderId, userOrStreamerId)
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.ORDER_NOT_FOUND));
+
+            default -> throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+        };
+
         order.updateWith(requestDto.getOrderStatus(), requestDto.getAddress());
 
         orderRepository.save(order);
