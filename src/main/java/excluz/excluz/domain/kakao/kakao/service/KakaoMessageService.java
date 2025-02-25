@@ -20,7 +20,8 @@ import java.util.Map;
 @Slf4j
 public class KakaoMessageService {
 
-    private final String BASE_MYINFO_URL = "http://localhost:8080/api/v1/events/applicants/myinfo";
+    @Value("${kakao.base-url}")
+    private String BASE_URL;
 
     /**
      * 이벤트 응모 결과 메시지 전송
@@ -30,8 +31,9 @@ public class KakaoMessageService {
         // 1) 메시지 구성
         String messageText = buildMessageText(responseDto);
 
-        // 2) 카카오 API 요청 준비
+        // 2) 카카오 API 요청 및 리다이렉트 준비
         String apiUrl = "https://kapi.kakao.com/v2/api/talk/memo/default/send";
+        String webUrl = BASE_URL + "api/v1/events/applicants/myinfo";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -39,7 +41,7 @@ public class KakaoMessageService {
 
         // 3) code만 쿼리 파라미터로 붙인 URL 생성 (email, password는 제외)
         String eventCode = responseDto.getEventCode(); // 예: "EVENT_7B922463"
-        StringBuilder urlBuilder = new StringBuilder(BASE_MYINFO_URL);
+        StringBuilder urlBuilder = new StringBuilder(webUrl);
         urlBuilder.append("?code=").append(eventCode);
 
         Map<String, String> linkObject = new HashMap<>();
