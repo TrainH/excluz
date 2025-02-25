@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -17,6 +18,12 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(CustomRuntimeException.class)
 	protected ResponseEntity<ErrorResponseDto> handleCustomException(final CustomRuntimeException e) {
 		ErrorResponseDto response = new ErrorResponseDto(e.getErrorCode());
+		return createResponseEntity(response);
+	}
+
+	@ExceptionHandler(AuthorizationDeniedException.class)
+	public ResponseEntity<ErrorResponseDto> handleAuthorizationDeniedException(AuthorizationDeniedException e) {
+		ErrorResponseDto response = new ErrorResponseDto(HttpStatus.FORBIDDEN, e.getMessage());
 		return createResponseEntity(response);
 	}
 
