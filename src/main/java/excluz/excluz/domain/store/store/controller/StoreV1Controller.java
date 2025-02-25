@@ -32,7 +32,7 @@ public class StoreV1Controller {
 
 	private final StoreService storeService;
 
-	@PostMapping()
+	@PostMapping("/my-store")
 	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<StoreResponseDto> createStore(
 		@Valid @RequestBody StoreRequestDto storeRequestDto
