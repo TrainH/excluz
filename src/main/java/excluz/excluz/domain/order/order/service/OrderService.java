@@ -12,6 +12,7 @@ import excluz.excluz.domain.order.orderItem.repository.OrderItemRepository;
 import excluz.excluz.domain.point.point.repository.PointRepository;
 import excluz.excluz.domain.point.pointTransaction.enums.TransactionType;
 import excluz.excluz.domain.point.pointTransaction.repository.PointTransactionRepository;
+import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,11 +21,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
+    private final ItemRepository itemRepository;
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
     private final PointRepository pointRepository;
     private final PointTransactionRepository pointTransactionRepository;
 
@@ -45,10 +50,20 @@ public class OrderService {
     @Transactional(readOnly = true)
     public OrderResponseDto getOrder(Integer userOrStreamerId, UserRole userRole, Integer orderId) {
 
-        Order order = orderRepository.findByIdAndUserId(orderId, userOrStreamerId).orElseThrow(
-                () -> new NotFoundException(ErrorCode.ORDER_NOT_FOUND)
-        );
-        return OrderResponseDto.from(order);
+        if (userRole.equals(UserRole.CUSTOMER)) {
+            Order order = orderRepository.findByIdAndUserId(orderId, userOrStreamerId).orElseThrow(
+                    () -> new NotFoundException(ErrorCode.ORDER_NOT_FOUND)
+            );
+            return OrderResponseDto.from(order);
+        }
+
+        if (userRole.equals(UserRole.STREAMER)) {
+            Order order = orderRepository.findByIdAndStreamerId(orderId, userOrStreamerId).orElseThrow(
+                    () -> new NotFoundException(ErrorCode.ORDER_NOT_FOUND)
+            );
+            return OrderResponseDto.from(order);
+        }
+        throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
     }
 
     @Transactional
@@ -61,15 +76,39 @@ public class OrderService {
             throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
         }
 
-        Order order = orderRepository.findByIdAndUserId(orderId, userOrStreamerId).orElseThrow(
-                () -> new NotFoundException(ErrorCode.ORDER_NOT_FOUND)
-        );
+        Order order = switch (userRole) {
+            case CUSTOMER -> orderRepository.findByIdAndUserId(orderId, userOrStreamerId)
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.ORDER_NOT_FOUND));
+
+            case STREAMER -> orderRepository.findByIdAndStreamerId(orderId, userOrStreamerId)
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.ORDER_NOT_FOUND));
+
+            default -> throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+        };
+
         order.updateWith(requestDto.getOrderStatus(), requestDto.getAddress());
 
         orderRepository.save(order);
 
         // 주문 취소 일때
         if (order.getOrderStatus() == OrderStatus.CANCELED) {
+
+            List<OrderItem> orderItemList = orderItemRepository.findAllByOrderId(orderId);
+
+            List<Integer> itemIdList = orderItemList.stream()
+                    .map(orderItem -> orderItem.getItem().getId()) // 람다식 사용
+                    .toList();
+
+            List<Item> itemList = itemRepository.findAllById(itemIdList);
+
+
+            for (OrderItem orderItem : orderItemList) {
+                for (Item item : itemList) {
+                    if (item.getId().equals(orderItem.getItem().getId())) {
+                        item.addRemainingQuantity(orderItem.getItem_quantity());
+                    }
+                }
+            }
 
             PointTransaction pointTransaction = pointTransactionRepository.findByOrderId(orderId).orElseThrow(
                     () -> new NotFoundException(ErrorCode.ORDER_NOT_FOUND)

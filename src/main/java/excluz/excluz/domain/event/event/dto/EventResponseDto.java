@@ -2,6 +2,8 @@ package excluz.excluz.domain.event.event.dto;
 
 import excluz.excluz.common.entity.Event;
 import excluz.excluz.common.entity.EventItem;
+import excluz.excluz.domain.event.event.enums.ParticipantCondition;
+import excluz.excluz.domain.event.event.enums.SelectionMethod;
 import excluz.excluz.domain.event.eventItem.dto.EventItemDto;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,8 +19,8 @@ public class EventResponseDto {
     private Integer id;
     private Integer streamerStoreId;
     private Integer numberOfWinners;
-    private String participantCondition;
-    private String selectionMethod;
+    private ParticipantCondition participantCondition;
+    private SelectionMethod selectionMethod;
     private LocalDateTime startDatetime;
     private LocalDateTime endDatetime;
     private Boolean isCompleted;
@@ -31,8 +33,8 @@ public class EventResponseDto {
     public EventResponseDto(Integer id,
                             Integer streamerStoreId,
                             Integer numberOfWinners,
-                            String participantCondition,
-                            String selectionMethod,
+                            ParticipantCondition participantCondition,
+                            SelectionMethod selectionMethod,
                             LocalDateTime startDatetime,
                             LocalDateTime endDatetime,
                             Boolean isCompleted,
@@ -72,8 +74,8 @@ public class EventResponseDto {
                 .id(event.getId())
                 .streamerStoreId(event.getStore().getId())
                 .numberOfWinners(event.getNumberOfWinners())
-                .participantCondition(event.getParticipantCondition().name())
-                .selectionMethod(event.getSelectionMethod().name())
+                .participantCondition(event.getParticipantCondition())
+                .selectionMethod(event.getSelectionMethod())
                 .startDatetime(event.getStartDatetime())
                 .endDatetime(event.getEndDatetime())
                 .isCompleted(event.getIsCompleted())
@@ -90,8 +92,8 @@ public class EventResponseDto {
                 .id(event.getId())
                 .streamerStoreId(event.getStore().getId())
                 .numberOfWinners(event.getNumberOfWinners())
-                .participantCondition(event.getParticipantCondition().name())
-                .selectionMethod(event.getSelectionMethod().name())
+                .participantCondition(event.getParticipantCondition())
+                .selectionMethod(event.getSelectionMethod())
                 .startDatetime(event.getStartDatetime())
                 .endDatetime(event.getEndDatetime())
                 .isCompleted(event.getIsCompleted())

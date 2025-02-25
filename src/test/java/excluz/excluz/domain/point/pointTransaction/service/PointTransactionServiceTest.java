@@ -3,6 +3,7 @@ package excluz.excluz.domain.point.pointTransaction.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import excluz.excluz.common.entity.*;
 import excluz.excluz.domain.cartItem.repository.CartItemRepository;
+import excluz.excluz.domain.order.order.dto.response.OrderResponseDto;
 import excluz.excluz.domain.order.order.enums.OrderStatus;
 import excluz.excluz.domain.order.order.repository.OrderRepository;
 import excluz.excluz.domain.order.orderItem.repository.OrderItemRepository;
@@ -127,18 +128,24 @@ class PointTransactionServiceTest {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
 
-        List<PointTransaction> transactions = List.of(
+        List<PointTransaction> transactionList = List.of(
                 new PointTransaction(order1, user1, store, TransactionType.PURCHASE,10000),
                 new PointTransaction(order2, user2, store, TransactionType.PURCHASE,20000)
         );
-        Page<PointTransaction> transactionPage = new PageImpl<>(transactions, pageable, transactions.size());
+
+        List<PointTransactionResponseDto> transactionDtoList = transactionList.stream()
+                .map(PointTransactionResponseDto::from)
+                .toList();
 
         Integer userOrStreamerId = 1;
         UserRole userRole = UserRole.CUSTOMER;
 
+
+        Page<PointTransactionResponseDto> transactionDtoPage = new PageImpl<>(transactionDtoList, pageable, transactionDtoList.size());
+
         // When
-        Mockito.when(pointTransactionRepository.findAllByUserId(userOrStreamerId, pageable))
-                .thenReturn(transactionPage);
+        Mockito.when(pointTransactionRepository.findAllByUserRoleAndUserId(userRole, userOrStreamerId, pageable))
+                .thenReturn(transactionDtoPage);
 
         Page<PointTransactionResponseDto> responseDto = pointTransactionService.getPointTransactionList(userOrStreamerId, userRole, pageable);
 

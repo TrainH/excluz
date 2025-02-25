@@ -77,6 +77,12 @@ public class SecurityConfig {
 					"/api/v1/events/applicants", // 이벤트 응모 및 조회(단, @RequestParam 코드가 맞을 때)
 					"/api/v1/events/applicants/{eventApplicantId}"
 				).permitAll()
+					"/api/v1/events/applicants/**",
+					"/oauth/kakao",
+					"/oauth/kakao/**",
+					"/kakao/**"
+
+					).permitAll()
 				.requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // 관리자
 				.requestMatchers("/api/v1/users/**").hasRole("CUSTOMER") // 일반 회원
 				.anyRequest().authenticated()
