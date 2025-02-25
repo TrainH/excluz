@@ -48,7 +48,7 @@ public class StreamerV1Controller {
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 
-	@PatchMapping()
+	@PatchMapping("/profile")
 	@PreAuthorize("hasRole('STREAMER')")
 	public ResponseEntity<StreamerResponseDto> updateStreamer(
 		@RequestBody StreamerUpdateRequestDto requestDto
