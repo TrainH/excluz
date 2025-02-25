@@ -39,7 +39,7 @@ public class LoggingFilter implements Filter {
 					URLDecoder.decode(String.join(",", entry.getValue()), StandardCharsets.UTF_8))
 				.collect(Collectors.joining("&"));
 
-			log.info("clientIP {}, userAgent {}, requestURI {}, requestMethod {}, requestParams {}",
+			log.info("clientIP: {}, userAgent: {}, requestURI: {}, requestMethod: {}, requestParams: {}",
 				clientIP, httpRequest.getHeader("User-Agent"), httpRequest.getRequestURI(),
 				httpRequest.getMethod(), requestParams);
 
