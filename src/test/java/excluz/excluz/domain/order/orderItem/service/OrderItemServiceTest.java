@@ -190,7 +190,7 @@ class OrderItemServiceTest {
 
 
         ArgumentCaptor<Point> captorPoint = ArgumentCaptor.forClass(Point.class);
-        verify(pointRepository, times(3)).save(captorPoint.capture());
+        verify(pointRepository, times(4)).save(captorPoint.capture());
         List<Point> captorPointList = captorPoint.getAllValues();
 
 
