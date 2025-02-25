@@ -8,6 +8,12 @@ public class CreateCartItemResponseDto {
 	// 카트 아이템 아이디
 	private final Integer cartItemId;
 
+	// 아이템 아이디
+	private final Integer itemId;
+
+	// 스토어 아이디
+	private final Integer storeId;
+
 	// 개수
 	private final Integer quantity;
 
@@ -18,8 +24,10 @@ public class CreateCartItemResponseDto {
 	private final Integer totalItemPrice;
 
 	@Builder
-	public CreateCartItemResponseDto(Integer cartItemId, Integer quantity, Integer itemPrice) {
+	public CreateCartItemResponseDto(Integer cartItemId, Integer itemId, Integer storeId, Integer quantity, Integer itemPrice) {
 		this.cartItemId = cartItemId;
+		this.itemId = itemId;
+		this.storeId = storeId;
 		this.quantity = quantity;
 		this.itemPrice = itemPrice;
 		this.totalItemPrice = itemPrice * quantity; // 개수 반영한 총 가격

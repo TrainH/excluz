@@ -2,11 +2,12 @@ package excluz.excluz.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,7 +23,7 @@ public class Store extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-	@OneToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "streamer_id")
 	private Streamer streamer;
 
@@ -32,7 +33,7 @@ public class Store extends BaseEntity {
 	@Column(length = 30, unique = true, nullable = false)
 	private String storeName;
 
-	@Column(length = 30, unique = true, nullable = false)
+	@Column(length = 30, nullable = false)
 	private String registrationNumber;
 
 	@Column(name = "is_deleted")
