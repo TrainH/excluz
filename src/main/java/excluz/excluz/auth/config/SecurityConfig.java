@@ -12,15 +12,21 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
 
 import excluz.excluz.auth.filter.JwtFilter;
+import excluz.excluz.auth.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
 
-	private final JwtFilter jwtFilter;
+	@Bean
+	public JwtFilter jwtFilter(JwtUtil jwtUtil) {
+		return new JwtFilter(jwtUtil);
+	}
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {
@@ -28,28 +34,49 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
 		return http
 			.csrf(AbstractHttpConfigurer::disable)
 			.httpBasic(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)
 			.addFilterBefore(jwtFilter, SecurityContextHolderAwareRequestFilter.class)
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers(
-					"/api/v1/users/login", // 일반 유저 로그인
-					"/api/v1/streamers/login", // 판매자 로그인
-					"/api/v1/users/signup", // 일반 유저 회원가입
-					"/api/v1/streamers/signup", // 판매자 회원가입
+				.requestMatchers( // 스트리머 권한 필요
+					// 스토어
+					"/api/v1/stores/my-store",
+					"/api/v1/stores/my-store/soft",
+					// 스트리머
+					"/api/v1/streamers/profile",
+					"/api/v1/streamers/soft",
+					// 아이템
+					"/api/v1/items/{itemsId}/soft",
+					// 이벤트
+					"/api/v1/events",
+					"/api/v1/events/{eventId}",
+					"/api/v1/events/{eventId}/eventItems",
+					"/api/v1/events/{eventId}/applicants"
+				).hasRole("STREAMER")
+				.requestMatchers( // 권한 불필요
+					// 일반 유저, 스트리머 로그인 & 회원가입
+					"/api/v1/users/login",
+					"/api/v1/streamers/login",
+					"/api/v1/users/signup",
+					"/api/v1/streamers/signup",
+					// 일반 유저
 					"/api/v1/users/{userId}",
-					"/api/v1/streamers/{streamerId}",
+					// 아이템
+					"/api/v1/items",
 					"/api/v1/items/{itemsId}",
-					"/api/v1/stores/{storeId}/?page=&size=",
-					"/api/v1/stores?storeName=&page=&size=",
-					"/api/v1/streamers?nickName=&page=&size=",
+					// 스토어
+					"/api/v1/stores/{storeId}",
+					"/api/v1/stores",
+					// 스트리머
+					"/api/v1/streamers",
+					"/api/v1/streamers/{streamerId}",
+					// 이벤트
 					"/api/v1/events/applicants", // 이벤트 응모 및 조회(단, @RequestParam 코드가 맞을 때)
-					"/api/v1/events/applicants/**"
-          
-					).permitAll()
+					"/api/v1/events/applicants/{eventApplicantId}"
+				).permitAll()
 				.requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // 관리자
 				.requestMatchers("/api/v1/users/**").hasRole("CUSTOMER") // 일반 회원
 				.anyRequest().authenticated()
