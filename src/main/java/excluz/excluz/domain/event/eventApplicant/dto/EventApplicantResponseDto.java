@@ -15,15 +15,18 @@ public class EventApplicantResponseDto {
     private String applicantName;
     private String deliveryAddress;
     private ApplicantStatus applicantStatus;
+    private String eventCode;
+
 
     @Builder
-    public EventApplicantResponseDto(Integer id, Integer eventId, String email, String applicantName, ApplicantStatus applicantStatus, String deliveryAddress) {
+    public EventApplicantResponseDto(Integer id, Integer eventId, String email, String applicantName, ApplicantStatus applicantStatus, String deliveryAddress, String eventCode) {
         this.id = id;
         this.eventId = eventId;
         this.email = email;
         this.applicantName = applicantName;
         this.deliveryAddress = deliveryAddress;
         this.applicantStatus = applicantStatus;
+        this.eventCode = eventCode;
     }
 
     public static EventApplicantResponseDto from(EventApplicant eventApplicant) {
@@ -35,5 +38,9 @@ public class EventApplicantResponseDto {
                 .deliveryAddress(eventApplicant.getDeliveryAddress())
                 .applicantStatus(eventApplicant.getApplicantStatus())
                 .build();
+    }
+
+    public void updateEventCode(String eventCode){
+        this.eventCode = eventCode;
     }
 }

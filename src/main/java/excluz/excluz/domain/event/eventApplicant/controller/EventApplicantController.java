@@ -5,6 +5,7 @@ import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantReadRequestDt
 import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantRequestDto;
 import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantResponseDto;
 import excluz.excluz.domain.event.eventApplicant.service.EventApplicantService;
+import excluz.excluz.domain.kakao.kakao.service.KakaoMessageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,11 +19,25 @@ import org.springframework.web.bind.annotation.*;
 public class EventApplicantController {
 
     private final EventApplicantService eventApplicantService;
+    private final KakaoMessageService kakaoMessageService;
 
     @PostMapping
-    public EventApplicantResponseDto applyForEvent(@RequestParam("code") String code,
-                                                   @Valid  @RequestBody EventApplicantRequestDto requestDto) {
-        return eventApplicantService.applyForEvent(code, requestDto);
+    public EventApplicantResponseDto applyForEvent(
+            @RequestParam("code") String code,
+            @RequestHeader(value = "Kakao-Authorization", required = false) String kakaoAuthorizationHeader,
+            @Valid @RequestBody EventApplicantRequestDto requestDto
+    ) {
+        // 1) 이벤트에 응모
+        EventApplicantResponseDto responseDto = eventApplicantService.applyForEvent(code, requestDto);
+
+        // 2) 카카오 메시지 전송 로직은 “별도 서비스”로 분리
+        //    사용자가 Kakao-Authorization 헤더를 보냈다면 메시지를 전송
+        if (kakaoAuthorizationHeader != null && !kakaoAuthorizationHeader.isEmpty()) {
+            responseDto.updateEventCode(code);
+            kakaoMessageService.sendApplicationResultMessage(kakaoAuthorizationHeader, responseDto);
+        }
+
+        return responseDto;
     }
 
     @PostMapping("/myinfo")
@@ -30,6 +45,7 @@ public class EventApplicantController {
                                                          @Valid @RequestBody EventApplicantReadRequestDto requestDto) {
         return eventApplicantService.getEventApplication(code, requestDto.getEmail(), requestDto.getApplicantPassword());
     }
+
 
     @DeleteMapping("/{eventApplicantId}")
     public ResponseEntity<Void> deleteEventApplicant(@RequestParam("code") String code,
