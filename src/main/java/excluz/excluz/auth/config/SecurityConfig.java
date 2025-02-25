@@ -57,11 +57,14 @@ public class SecurityConfig {
 					"/api/v1/events/{eventId}/applicants"
 				).hasRole("STREAMER")
 				.requestMatchers( // 권한 불필요
-					// 일반 유저, 스트리머 로그인 & 회원가입
+					// 로그인 & 회원가입
 					"/api/v1/users/login",
 					"/api/v1/streamers/login",
 					"/api/v1/users/signup",
 					"/api/v1/streamers/signup",
+					"/oauth/kakao",
+					"/oauth/kakao/**",
+					"/kakao/**",
 					// 일반 유저
 					"/api/v1/users/{userId}",
 					// 아이템
@@ -76,12 +79,6 @@ public class SecurityConfig {
 					// 이벤트
 					"/api/v1/events/applicants", // 이벤트 응모 및 조회(단, @RequestParam 코드가 맞을 때)
 					"/api/v1/events/applicants/{eventApplicantId}"
-				).permitAll()
-					"/api/v1/events/applicants/**",
-					"/oauth/kakao",
-					"/oauth/kakao/**",
-					"/kakao/**"
-
 					).permitAll()
 				.requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // 관리자
 				.requestMatchers("/api/v1/users/**").hasRole("CUSTOMER") // 일반 회원
