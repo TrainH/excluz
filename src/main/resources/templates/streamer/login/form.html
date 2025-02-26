@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>스트리머 로그인</title>
+</head>
+<body>
+<h1>스트리머 로그인</h1>
+<form th:action="@{/api/v1/streamers/login}" method="post">
+    <div>
+        <label>이메일:</label>
+        <input type="email" name="email" placeholder="이메일 입력" required />
+    </div>
+    <div>
+        <label>비밀번호:</label>
+        <input type="password" name="password" placeholder="비밀번호 입력" required />
+    </div>
+    <button type="submit">로그인</button>
+</form>
+</body>
+</html>

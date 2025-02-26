@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>마이페이지</title>
+</head>
+<body>
+<h1>스트리머 마이페이지</h1>
+<div>
+    <label>회원 번호:</label>
+    <span th:text="${streamerInfo.streamerId}"></span>
+</div>
+<div>
+    <label>이름:</label>
+    <span th:text="${streamerInfo.name}"></span>
+</div>
+<div>
+    <label>닉네임:</label>
+    <span th:text="${streamerInfo.nickName}"></span>
+</div>
+<div>
+    <label>전화번호:</label>
+    <span th:text="${streamerInfo.phoneNumber}"></span>
+</div>
+<div>
+    <label>이메일:</label>
+    <span th:text="${streamerInfo.email}"></span>
+</div>
+</body>
+</html>

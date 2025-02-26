@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>스트리머 정보</title>
+</head>
+<body>
+<h1>스트리머 프로필</h1>
+<div>
+    <label>스트리머 번호:</label>
+    <span th:text="${streamerSummary.streamerId}"></span>
+</div>
+<div>
+    <label>닉네임:</label>
+    <span th:text="${streamerSummary.nickName}"></span>
+</div>
+</body>
+</html>

@@ -1,8 +1,12 @@
 package excluz.excluz.domain.user.controller;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -28,86 +32,74 @@ import excluz.excluz.domain.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@RestController
+@Controller
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
 
 	private final UserService userService;
 
+//	추가: 회원가입 폼 보여주기
+	@GetMapping("/signup")
+	public String showSignupForm(){
+		return "user/signup/form";
+	}
+
 	@PostMapping("/signup")
-	public ResponseEntity<UserSignupResponseDto> userSignupAPI(
-		@Valid
-		@RequestBody UserSignupRequestDto signupRequest) {
+	public String userSignupAPI(
+		@Valid UserSignupRequestDto signupRequest,
+		Model model) {
 
 		UserSignupResponseDto userSignupResponseDto = userService.userSignup(signupRequest);
 
-		return ResponseEntity.ok(userSignupResponseDto);
+		model.addAttribute("signupResponse", userSignupResponseDto);
+		return "user/signup/success";
+//		return ResponseEntity.ok(userSignupResponseDto);
 	}
+
+	@GetMapping("login")
+	public String showLoginForm(){
+		return "user/login/form";
+	}
+
 
 	@PostMapping("/login")
-	public ResponseEntity<UserLoginResponseDto> userLoginAPI(
-		@RequestBody UserLoginRequestDto loginRequest) {
-
+	public String userLoginForm(
+			UserLoginRequestDto loginRequest,   // @RequestBody 대신 form 데이터 바인딩
+			HttpServletResponse response        // 쿠키 설정 위해
+	) {
+		// ① 이메일/패스워드 확인 -> 토큰 생성
 		UserLoginResponseDto userLoginResponseDto = userService.userLogin(loginRequest);
+		// userLoginResponseDto.getToken()으로 꺼내도 되고,
+		// 혹은 여기서 직접 jwtUtil.createToken(...) 해도 됨
 
-		return ResponseEntity.ok(userLoginResponseDto);
-	}
+		// ② createToken() 등에서 넘어온 JWT가 "Bearer ..." 형식일 것이므로 접두사를 제거
+		String jwtToken = userLoginResponseDto.getToken();
+		if (jwtToken.startsWith("Bearer ")) {
+			jwtToken = jwtToken.substring(7); // "Bearer " 부분 잘라내기
+		}
 
-	@DeleteMapping("/soft")
-	@PreAuthorize("hasRole('CUSTOMER')")
-	public ResponseEntity<Void> userUnregisterAPI(
-		@RequestBody UserWithdrawRequestDto userWithdrawRequest) {
+// ③ 순수 토큰을 쿠키에 저장
+		Cookie tokenCookie = new Cookie("jwtToken", jwtToken);
+		tokenCookie.setPath("/");
+		tokenCookie.setHttpOnly(true);
+		response.addCookie(tokenCookie);
 
-		Integer userId = SecurityContextUtil.getUserOrStreamerId();
+// ④ 리다이렉트
+		return "redirect:/api/v1/users/profile";
 
-		userService.userWithdraw(userId, userWithdrawRequest);
-
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
-	// 마이페이지가 아닌 다른 유저의 정보 조회
-	@GetMapping("/{userId}")
-	public ResponseEntity<UserProfileResponseDto> userProfileFindAPI(
-		@PathVariable(name = "userId") Integer userId){
-
-		UserProfileResponseDto profileResponseDto = userService.userGetProfile(userId);
-
-		return ResponseEntity.ok(profileResponseDto);
 	}
 
 	@GetMapping("/profile")
-	@PreAuthorize("hasRole('CUSTOMER')")
-	public ResponseEntity<MyProfileResponseDto> myPageGetAPI() {
-
+	@PreAuthorize("hasRole('CUSTOMER')") // 필요 시 권한 체크
+	public String showProfile(Model model) {
 		Integer userId = SecurityContextUtil.getUserOrStreamerId();
 
-		MyProfileResponseDto myProfileResponse = userService.userGetMyProfile(userId);
+		MyProfileResponseDto myProfile = userService.userGetMyProfile(userId);
 
-		return ResponseEntity.ok(myProfileResponse);
+		model.addAttribute("myProfile", myProfile);
+
+		return "user/profile/view";
 	}
 
-	@PatchMapping("/profile")
-	@PreAuthorize("hasRole('CUSTOMER')")
-	public ResponseEntity<UpdateMyProfileResponseDto> userProfileUpdateAPI(
-		@RequestBody UpdateMyProfileRequestDto updateMyProfileRequest) {
-
-		Integer userId = SecurityContextUtil.getUserOrStreamerId();
-
-		UpdateMyProfileResponseDto updateMyProfileResponse = userService.updateMyProfile(userId, updateMyProfileRequest);
-
-		return ResponseEntity.ok(updateMyProfileResponse);
-	}
-
-	@PutMapping("/password")
-	@PreAuthorize("hasRole('CUSTOMER')")
-	public ResponseEntity<UpdatePasswordResponseDto> userUpdatePasswordAPU(
-		@RequestBody UpdatePasswordRequestDto updatePasswordRequest) {
-
-		Integer userId = SecurityContextUtil.getUserOrStreamerId();
-
-		UpdatePasswordResponseDto updatePasswordResponse = userService.updatePassword(userId, updatePasswordRequest);
-
-		return ResponseEntity.ok(updatePasswordResponse);
-	}
 }

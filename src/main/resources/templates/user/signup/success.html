@@ -1,0 +1,19 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>회원가입 완료</title>
+</head>
+<body>
+<h1>회원가입이 완료되었습니다</h1>
+<p>이름:
+    <span th:text="${signupResponse.name}"></span>
+</p>
+<p>이메일:
+    <span th:text="${signupResponse.email}"></span>
+</p>
+<p>닉네임:
+    <span th:text="${signupResponse.nickName}"></span>
+</p>
+<a th:href="@{/api/v1/users/login}">로그인하러 가기</a>
+</body>
+</html>

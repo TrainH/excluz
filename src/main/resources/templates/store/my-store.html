@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>마이 스토어</title>
+</head>
+<body>
+<h1>마이 스토어 정보</h1>
+
+<!-- 스토어 기본 정보 -->
+<div>
+    <label>스토어 ID: </label>
+    <span th:text="${storeDetail.storeId}"></span>
+</div>
+<div>
+    <label>내 닉네임: </label>
+    <span th:text="${storeDetail.nickName}"></span>
+</div>
+<div>
+    <label>주소: </label>
+    <span th:text="${storeDetail.address}"></span>
+</div>
+<div>
+    <label>가게명: </label>
+    <span th:text="${storeDetail.storeName}"></span>
+</div>
+<div>
+    <label>사업자 등록번호: </label>
+    <span th:text="${storeDetail.registrationNumber}"></span>
+</div>
+
+<!-- 아이템 목록 (storeDetail.itemList : Page<ItemResponseDto>) -->
+<h2>등록된 상품 관리</h2>
+<div th:if="${#lists.isEmpty(storeDetail.itemList.content)}">
+    등록된 상품이 없습니다.
+</div>
+<table th:if="${not #lists.isEmpty(storeDetail.itemList.content)}" border="1" cellpadding="8" cellspacing="0">
+    <thead>
+    <tr>
+        <th>상품 ID</th>
+        <th>상품명</th>
+        <th>설명</th>
+        <th>가격</th>
+        <th>남은 수량</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${storeDetail.itemList.content}">
+        <td th:text="${item.itemId}"></td>
+        <td th:text="${item.itemName}"></td>
+        <td th:text="${item.explanation}"></td>
+        <td th:text="${item.price}"></td>
+        <td th:text="${item.remainingQuantity}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- 페이징(예시) -->
+<div th:if="${storeDetail.itemList.totalPages} > 1">
+    <p>
+        Page: <span th:text="${storeDetail.itemList.number + 1}"></span>
+        / <span th:text="${storeDetail.itemList.totalPages}"></span>
+    </p>
+    <form th:action="@{/api/v1/stores/my-store}" method="get">
+        <label>Page:</label>
+        <input type="number" name="page" min="0" th:value="${storeDetail.itemList.number}" />
+        <label>Size:</label>
+        <input type="number" name="size" min="1" th:value="${storeDetail.itemList.size}" />
+        <button type="submit">Go</button>
+    </form>
+</div>
+
+</body>
+</html>

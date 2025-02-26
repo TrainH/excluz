@@ -1,93 +1,80 @@
 package excluz.excluz.domain.streamer.controller;
 
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
 import excluz.excluz.auth.util.SecurityContextUtil;
-import excluz.excluz.domain.streamer.dto.request.*;
-import excluz.excluz.domain.streamer.dto.response.*;
+import excluz.excluz.domain.streamer.dto.request.StreamerLoginRequestDto;
+import excluz.excluz.domain.streamer.dto.response.StreamerLoginResponseDto;
+import excluz.excluz.domain.streamer.dto.response.StreamerResponseDto;
+import excluz.excluz.domain.streamer.dto.response.StreamerSummaryResponseDto;
 import excluz.excluz.domain.streamer.service.StreamerService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 
-@RestController
+@Controller
 @RequestMapping("/api/v1/streamers")
 @RequiredArgsConstructor
+@Slf4j
 public class StreamerV1Controller {
 
 	private final StreamerService streamerService;
 
-	@PostMapping("/signup")
-	public ResponseEntity<StreamerResponseDto> streamerSignup(
-		@Valid @RequestBody StreamerSignupRequestDto signupRequestDto
-	) {
-		StreamerResponseDto responseDto = streamerService.streamerSignup(signupRequestDto);
-
-		return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
+	// 1) 로그인 폼 페이지
+	@GetMapping("/login")
+	public String showLoginForm() {
+		return "streamer/login/form";
 	}
 
+	// 2) 로그인 처리 (Form Data)
 	@PostMapping("/login")
-	public ResponseEntity<StreamerLoginResponseDto> streamerLogin(
-		@Valid @RequestBody StreamerLoginRequestDto loginRequestDto
+	public String streamerLoginForm(
+			@Valid StreamerLoginRequestDto loginRequestDto,
+			HttpServletResponse response
 	) {
-		return new ResponseEntity<>(streamerService.streamerLogin(loginRequestDto), HttpStatus.OK);
+		// Service 호출하여 JWT 토큰 발급
+		log.info("test" + loginRequestDto.getEmail());
+		log.info("test" + loginRequestDto.getPassword());
+		StreamerLoginResponseDto streamerLoginResponseDto = streamerService.streamerLogin(loginRequestDto);
+		String jwtToken = streamerLoginResponseDto.getToken();
+
+		// "Bearer "가 포함되어 있다면 제거 후 쿠키에 저장 (일반적으로 'Bearer ' 없이 저장)
+		if (jwtToken.startsWith("Bearer ")) {
+			jwtToken = jwtToken.substring(7);
+		}
+
+		Cookie tokenCookie = new Cookie("jwtToken", jwtToken);
+		tokenCookie.setPath("/");
+		tokenCookie.setHttpOnly(true);
+		response.addCookie(tokenCookie);
+
+		// 로그인 성공 시 스트리머 마이페이지로 리다이렉트
+		return "redirect:/api/v1/streamers/my-page";
 	}
 
-	@DeleteMapping("/soft")
-	@PreAuthorize("hasRole('STREAMER')")
-	public ResponseEntity<Void> deleteStreamer(
-		@RequestBody StreamerDeleteRequestDto deleteRequestDto
-	) {
-		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
-
-		streamerService.deleteStreamer(streamerId, deleteRequestDto.getPassword());
-
-		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-	}
-
-	@PatchMapping("/profile")
-	@PreAuthorize("hasRole('STREAMER')")
-	public ResponseEntity<StreamerResponseDto> updateStreamer(
-		@RequestBody StreamerUpdateRequestDto requestDto
-	) {
-		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
-
-		StreamerResponseDto responseDto = streamerService.updateStreamer(streamerId, requestDto);
-
-		return new ResponseEntity<>(responseDto, HttpStatus.OK);
-	}
-
-	// 스트리머 본인 조회
+	// 3) 스트리머 본인 조회 (마이페이지)
 	@GetMapping("/my-page")
 	@PreAuthorize("hasRole('STREAMER')")
-	public ResponseEntity<StreamerResponseDto> getPersonalInfo() {
+	public String getPersonalInfo(Model model) {
 		Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
-
 		StreamerResponseDto responseDto = streamerService.getPersonalInfo(streamerId);
 
-		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+		model.addAttribute("streamerInfo", responseDto);
+		return "streamer/mypage/view";
 	}
 
-	@GetMapping()
-	public ResponseEntity<Page<StreamerSummaryResponseDto>> getStreamerList(
-		@RequestParam(required = false) String nickName,
-		@RequestParam(defaultValue = "0") int page,
-		@RequestParam(defaultValue = "10") int size
-	) {
-		Page<StreamerSummaryResponseDto> responseDtoList = streamerService.getStreamerList(page, size, nickName);
-
-		return new ResponseEntity<>(responseDtoList, HttpStatus.OK);
-	}
-
+	// 4) 특정 스트리머 조회
 	@GetMapping("/{streamerId}")
-	public ResponseEntity<StreamerSummaryResponseDto> getStreamer(
-		@PathVariable Integer streamerId
+	public String getStreamer(
+			@PathVariable Integer streamerId,
+			Model model
 	) {
-		StreamerSummaryResponseDto responseDtoList = streamerService.getStreamer(streamerId);
-
-		return new ResponseEntity<>(responseDtoList, HttpStatus.OK);
+		StreamerSummaryResponseDto responseDto = streamerService.getStreamer(streamerId);
+		model.addAttribute("streamerSummary", responseDto);
+		return "streamer/profile/summary";
 	}
 }

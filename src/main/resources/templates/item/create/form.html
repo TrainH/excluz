@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>상품 등록</title>
+</head>
+<body>
+<h1>상품 등록</h1>
+
+<!--
+    th:object를 사용할 수도 있지만, 여기서는 간단히 name="필드명" 만 매칭해도 동일하게 바인딩됩니다.
+    th:action="@{/api/v1/items/new}"로 POST 전송 시 createItemForm()가 호출됨
+-->
+<form th:action="@{/api/v1/items/new}" method="post">
+    <div>
+        <label>상품명</label>
+        <input type="text" name="itemName" placeholder="상품명" required/>
+    </div>
+    <div>
+        <label>상품 설명</label>
+        <input type="text" name="explanation" placeholder="상품 설명"/>
+    </div>
+    <div>
+        <label>가격</label>
+        <input type="number" name="price" placeholder="가격" min="0" required/>
+    </div>
+    <div>
+        <label>재고수량</label>
+        <input type="number" name="remainingQuantity" placeholder="재고" min="0" required/>
+    </div>
+    <button type="submit">등록</button>
+</form>
+
+</body>
+</html>

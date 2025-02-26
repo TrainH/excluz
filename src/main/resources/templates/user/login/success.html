@@ -1,0 +1,15 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>로그인 결과</title>
+</head>
+<body>
+<h1>로그인 성공</h1>
+<p>토큰 정보:
+    <span th:text="${loginResponse.token}"></span>
+</p>
+
+<!-- 필요하다면 메인 페이지나 다른 페이지로 이동할 링크 -->
+<a href="/">메인으로 이동</a>
+</body>
+</html>

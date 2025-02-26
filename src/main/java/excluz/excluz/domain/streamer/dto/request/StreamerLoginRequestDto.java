@@ -4,8 +4,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter // 없으면 매핑이 안 됨
 @NoArgsConstructor
 public class StreamerLoginRequestDto {
 
