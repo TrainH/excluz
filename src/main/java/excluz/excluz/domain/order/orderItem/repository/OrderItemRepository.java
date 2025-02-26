@@ -24,7 +24,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
     Page<OrderItemResponseDto> findByUserId(@Param("userId") Integer userId, Pageable pageable);
 
     @Query("SELECT new excluz.excluz.domain.order.orderItem.dto.response.OrderItemResponseDto(" +
-            "oi.id, o.id, u.nickName, i.id, i.itemName, i.price, oi.item_quantity, o.createdAt) " +
+            "o.id, oi.id, u.nickName, i.id, i.itemName, i.price, oi.item_quantity, o.createdAt) " +
             "FROM OrderItem oi " +
             "JOIN oi.order o " +
             "JOIN o.user u " +
