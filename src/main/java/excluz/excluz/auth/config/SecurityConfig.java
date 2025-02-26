@@ -49,12 +49,12 @@ public class SecurityConfig {
 					"/api/v1/streamers/profile",
 					"/api/v1/streamers/soft",
 					// 아이템
-					"/api/v1/items/{itemsId}/soft",
+					"/api/v1/items/{itemsId}/soft"
 					// 이벤트
-					"/api/v1/events",
-					"/api/v1/events/{eventId}",
-					"/api/v1/events/{eventId}/eventItems",
-					"/api/v1/events/{eventId}/applicants"
+//					"/api/v1/events",
+//					"/api/v1/events/{eventId}",
+//					"/api/v1/events/{eventId}/eventItems",
+//					"/api/v1/events/{eventId}/applicants"
 				).hasRole("STREAMER")
 				.requestMatchers( // 권한 불필요
 					// 로그인 & 회원가입
