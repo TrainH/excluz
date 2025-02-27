@@ -18,7 +18,7 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
 
     @Query("SELECT new excluz.excluz.domain.event.event.dto.EventResponseWithoutEventItemDto(" +
             "e.id, e.store.id, e.numberOfWinners, e.participantCondition, e.selectionMethod, e.startDatetime, e.endDatetime, e.isCompleted, " +
-            "e.createdAt, e.updatedAt, e.generatedCode, null) " +
+            "e.createdAt, e.updatedAt, e.generatedCode) " +
             "FROM Event e " +
             "JOIN e.store s " +
             "JOIN s.streamer st " +

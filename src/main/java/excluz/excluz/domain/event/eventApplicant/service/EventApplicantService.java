@@ -40,8 +40,6 @@ public class EventApplicantService {
         if (event.getIsDeleted()) {
             throw new BadRequestException(ErrorCode.EVENT_ALREADY_CANCELED);
         }
-
-//        이벤트 시간 관련 로직
         LocalDateTime now = LocalDateTime.now();
         if (now.isBefore(event.getStartDatetime())) {
             throw new BadRequestException(ErrorCode.EVENT_APPLICANT_NOT_STARTED);
@@ -63,8 +61,6 @@ public class EventApplicantService {
                 .build();
 
         if (event.getSelectionMethod() == SelectionMethod.FIRST_COME_FIRST_SERVED) {
-            // todo: 이 단에서만 락이 걸려야 함
-            // 선착순이 아니어도 락이 걸리는 문제....
             int numberOfCurrentWinners = eventApplicantRepository.countByEventAndApplicantStatus(event, ApplicantStatus.WINNER);
             if (numberOfCurrentWinners < event.getNumberOfWinners()) {
                 eventApplicant.updateApplicantStatus(ApplicantStatus.WINNER);

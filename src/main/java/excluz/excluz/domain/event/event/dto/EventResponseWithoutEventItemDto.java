@@ -53,9 +53,8 @@ public class EventResponseWithoutEventItemDto {
         this.generatedCode = generatedCode;
     }
 
-    // Event 엔티티와 EventItem 리스트를 받아서 EventResponseDto로 변환하는 정적 메서드
-    public static EventResponseWithoutEventItemDto from(Event event) {
 
+    public static EventResponseWithoutEventItemDto from(Event event) {
 
         return EventResponseWithoutEventItemDto.builder()
                 .id(event.getId())

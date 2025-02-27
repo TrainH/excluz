@@ -15,7 +15,7 @@ public class EventApplicantResponseDto {
     private String applicantName;
     private String deliveryAddress;
     private ApplicantStatus applicantStatus;
-    private String eventCode;
+    private String eventCodeForKakaoLink;
 
 
     @Builder
@@ -26,7 +26,7 @@ public class EventApplicantResponseDto {
         this.applicantName = applicantName;
         this.deliveryAddress = deliveryAddress;
         this.applicantStatus = applicantStatus;
-        this.eventCode = eventCode;
+        this.eventCodeForKakaoLink = eventCode;
     }
 
     public static EventApplicantResponseDto from(EventApplicant eventApplicant) {
@@ -41,6 +41,6 @@ public class EventApplicantResponseDto {
     }
 
     public void updateEventCode(String eventCode){
-        this.eventCode = eventCode;
+        this.eventCodeForKakaoLink = eventCode;
     }
 }
