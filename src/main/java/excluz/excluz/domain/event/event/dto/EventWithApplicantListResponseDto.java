@@ -5,7 +5,6 @@ import excluz.excluz.common.entity.EventApplicant;
 import excluz.excluz.common.entity.EventItem;
 import excluz.excluz.domain.event.event.enums.ParticipantCondition;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
-import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantResponseDto;
 import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantReviewResponseDto;
 import excluz.excluz.domain.event.eventItem.dto.EventItemDto;
 import lombok.*;
@@ -16,7 +15,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
-public class EventWithApplicantsResponseDto {
+public class EventWithApplicantListResponseDto {
 
     private Integer id;
     private String generatedCode;
@@ -31,10 +30,10 @@ public class EventWithApplicantsResponseDto {
     private List<EventApplicantReviewResponseDto> eventApplicantList; // 이벤트 지원자 목록 Dto
 
     @Builder
-    public EventWithApplicantsResponseDto(Integer id, String generatedCode, ParticipantCondition participantCondition,
-                                          SelectionMethod selectionMethod,
-                                          LocalDateTime startDatetime, LocalDateTime endDatetime, Boolean isCompleted, Boolean isDeleted,
-                                          List<EventItemDto> eventItemList, List<EventApplicantReviewResponseDto> eventApplicantList) {
+    public EventWithApplicantListResponseDto(Integer id, String generatedCode, ParticipantCondition participantCondition,
+                                             SelectionMethod selectionMethod,
+                                             LocalDateTime startDatetime, LocalDateTime endDatetime, Boolean isCompleted, Boolean isDeleted,
+                                             List<EventItemDto> eventItemList, List<EventApplicantReviewResponseDto> eventApplicantList) {
         this.id = id;
         this.generatedCode = generatedCode;
         this.participantCondition = participantCondition;
@@ -49,9 +48,9 @@ public class EventWithApplicantsResponseDto {
 
     }
 
-    public static EventWithApplicantsResponseDto from(Event event,
-                                                      List<EventItem> eventItemList,
-                                                      List<EventApplicant> eventApplicantList) {
+    public static EventWithApplicantListResponseDto from(Event event,
+                                                         List<EventItem> eventItemList,
+                                                         List<EventApplicant> eventApplicantList) {
 
         List<EventItemDto> itemDtoList = eventItemList.stream()
                 .map(EventItemDto::from)
@@ -62,7 +61,7 @@ public class EventWithApplicantsResponseDto {
                 .map(EventApplicantReviewResponseDto::from)
                 .toList();
 
-        return EventWithApplicantsResponseDto.builder()
+        return EventWithApplicantListResponseDto.builder()
                 .id(event.getId())
                 .generatedCode(event.getGeneratedCode())
                 .participantCondition(event.getParticipantCondition())

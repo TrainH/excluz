@@ -6,8 +6,7 @@ import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.UnauthorizedException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.event.event.dto.EventClosingResponseDto;
-import excluz.excluz.domain.event.event.dto.EventWithApplicantsResponseDto;
-import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantResponseDto;
+import excluz.excluz.domain.event.event.dto.EventWithApplicantListResponseDto;
 import excluz.excluz.domain.event.eventApplicant.enums.ApplicantStatus;
 import excluz.excluz.domain.event.eventApplicant.repository.EventApplicantRepository;
 import excluz.excluz.domain.event.eventItem.dto.EventItemRequestDto;
@@ -30,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -111,7 +109,7 @@ public class EventService {
 
 
     @Transactional(readOnly = true)
-    public EventWithApplicantsResponseDto getEvent(Integer streamerId, Integer eventId) {
+    public EventWithApplicantListResponseDto getEvent(Integer streamerId, Integer eventId) {
         Streamer streamer = streamerRepository.findById(streamerId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
@@ -122,10 +120,10 @@ public class EventService {
             throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
         }
 
-        List<EventItem> eventItems = eventItemRepository.findByEvent(event);
-        List<EventApplicant> eventApplicants = eventApplicantRepository.findByEvent(event);
+        List<EventItem> eventItemList = eventItemRepository.findByEvent(event);
+        List<EventApplicant> eventApplicantList = eventApplicantRepository.findByEvent(event);
 
-        return EventWithApplicantsResponseDto.from(event, eventItems, eventApplicants);
+        return EventWithApplicantListResponseDto.from(event, eventItemList, eventApplicantList);
     }
 
 
@@ -151,8 +149,8 @@ public class EventService {
         }
 
         // 이벤트의 종료 여부를 endDatetime과 현재 시간으로 재확인 (종료, 취소시에도 재고 복구)
-        List<EventItem> eventItems = eventItemRepository.findByEvent(event);
-        for (EventItem eventItem : eventItems) {
+        List<EventItem> eventItemList = eventItemRepository.findByEvent(event);
+        for (EventItem eventItem : eventItemList) {
             Item item = eventItem.getItem();
             item.addRemainingQuantity(eventItem.getQuantity() * event.getNumberOfWinners());
         }
@@ -196,10 +194,10 @@ public class EventService {
         int numberOfWinners = event.getNumberOfWinners();
         // 실제 응모자 수
         int actualApplicants = applicantList.size();
+
         if (event.getSelectionMethod() == SelectionMethod.RANDOM_DRAW) {
-            // 무작위 섞기
             Collections.shuffle(applicantList);
-            // 후보 리스트 중 최대 numberOfWinners명만 WINNER로
+
             List<EventApplicant> winners = applicantList.subList(0, Math.min(numberOfWinners, actualApplicants));
             for (EventApplicant applicant : applicantList) {
                 if (winners.contains(applicant)) {
