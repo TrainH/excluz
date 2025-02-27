@@ -71,7 +71,7 @@ public class Streamer extends BaseEntity {
 	) {
 		if (name != null) this.name = name;
 		if (nickName != null) this.nickName = nickName;
-		if (phoneNumber != null) this.phoneNumber = phoneNumber;
-		if (email != null) this.email = email;
+		if (phoneNumber != null) this.phoneNumber = phoneNumber; // 검증 로직 추가. 정규식
+		if (email != null) this.email = email; // --
 	}
 }

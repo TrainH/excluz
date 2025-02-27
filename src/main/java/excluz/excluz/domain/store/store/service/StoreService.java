@@ -1,6 +1,7 @@
 package excluz.excluz.domain.store.store.service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -83,10 +84,15 @@ public class StoreService {
 	public StoreResponseDto updateStore(Integer userId, Integer storeId, StoreUpdateRequestDto requestDto) {
 		Store store = getStoreByIdAndNotDeleted(storeId);
 
-		// 스토어 주인 검증 로직
-		if (!store.getStreamer().getId().equals(userId)) {
+		Streamer streamer = store.getStreamer();
+		if (streamer!=null && Objects.equals(streamer.getId(), userId)) {
 			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
 		}
+		// 스토어 주인 검증 로직
+		// if (Objects.equals(store.getStreamer().getId(), userId))
+		// if (!store.getStreamer().getId().equals(userId)) { // NPE 주의 개선 필요
+		// 	throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+		// }
 
 		// 삭제 되지 않은 가게 중 중복된 사업자 등록 번호가 있을경우 예외 처리
 		if (requestDto.getRegistrationNumber() != null) {
@@ -102,7 +108,7 @@ public class StoreService {
 
 	@Transactional(readOnly = true)
 	public Page<StoreNameResponseDto> getStoreList(String storeName, int page, int size) {
-		Pageable pageable = PageRequest.of(Math.max(0, page), size);
+		// Pageable pageable = PageRequest.of(Math.max(0, page), size);
 
 		Page<Store> storeList = storeRepository.findByStoreName(pageable, storeName);
 
@@ -118,9 +124,9 @@ public class StoreService {
 
 		Store store = getStoreByIdAndNotDeleted(storeId);
 
-		Page<Item> itemList = itemRepository.findByStoreId(storeId, pageable);
-		List<ItemResponseDto> itemResponseList = itemList.stream().map(ItemResponseDto::from).toList();
-		Page<ItemResponseDto> itemResponsePage = new PageImpl<>(itemResponseList, pageable, itemList.getTotalElements());
+		// Page<Item> itemList = itemRepository.findByStoreId(storeId, pageable);
+		// List<ItemResponseDto> itemResponseList = itemList.stream().map(ItemResponseDto::from).toList();
+		// Page<ItemResponseDto> itemResponsePage = new PageImpl<>(itemResponseList, pageable, itemList.getTotalElements());
 
 		return StoreDetailResponseDto.of(streamer.getNickName(), store, itemResponsePage);
 	}
@@ -140,9 +146,9 @@ public class StoreService {
 			throw new NotFoundException(ErrorCode.STORE_NOT_FOUND);
 		}
 
-		Page<Item> itemList = itemRepository.findByStoreId(store.getId(), pageable);
-		List<ItemResponseDto> itemResponseList = itemList.stream().map(ItemResponseDto::from).toList();
-		Page<ItemResponseDto> itemResponsePage = new PageImpl<>(itemResponseList, pageable, itemList.getTotalElements());
+		// Page<Item> itemList = itemRepository.findByStoreId(store.getId(), pageable);
+		// List<ItemResponseDto> itemResponseList = itemList.stream().map(ItemResponseDto::from).toList();
+		// Page<ItemResponseDto> itemResponsePage = new PageImpl<>(itemResponseList, pageable, itemList.getTotalElements());
 
 		return StoreDetailResponseDto.of(streamer.getNickName(), store, itemResponsePage);
 	}
@@ -157,7 +163,7 @@ public class StoreService {
 		return streamer;
 	}
 
-	// 삭제되지 않은 스토어만 반환
+	// 삭제되지 않은 스토어만 반환 /* TODO 터트리지 않아도 될 예외는 터트리지 말자 */
 	private Store getStoreByIdAndNotDeleted(Integer storeId) {
 		Store store = storeRepository.findById(storeId).orElseThrow(
 			() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND)

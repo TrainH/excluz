@@ -31,6 +31,8 @@ public class StreamerService {
 
 	@Transactional
 	public StreamerResponseDto streamerSignup(StreamerSignupRequestDto signupRequestDto) {
+
+		/*TODO*/
 		if (!signupRequestDto.getPassword().equals(signupRequestDto.getReEnterPassword())) {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
@@ -48,6 +50,7 @@ public class StreamerService {
 		return StreamerResponseDto.from(streamerRepository.save(streamer));
 	}
 
+	// 동사먼저 시작
 	public StreamerLoginResponseDto streamerLogin(StreamerLoginRequestDto loginRequestDto) {
 		Streamer streamer = streamerRepository.findByEmail(loginRequestDto.getEmail()).orElseThrow(
 			() -> new NotFoundException(ErrorCode.UNAUTHORIZED_USER)
@@ -71,7 +74,7 @@ public class StreamerService {
 		}
 
 		// 소프트 딜리트
-		streamer.updateStreamerStatus(true);
+		streamer.updateStreamerStatus(true); // softDelete()
 	}
 
 	@Transactional
@@ -112,7 +115,7 @@ public class StreamerService {
 	}
 
 	@Transactional(readOnly = true)
-	public StreamerSummaryResponseDto getStreamer(Integer streamerId) {
+	public StreamerSummaryResponseDto getStreamer(Integer streamerId) { //+DtoById
 		Streamer streamer = streamerRepository.findById(streamerId).orElseThrow(
 			() -> new NotFoundException(ErrorCode.USER_NOT_FOUND)
 		);
@@ -125,6 +128,7 @@ public class StreamerService {
 	}
 
 	/* 기타 메서드 */
+	@Transactional(readOnly = true)
 	public Streamer findStreamerById(Integer streamerId) {
 		return streamerRepository.findById(streamerId).orElseThrow(
 			() -> new NotFoundException(ErrorCode.UNAUTHORIZED_USER)

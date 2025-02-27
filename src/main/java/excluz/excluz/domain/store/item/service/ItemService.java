@@ -51,18 +51,19 @@ public class ItemService {
 	public void deleteItem(Integer itemsId, Integer streamerId) {
 		Item item = findItemByIdAndNotDeleted(itemsId);
 
+		/*TODO*/
 		if (!item.getStore().getStreamer().getId().equals(streamerId)) {
 			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
 		}
 
-		item.updateIsDeleted(true);
+		item.updateIsDeleted(true); // softDelete()
 	}
 
 	@Transactional
 	public ItemResponseDto updateItemInfo(ItemUpdateRequestDto itemUpdateRequestDto, Integer itemsId, Integer streamerId) {
 		Item item = findItemByIdAndNotDeleted(itemsId);
 
-		// 아이템 수정 권한이 있는 회원인지 확인
+		// 아이템 수정 권한이 있는 회원인지 확인 /* TODO 수정 */
 		if (!item.getStore().getStreamer().getId().equals(streamerId)) {
 			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
 		}
@@ -76,7 +77,7 @@ public class ItemService {
 	}
 
 	@Transactional(readOnly = true)
-	public ItemResponseDto getItemById(Integer itemsId) {
+	public ItemResponseDto getItemById(Integer itemsId) { //getItemDTOById
 		return ItemResponseDto.from(findItemByIdAndNotDeleted(itemsId));
 	}
 
@@ -84,17 +85,17 @@ public class ItemService {
 	public GetItemListResponseDto getItemList(int page, int size, Integer minPrice, Integer maxPrice, String itemName) {
 
 		Pageable pageable = PageRequest.of(Math.max(page, 0), size);
-		int newMinPrice=minPrice, newMaxPrice=maxPrice;
-		Optional<Integer> highestPrice = itemRepository.findHighestItemPrice();
-
-		// 유효 가격 범위로 값 재설정
-		if (minPrice == Integer.MAX_VALUE) {
-			newMinPrice = highestPrice.orElse(0);
-			newMaxPrice = Integer.MAX_VALUE;
-		}
-		else if (maxPrice <= minPrice) {
-			newMaxPrice = highestPrice.orElse(minPrice + 1);
-		}
+		// int newMinPrice=minPrice, newMaxPrice=maxPrice;
+		// Optional<Integer> highestPrice = itemRepository.findHighestItemPrice();
+		//
+		// // 유효 가격 범위로 값 재설정
+		// if (minPrice == Integer.MAX_VALUE) {
+		// 	newMinPrice = highestPrice.orElse(0);
+		// 	newMaxPrice = Integer.MAX_VALUE;
+		// }
+		// else if (maxPrice <= minPrice) {
+		// 	newMaxPrice = highestPrice.orElse(minPrice + 1);
+		// }
 
 		Page<Item> items = itemRepository.findByPriceWithItemName(pageable, newMinPrice, newMaxPrice, itemName);
 		Page<ItemResponseDto> responseDtoPage = items.map(ItemResponseDto::from);

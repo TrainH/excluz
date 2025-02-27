@@ -1,6 +1,8 @@
 package excluz.excluz.domain.store.store.controller;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -62,7 +64,7 @@ public class StoreV1Controller {
 		@PathVariable Integer storeId,
 		@RequestBody(required = false) StoreUpdateRequestDto requestDto
 	) {
-		Integer userId = SecurityContextUtil.getUserOrStreamerId();
+		Integer userId = SecurityContextUtil.getUserOrStreamerId(); //
 
 		StoreResponseDto responseDto = storeService.updateStore(userId, storeId, requestDto);
 
@@ -72,8 +74,9 @@ public class StoreV1Controller {
 	@GetMapping()
 	public ResponseEntity<Page<StoreNameResponseDto>> getStoreList(
 		@RequestParam(required = false) String storeName,
-		@RequestParam(defaultValue = "0") int page,
-		@RequestParam(defaultValue = "10") int size
+		@PageableDefault Pageable pageable // 어노테이션 사용해서 기본값 변경 가능(@PageableDefault)
+		// @RequestParam(defaultValue = "0") int page,
+		// @RequestParam(defaultValue = "10") int size
 	) {
 		Page<StoreNameResponseDto> responseDtoList = storeService.getStoreList(storeName, page, size);
 
