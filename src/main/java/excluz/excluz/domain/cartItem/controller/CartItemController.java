@@ -1,5 +1,7 @@
 package excluz.excluz.domain.cartItem.controller;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import excluz.excluz.auth.util.SecurityContextUtil;
@@ -56,11 +59,14 @@ public class CartItemController {
 
 	// 물품 다건 조회
 	@GetMapping
-	public ResponseEntity<CartItemListResponseDto> getCartItemList() {
+	public ResponseEntity<CartItemListResponseDto> getCartItemList(
+		@RequestParam(defaultValue = "0") int page,     // 기본값 0 (첫 페이지)
+		@RequestParam(defaultValue = "10") int size     // 기본값 10 (한 페이지당 10개)
+	) {
 		Integer userId = SecurityContextUtil.getUserOrStreamerId();
 		UserRole userRole = SecurityContextUtil.getUserRole();
 
-		CartItemListResponseDto response = cartItemService.getCartItemList(userId, userRole);
+		CartItemListResponseDto response = cartItemService.getCartItemList(userId, userRole, page, size);
 		return ResponseEntity.ok(response);
 	}
 
