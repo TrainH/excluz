@@ -44,15 +44,8 @@ public class EventService {
 
     @Transactional
     public EventResponseDto createEvent(Integer streamerId, EventRequestDto eventRequestDto) {
-        Store store = storeRepository.findById(eventRequestDto.getStoreId())
+        Store store = storeRepository.findStoreWithStreamer(streamerId)
                 .orElseThrow(() ->  new NotFoundException(ErrorCode.STORE_NOT_FOUND));
-
-        Streamer streamer = streamerRepository.findById(streamerId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
-
-        if (!streamer.getId().equals(store.getStreamer().getId())){
-            throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
-        }
 
         if (eventRequestDto.getEndDatetime().isBefore(LocalDateTime.now())) {
             throw new BadRequestException(ErrorCode.EVENT_ENDDATETIME_TOO_EARLY);
@@ -97,26 +90,21 @@ public class EventService {
     // 이벤트 전체 조회 서비스 로직
     @Transactional(readOnly = true)
     public Page<EventResponseDto> getEventList(Integer streamerId, int page, int size) {
-        // 스트리머 존재 여부 확인 (없으면 예외)
-        Streamer streamer = streamerRepository.findById(streamerId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         Pageable pageable = PageRequest.of(Math.max(0, page), size);
 
         // 스트리머에 해당하는 이벤트를 직접 조회 (페이지 적용)
-        return eventRepository.findByStreamerId(streamer.getId(), pageable);
+        return eventRepository.findByStreamerId(streamerId, pageable);
     }
 
 
     @Transactional(readOnly = true)
     public EventWithApplicantListResponseDto getEvent(Integer streamerId, Integer eventId) {
-        Streamer streamer = streamerRepository.findById(streamerId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
 
-        if (!event.getStore().getStreamer().getId().equals(streamer.getId())) {
+        if (!event.getStore().getStreamer().getId().equals(streamerId)) {
             throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
         }
 
@@ -133,10 +121,7 @@ public class EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
 
-        Streamer streamer = streamerRepository.findById(streamerId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
-
-        if (!event.getStore().getStreamer().getId().equals(streamer.getId())) {
+        if (!event.getStore().getStreamer().getId().equals(streamerId)) {
             throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
         }
 
@@ -172,10 +157,8 @@ public class EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
 
-        Streamer streamer = streamerRepository.findById(streamerId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
-        if (!event.getStore().getStreamer().getId().equals(streamer.getId())) {
+        if (!event.getStore().getStreamer().getId().equals(streamerId)) {
             throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
         }
 

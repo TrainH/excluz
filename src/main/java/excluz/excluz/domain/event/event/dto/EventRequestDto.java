@@ -13,8 +13,6 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class EventRequestDto {
-    @NotNull(message = "스토어 ID는 필수입니다.")
-    private Integer storeId;
 
     @NotNull(message = "당첨자 수는 필수입니다.")
     @Positive(message = "당첨자 수는 최소 1명 이상이어야 합니다.")
@@ -47,14 +45,12 @@ public class EventRequestDto {
     }
 
     @Builder
-    public EventRequestDto(Integer storeId,
-                           Integer numberOfWinners,
+    public EventRequestDto(Integer numberOfWinners,
                            String participantCondition,
                            String selectionMethod,
                            LocalDateTime startDatetime,
                            LocalDateTime endDatetime,
                            List<EventItemRequestDto> eventItemList) {
-        this.storeId = storeId;
         this.numberOfWinners = numberOfWinners;
         this.participantCondition = participantCondition;
         this.selectionMethod = selectionMethod;
