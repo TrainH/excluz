@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
-public class EventResponseWithEventItemDto {
+public class EventResponseWithoutEventItemDto {
     private Integer id;
     private Integer streamerStoreId;
     private Integer numberOfWinners;
@@ -27,21 +27,19 @@ public class EventResponseWithEventItemDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String generatedCode;
-    private List<EventItemDto> eventItemList;
 
     @Builder
-    public EventResponseWithEventItemDto(Integer id,
-                                         Integer streamerStoreId,
-                                         Integer numberOfWinners,
-                                         ParticipantCondition participantCondition,
-                                         SelectionMethod selectionMethod,
-                                         LocalDateTime startDatetime,
-                                         LocalDateTime endDatetime,
-                                         Boolean isCompleted,
-                                         LocalDateTime createdAt,
-                                         LocalDateTime updatedAt,
-                                         String generatedCode,
-                                         List<EventItemDto> eventItemList) {
+    public EventResponseWithoutEventItemDto(Integer id,
+                                            Integer streamerStoreId,
+                                            Integer numberOfWinners,
+                                            ParticipantCondition participantCondition,
+                                            SelectionMethod selectionMethod,
+                                            LocalDateTime startDatetime,
+                                            LocalDateTime endDatetime,
+                                            Boolean isCompleted,
+                                            LocalDateTime createdAt,
+                                            LocalDateTime updatedAt,
+                                            String generatedCode) {
         this.id = id;
         this.streamerStoreId = streamerStoreId;
         this.numberOfWinners = numberOfWinners;
@@ -53,24 +51,13 @@ public class EventResponseWithEventItemDto {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.generatedCode = generatedCode;
-        this.eventItemList = eventItemList;
     }
 
     // Event 엔티티와 EventItem 리스트를 받아서 EventResponseDto로 변환하는 정적 메서드
-    public static EventResponseWithEventItemDto from(Event event, List<EventItem> eventItemList) {
-        List<EventItemDto> eventItemDtoList = null;
-        if (eventItemList != null) {
-            eventItemDtoList = eventItemList.stream()
-                    .map(item -> EventItemDto.builder()
-                            .id(item.getId())
-                            .quantity(item.getQuantity())
-                            .eventId(event.getId())
-                            .itemId(item.getId())
-                            .build())
-                    .collect(Collectors.toList());
-        }
+    public static EventResponseWithoutEventItemDto from(Event event) {
 
-        return EventResponseWithEventItemDto.builder()
+
+        return EventResponseWithoutEventItemDto.builder()
                 .id(event.getId())
                 .streamerStoreId(event.getStore().getId())
                 .numberOfWinners(event.getNumberOfWinners())
@@ -82,7 +69,6 @@ public class EventResponseWithEventItemDto {
                 .createdAt(event.getCreatedAt())
                 .updatedAt(event.getUpdatedAt())
                 .generatedCode(event.getGeneratedCode())
-                .eventItemList(eventItemDtoList)
                 .build();
     }
 

@@ -1,10 +1,7 @@
 package excluz.excluz.domain.event.event.controller;
 
 import excluz.excluz.auth.util.SecurityContextUtil;
-import excluz.excluz.domain.event.event.dto.EventClosingResponseDto;
-import excluz.excluz.domain.event.event.dto.EventRequestDto;
-import excluz.excluz.domain.event.event.dto.EventResponseDto;
-import excluz.excluz.domain.event.event.dto.EventWithApplicantListResponseDto;
+import excluz.excluz.domain.event.event.dto.*;
 import excluz.excluz.domain.event.event.service.EventService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +21,10 @@ public class EventController {
     // 스트리머 로직
     @PostMapping()
     @PreAuthorize("hasRole('STREAMER')")
-    public ResponseEntity<EventResponseDto> createEvent(@Valid @RequestBody EventRequestDto eventRequestDto) {
+    public ResponseEntity<EventResponseWithEventItemDto> createEvent(@Valid @RequestBody EventRequestDto eventRequestDto) {
         Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
-        EventResponseDto eventResponseDto = eventService.createEvent(streamerId, eventRequestDto);
-        return ResponseEntity.status(201).body(eventResponseDto);
+        EventResponseWithEventItemDto eventResponseWithEventItemDto = eventService.createEvent(streamerId, eventRequestDto);
+        return ResponseEntity.status(201).body(eventResponseWithEventItemDto);
     }
 
     @PatchMapping("/{eventId}/applicants")
@@ -50,10 +47,10 @@ public class EventController {
 
     @GetMapping()
     @PreAuthorize("hasRole('STREAMER')")
-    public ResponseEntity<Page<EventResponseDto>> getAllEvents(@RequestParam(defaultValue = "0") int page,
-                                                               @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<Page<EventResponseWithoutEventItemDto>> getAllEvents(@RequestParam(defaultValue = "0") int page,
+                                                                            @RequestParam(defaultValue = "10") int size) {
         Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
-        Page<EventResponseDto> eventResponseDtoList = eventService.getEventList(streamerId, page, size);
+        Page<EventResponseWithoutEventItemDto> eventResponseDtoList = eventService.getEventList(streamerId, page, size);
         return ResponseEntity.ok(eventResponseDtoList);
     }
 

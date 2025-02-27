@@ -1,6 +1,5 @@
 package excluz.excluz.domain.event.eventApplicant.controller;
 
-import excluz.excluz.domain.event.event.dto.EventResponseDto;
 import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantReadRequestDto;
 import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantRequestDto;
 import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantResponseDto;
