@@ -37,7 +37,6 @@ public class EventService {
     private final EventItemRepository eventItemRepository;
     private final ItemRepository itemRepository;
     private final EventApplicantRepository eventApplicantRepository;
-    private final StreamerRepository streamerRepository;
 
     @Transactional
     public EventResponseWithEventItemDto createEvent(Integer streamerId, EventRequestDto eventRequestDto) {
