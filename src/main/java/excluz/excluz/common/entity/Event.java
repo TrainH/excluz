@@ -9,7 +9,11 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "events")
+@Table(name = "events", indexes = {
+        @Index(name = "idx_events_generated_code", columnList = "generated_code"),
+        @Index(name = "idx_events_start_datetime", columnList = "start_datetime"),
+        @Index(name = "idx_events_streamer_store_id", columnList = "streamer_store_id")
+})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Event extends BaseEntity  {
 
