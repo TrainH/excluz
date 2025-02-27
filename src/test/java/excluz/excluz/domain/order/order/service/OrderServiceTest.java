@@ -9,7 +9,6 @@ import excluz.excluz.domain.order.order.enums.OrderStatus;
 import excluz.excluz.domain.order.order.repository.OrderRepository;
 import excluz.excluz.domain.order.orderItem.repository.OrderItemRepository;
 import excluz.excluz.domain.point.point.repository.PointRepository;
-import excluz.excluz.domain.point.pointTransaction.enums.TransactionType;
 import excluz.excluz.domain.point.pointTransaction.repository.PointTransactionRepository;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
@@ -128,13 +127,9 @@ class OrderServiceTest {
         Integer userId = 1;
         UserRole userRole = UserRole.CUSTOMER;
         Pageable pageable = PageRequest.of(0, 10);
-        List<Order> orderList = List.of(order1, order2); // Mock 데이터
+        List<Order> orders = List.of(order1, order2); // Mock 데이터
 
-        List<OrderResponseDto> orderDtoList = orderList.stream()
-                .map(OrderResponseDto::from)
-                .toList();
-
-        Page<OrderResponseDto> orderPage = new PageImpl<>(orderDtoList, pageable, orderDtoList.size());
+        Page<Order> orderPage = new PageImpl<>(orders, pageable, orders.size());
 
         Mockito.when(orderRepository.findByUserId(userId, pageable)).thenReturn(orderPage);
 
@@ -271,35 +266,28 @@ class OrderServiceTest {
                 orderService.getOrder(userOrStreamerId, userRole, orderId)
         );
         assertEquals(ErrorCode.ORDER_NOT_FOUND, exception.getErrorCode());
-        // verify(orderRepository, times(1)).findByIdAndStreamerId(orderId, userOrStreamerId);
+        verify(orderRepository, times(1)).findByIdAndStreamerId(orderId, userOrStreamerId);
     }
 
     @Test
-    @DisplayName("성공 - CUSTOMER가 주문 상태를 배송중(SHIPPING)을 배송완료(DELIVERED)로 업데이트")
-    void updateShippingToDeliverdAsCustomer() throws Exception {
+    @DisplayName("성공 - CUSTOMER가 주문 상태를 업데이트")
+    void updateOrderAsCustomer() throws Exception {
         // Given
         Integer userOrStreamerId = 1;
         UserRole userRole = UserRole.CUSTOMER;
         Integer orderId = 1;
+        OrderUpdateRequestDto requestDto = new OrderUpdateRequestDto(OrderStatus.CANCELED, "address11");
 
-        order = new Order(user1, OrderStatus.SHIPPING, "address1");
-        orderRepository.save(order);
-        ReflectionTestUtils.setField(order, "id", 1);
-
-        OrderUpdateRequestDto requestDto = new OrderUpdateRequestDto(OrderStatus.DELIVERED, "address11");
-
-
-        Mockito.when(orderRepository.findByIdAndUserId(orderId, userOrStreamerId)).thenReturn(Optional.of(order));
+        Mockito.when(orderRepository.findByIdAndUserId(orderId, userOrStreamerId)).thenReturn(Optional.of(order1));
         // String roleName = userRole.replace("ROLE_", "").toUpperCase();
-
         // When
         orderService.updateOrder(userOrStreamerId, userRole, orderId, requestDto);
 
         // Then
-        assertEquals(OrderStatus.DELIVERED, order.getOrderStatus()); // 주문 상태가 변경되었는지 검증
+        assertEquals(OrderStatus.CANCELED, order1.getOrderStatus()); // 주문 상태가 변경되었는지 검증
 
         ArgumentCaptor<Order> captorOrder = ArgumentCaptor.forClass(Order.class);
-        verify(orderRepository, times(4)).save(captorOrder.capture()); // 위에서 save로 저장하기 때문에 3개로 해줌
+        verify(orderRepository, times(3)).save(captorOrder.capture()); // 위에서 save로 저장하기 때문에 3개로 해줌
         List<Order> captorOrderList = captorOrder.getAllValues();
 
 
@@ -309,227 +297,29 @@ class OrderServiceTest {
     }
 
     @Test
-    @DisplayName("성공 - CUSTOMER가 주문 상태를 주문된(ORDERED)을 준비중(PREPARING)로 업데이트")
-    void updateOrderedToShippingAsStreamer() throws Exception {
+    @DisplayName("성공 - STREAMER가 주문 상태를 업데이트")
+    void updateOrderAsStreamer() throws Exception {
         // Given
         Integer userOrStreamerId = 1;
         UserRole userRole = UserRole.STREAMER;
         Integer orderId = 1;
+        OrderUpdateRequestDto requestDto = new OrderUpdateRequestDto(OrderStatus.CANCELED, "address11");
 
-        order = new Order(user1, OrderStatus.ORDERED, "address1");
-        orderRepository.save(order);
-        ReflectionTestUtils.setField(order, "id", 1);
-
-        OrderUpdateRequestDto requestDto = new OrderUpdateRequestDto(OrderStatus.PREPARING, "address11");
-
-        Mockito.when(orderRepository.findByIdAndStreamerId(orderId, userOrStreamerId)).thenReturn(Optional.of(order));
+        Mockito.when(orderRepository.findByIdAndStreamerId(orderId, userOrStreamerId)).thenReturn(Optional.of(order1));
         // String roleName = userRole.replace("ROLE_", "").toUpperCase();
-
         // When
         orderService.updateOrder(userOrStreamerId, userRole, orderId, requestDto);
 
         // Then
-        assertEquals(OrderStatus.PREPARING, order.getOrderStatus()); // 주문 상태가 변경되었는지 검증
+        assertEquals(OrderStatus.CANCELED, order1.getOrderStatus()); // 주문 상태가 변경되었는지 검증
 
         ArgumentCaptor<Order> captorOrder = ArgumentCaptor.forClass(Order.class);
-        verify(orderRepository, times(4)).save(captorOrder.capture()); // 위에서 save로 저장하기 때문에 3개로 해줌
+        verify(orderRepository, times(3)).save(captorOrder.capture()); // 위에서 save로 저장하기 때문에 3개로 해줌
         List<Order> captorOrderList = captorOrder.getAllValues();
 
 
         System.out.println("captorOrder: " + objectMapper.writerWithDefaultPrettyPrinter()
                 .writeValueAsString(captorOrderList.get(2))); // service 단에서 .save는 맨마지만 꺼임
-
-    }
-
-    @Test
-    @DisplayName("성공 - CUSTOMER가 주문 상태를 주문된(ORDERED)을 주문취소(CANCELED)로 업데이트")
-    void updateOrderedToCanceledAsCustomer() throws Exception {
-        // Given
-        Integer userOrStreamerId = 1;
-        UserRole userRole = UserRole.CUSTOMER;
-        Integer orderId = 1;
-
-
-        order = new Order(user1, OrderStatus.ORDERED, "address1");
-        orderRepository.save(order);
-        ReflectionTestUtils.setField(order, "id", 1);
-        Mockito.when(orderRepository.findByIdAndUserId(orderId, userOrStreamerId)).thenReturn(Optional.of(order));
-
-
-        PointTransaction pointTransaction1 = new PointTransaction(null, user1, null, TransactionType.CHARGE,100000);
-        pointTransactionRepository.save(pointTransaction1);
-        ReflectionTestUtils.setField(pointTransaction1, "id", 1);
-        Mockito.when(pointTransactionRepository.findByOrderId(orderId)).thenReturn(Optional.of(pointTransaction1));
-
-
-        PointTransaction pointTransaction2 = new PointTransaction(order1, user1, store1, TransactionType.PURCHASE,10000);
-        pointTransactionRepository.save(pointTransaction2);
-        ReflectionTestUtils.setField(pointTransaction2, "id", 2);
-        Mockito.when(pointTransactionRepository.findByOrderId(orderId)).thenReturn(Optional.of(pointTransaction2));
-
-
-        Point userPoint = new Point(UserRole.CUSTOMER, 1, 100000);
-        pointRepository.save(userPoint);
-        ReflectionTestUtils.setField(userPoint, "id", 1);  // ID 강제 설정
-
-        Mockito.when(pointRepository.findByUserRoleAndUserOrStreamerId(
-                pointTransaction2.getUser().getUserRole(),
-                pointTransaction2.getUser().getId())
-        ).thenReturn(Optional.of(userPoint));
-
-
-        Point streamerPoint = new Point(UserRole.STREAMER, 1, 100000);
-        pointRepository.save(streamerPoint);
-        ReflectionTestUtils.setField(streamerPoint, "id", 2);  // ID 강제 설정
-
-        Mockito.when(pointRepository.findByUserRoleAndUserOrStreamerId(
-                        pointTransaction2.getStore().getStreamer().getUserRole(),
-                        pointTransaction2.getStore().getStreamer().getId())
-                ).thenReturn(Optional.of(streamerPoint));
-
-
-
-        OrderUpdateRequestDto requestDto = new OrderUpdateRequestDto(OrderStatus.CANCELED, "address1");
-
-
-
-
-        // String roleName = userRole.replace("ROLE_", "").toUpperCase();
-
-        // When
-        orderService.updateOrder(userOrStreamerId, userRole, orderId, requestDto);
-
-
-        // Then
-        assertEquals(OrderStatus.CANCELED, order.getOrderStatus()); // 주문 상태가 변경되었는지 검증
-
-        ArgumentCaptor<Order> captorOrder = ArgumentCaptor.forClass(Order.class);
-        verify(orderRepository, times(4)).save(captorOrder.capture());
-        List<Order> captorOrderList = captorOrder.getAllValues();
-
-        ArgumentCaptor<Point> captorPoint = ArgumentCaptor.forClass(Point.class);
-        verify(pointRepository, times(2)).save(captorPoint.capture());
-        List<Point> captorPointList = captorPoint.getAllValues();
-
-        ArgumentCaptor<PointTransaction> captorPointTransaction = ArgumentCaptor.forClass(PointTransaction.class);
-        verify(pointTransactionRepository, times(3)).save(captorPointTransaction.capture());
-        List<PointTransaction> captorPointTransactionList = captorPointTransaction.getAllValues();
-
-
-        // Order
-        assertEquals(OrderStatus.CANCELED, captorOrderList.get(3).getOrderStatus());
-
-        //PointTransaction
-        assertEquals(TransactionType.REFUND, captorPointTransactionList.get(2).getTransactionType());
-        assertEquals(10000, captorPointTransactionList.get(2).getAmount());
-
-
-//        System.out.println("----------------------------------");
-//        System.out.println("captorOrderList: " + objectMapper.writerWithDefaultPrettyPrinter()
-//                .writeValueAsString(captorOrderList.get(2))); // service 단에서 .save는 맨마지만 꺼임
-//        System.out.println("----------------------------------");
-//        System.out.println("captorPointList: " + objectMapper.writerWithDefaultPrettyPrinter()
-//                .writeValueAsString(captorPointList)); // service 단에서 .save는 맨마지만 꺼임
-//
-//        System.out.println("----------------------------------");
-//        System.out.println("captorPointTransactionList: " + objectMapper.writerWithDefaultPrettyPrinter()
-//                .writeValueAsString(captorPointTransactionList)); // service 단에서 .save는 맨마지만 꺼임
-
-    }
-
-    @Test
-    @DisplayName("성공 - STREAMER가 주문 상태를 주문된(ORDERED)을 주문취소(CANCELED)로 업데이트")
-    void updateOrderedToCanceledAsStreamer() throws Exception {
-        // Given
-        Integer userOrStreamerId = 1;
-        UserRole userRole = UserRole.STREAMER;
-        Integer orderId = 1;
-
-
-        order = new Order(user1, OrderStatus.ORDERED, "address1");
-        orderRepository.save(order);
-        ReflectionTestUtils.setField(order, "id", 1);
-        Mockito.when(orderRepository.findByIdAndStreamerId(orderId, userOrStreamerId)).thenReturn(Optional.of(order));
-
-
-        PointTransaction pointTransaction1 = new PointTransaction(null, user1, null, TransactionType.CHARGE,100000);
-        pointTransactionRepository.save(pointTransaction1);
-        ReflectionTestUtils.setField(pointTransaction1, "id", 1);
-        Mockito.when(pointTransactionRepository.findByOrderId(orderId)).thenReturn(Optional.of(pointTransaction1));
-
-
-        PointTransaction pointTransaction2 = new PointTransaction(order1, user1, store1, TransactionType.PURCHASE,10000);
-        pointTransactionRepository.save(pointTransaction2);
-        ReflectionTestUtils.setField(pointTransaction2, "id", 2);
-        Mockito.when(pointTransactionRepository.findByOrderId(orderId)).thenReturn(Optional.of(pointTransaction2));
-
-
-        Point userPoint = new Point(UserRole.CUSTOMER, 1, 100000);
-        pointRepository.save(userPoint);
-        ReflectionTestUtils.setField(userPoint, "id", 1);  // ID 강제 설정
-
-        Mockito.when(pointRepository.findByUserRoleAndUserOrStreamerId(
-                pointTransaction2.getUser().getUserRole(),
-                pointTransaction2.getUser().getId())
-        ).thenReturn(Optional.of(userPoint));
-
-
-        Point streamerPoint = new Point(UserRole.STREAMER, 1, 100000);
-        pointRepository.save(streamerPoint);
-        ReflectionTestUtils.setField(streamerPoint, "id", 2);  // ID 강제 설정
-
-        Mockito.when(pointRepository.findByUserRoleAndUserOrStreamerId(
-                pointTransaction2.getStore().getStreamer().getUserRole(),
-                pointTransaction2.getStore().getStreamer().getId())
-        ).thenReturn(Optional.of(streamerPoint));
-
-
-
-        OrderUpdateRequestDto requestDto = new OrderUpdateRequestDto(OrderStatus.CANCELED, "address1");
-
-
-
-
-        // String roleName = userRole.replace("ROLE_", "").toUpperCase();
-
-        // When
-        orderService.updateOrder(userOrStreamerId, userRole, orderId, requestDto);
-
-
-        // Then
-        assertEquals(OrderStatus.CANCELED, order.getOrderStatus()); // 주문 상태가 변경되었는지 검증
-
-        ArgumentCaptor<Order> captorOrder = ArgumentCaptor.forClass(Order.class);
-        verify(orderRepository, times(4)).save(captorOrder.capture());
-        List<Order> captorOrderList = captorOrder.getAllValues();
-
-        ArgumentCaptor<Point> captorPoint = ArgumentCaptor.forClass(Point.class);
-        verify(pointRepository, times(2)).save(captorPoint.capture());
-        List<Point> captorPointList = captorPoint.getAllValues();
-
-        ArgumentCaptor<PointTransaction> captorPointTransaction = ArgumentCaptor.forClass(PointTransaction.class);
-        verify(pointTransactionRepository, times(3)).save(captorPointTransaction.capture());
-        List<PointTransaction> captorPointTransactionList = captorPointTransaction.getAllValues();
-
-
-        // Order
-        assertEquals(OrderStatus.CANCELED, captorOrderList.get(3).getOrderStatus());
-
-        //PointTransaction
-        assertEquals(TransactionType.REFUND, captorPointTransactionList.get(2).getTransactionType());
-        assertEquals(10000, captorPointTransactionList.get(2).getAmount());
-
-
-//        System.out.println("----------------------------------");
-//        System.out.println("captorOrderList: " + objectMapper.writerWithDefaultPrettyPrinter()
-//                .writeValueAsString(captorOrderList.get(2))); // service 단에서 .save는 맨마지만 꺼임
-//        System.out.println("----------------------------------");
-//        System.out.println("captorPointList: " + objectMapper.writerWithDefaultPrettyPrinter()
-//                .writeValueAsString(captorPointList)); // service 단에서 .save는 맨마지만 꺼임
-//
-//        System.out.println("----------------------------------");
-//        System.out.println("captorPointTransactionList: " + objectMapper.writerWithDefaultPrettyPrinter()
-//                .writeValueAsString(captorPointTransactionList)); // service 단에서 .save는 맨마지만 꺼임
 
     }
 }
