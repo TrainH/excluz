@@ -95,7 +95,6 @@ public class EventConcurrentFirstComeTest {
 
         // 이벤트 생성 (FIRST_COME_FIRST_SERVED 방식)
         EventRequestDto eventRequestDto = EventRequestDto.builder()
-                .storeId(store.getId())
                 .numberOfWinners(NUMBER_OF_WINNERS)
                 .participantCondition("ALL_USERS") // enum 값 문자열 (예)
                 .selectionMethod(SelectionMethod.FIRST_COME_FIRST_SERVED.name())

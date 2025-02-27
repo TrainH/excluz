@@ -4,8 +4,6 @@ import excluz.excluz.domain.event.event.enums.ParticipantCondition;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -19,9 +17,8 @@ public class Event extends BaseEntity  {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // StreamerStore 엔티티와의 Many-to-One 관계 매핑 (_id로 끝나는 컬럼 처리)
-    @ManyToOne
-    @JoinColumn(name = "streamer_store_id",  nullable = false) // 컬럼 이름은 snake_case
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "streamer_store_id",  nullable = false)
     private Store store;
 
     @Column(name = "number_of_winners", nullable = false)
@@ -44,18 +41,12 @@ public class Event extends BaseEntity  {
     @Column(name = "end_datetime",  nullable = false)
     private LocalDateTime endDatetime;
 
-    // 이벤트 마감 여부
     @Column(name = "is_completed",  nullable = false)
     private Boolean isCompleted;
 
     @Column(name = "is_deleted",  nullable = false)
     private Boolean isDeleted;
 
-//    //    todo: 낙관적 락 테스트
-//    @Version
-//    private Integer version;
-
-    // 생성자: 매개변수 4개 이상이므로 @Builder 패턴 사용
     @Builder
     public Event(Store store,
                  Integer numberOfWinners,

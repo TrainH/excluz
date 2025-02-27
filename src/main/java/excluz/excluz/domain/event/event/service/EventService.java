@@ -6,8 +6,7 @@ import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.UnauthorizedException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.event.event.dto.EventClosingResponseDto;
-import excluz.excluz.domain.event.event.dto.EventWithApplicantsResponseDto;
-import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantResponseDto;
+import excluz.excluz.domain.event.event.dto.EventWithApplicantListResponseDto;
 import excluz.excluz.domain.event.eventApplicant.enums.ApplicantStatus;
 import excluz.excluz.domain.event.eventApplicant.repository.EventApplicantRepository;
 import excluz.excluz.domain.event.eventItem.dto.EventItemRequestDto;
@@ -30,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -46,15 +44,8 @@ public class EventService {
 
     @Transactional
     public EventResponseDto createEvent(Integer streamerId, EventRequestDto eventRequestDto) {
-        Store store = storeRepository.findById(eventRequestDto.getStoreId())
+        Store store = storeRepository.findStoreWithStreamer(streamerId)
                 .orElseThrow(() ->  new NotFoundException(ErrorCode.STORE_NOT_FOUND));
-
-        Streamer streamer = streamerRepository.findById(streamerId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
-
-        if (!streamer.getId().equals(store.getStreamer().getId())){
-            throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
-        }
 
         if (eventRequestDto.getEndDatetime().isBefore(LocalDateTime.now())) {
             throw new BadRequestException(ErrorCode.EVENT_ENDDATETIME_TOO_EARLY);
@@ -99,33 +90,28 @@ public class EventService {
     // 이벤트 전체 조회 서비스 로직
     @Transactional(readOnly = true)
     public Page<EventResponseDto> getEventList(Integer streamerId, int page, int size) {
-        // 스트리머 존재 여부 확인 (없으면 예외)
-        Streamer streamer = streamerRepository.findById(streamerId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         Pageable pageable = PageRequest.of(Math.max(0, page), size);
 
         // 스트리머에 해당하는 이벤트를 직접 조회 (페이지 적용)
-        return eventRepository.findByStreamerId(streamer.getId(), pageable);
+        return eventRepository.findByStreamerId(streamerId, pageable);
     }
 
 
     @Transactional(readOnly = true)
-    public EventWithApplicantsResponseDto getEvent(Integer streamerId, Integer eventId) {
-        Streamer streamer = streamerRepository.findById(streamerId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+    public EventWithApplicantListResponseDto getEvent(Integer streamerId, Integer eventId) {
 
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
 
-        if (!event.getStore().getStreamer().getId().equals(streamer.getId())) {
+        if (!event.getStore().getStreamer().getId().equals(streamerId)) {
             throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
         }
 
-        List<EventItem> eventItems = eventItemRepository.findByEvent(event);
-        List<EventApplicant> eventApplicants = eventApplicantRepository.findByEvent(event);
+        List<EventItem> eventItemList = eventItemRepository.findByEvent(event);
+        List<EventApplicant> eventApplicantList = eventApplicantRepository.findByEvent(event);
 
-        return EventWithApplicantsResponseDto.from(event, eventItems, eventApplicants);
+        return EventWithApplicantListResponseDto.from(event, eventItemList, eventApplicantList);
     }
 
 
@@ -135,10 +121,7 @@ public class EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
 
-        Streamer streamer = streamerRepository.findById(streamerId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
-
-        if (!event.getStore().getStreamer().getId().equals(streamer.getId())) {
+        if (!event.getStore().getStreamer().getId().equals(streamerId)) {
             throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
         }
 
@@ -151,8 +134,8 @@ public class EventService {
         }
 
         // 이벤트의 종료 여부를 endDatetime과 현재 시간으로 재확인 (종료, 취소시에도 재고 복구)
-        List<EventItem> eventItems = eventItemRepository.findByEvent(event);
-        for (EventItem eventItem : eventItems) {
+        List<EventItem> eventItemList = eventItemRepository.findByEvent(event);
+        for (EventItem eventItem : eventItemList) {
             Item item = eventItem.getItem();
             item.addRemainingQuantity(eventItem.getQuantity() * event.getNumberOfWinners());
         }
@@ -174,10 +157,8 @@ public class EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
 
-        Streamer streamer = streamerRepository.findById(streamerId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
-        if (!event.getStore().getStreamer().getId().equals(streamer.getId())) {
+        if (!event.getStore().getStreamer().getId().equals(streamerId)) {
             throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
         }
 
@@ -196,10 +177,10 @@ public class EventService {
         int numberOfWinners = event.getNumberOfWinners();
         // 실제 응모자 수
         int actualApplicants = applicantList.size();
+
         if (event.getSelectionMethod() == SelectionMethod.RANDOM_DRAW) {
-            // 무작위 섞기
             Collections.shuffle(applicantList);
-            // 후보 리스트 중 최대 numberOfWinners명만 WINNER로
+
             List<EventApplicant> winners = applicantList.subList(0, Math.min(numberOfWinners, actualApplicants));
             for (EventApplicant applicant : applicantList) {
                 if (winners.contains(applicant)) {

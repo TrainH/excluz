@@ -1,23 +1,17 @@
 package excluz.excluz.domain.event.event.controller;
 
 import excluz.excluz.auth.util.SecurityContextUtil;
-import excluz.excluz.common.entity.Event;
 import excluz.excluz.domain.event.event.dto.EventClosingResponseDto;
 import excluz.excluz.domain.event.event.dto.EventRequestDto;
 import excluz.excluz.domain.event.event.dto.EventResponseDto;
-import excluz.excluz.domain.event.event.dto.EventWithApplicantsResponseDto;
+import excluz.excluz.domain.event.event.dto.EventWithApplicantListResponseDto;
 import excluz.excluz.domain.event.event.service.EventService;
-import excluz.excluz.domain.user.enums.UserRole;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 
 @RestController
@@ -65,9 +59,9 @@ public class EventController {
 
     @GetMapping("/{eventId}")
     @PreAuthorize("hasRole('STREAMER')")
-    public ResponseEntity<EventWithApplicantsResponseDto> getEvent(@PathVariable Integer eventId) {
+    public ResponseEntity<EventWithApplicantListResponseDto> getEvent(@PathVariable Integer eventId) {
         Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
-        EventWithApplicantsResponseDto eventResponseDto = eventService.getEvent(streamerId, eventId);
+        EventWithApplicantListResponseDto eventResponseDto = eventService.getEvent(streamerId, eventId);
         return ResponseEntity.ok(eventResponseDto);
     }
 
