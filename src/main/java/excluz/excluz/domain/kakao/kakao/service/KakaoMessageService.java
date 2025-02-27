@@ -40,7 +40,7 @@ public class KakaoMessageService {
         headers.set("Authorization", kakaoAuthorizationHeader);
 
         // 3) code만 쿼리 파라미터로 붙인 URL 생성 (email, password는 제외)
-        String eventCode = responseDto.getEventCode(); // 예: "EVENT_7B922463"
+        String eventCode = responseDto.getEventCodeForKakaoLink(); // 예: "EVENT_7B922463"
         StringBuilder urlBuilder = new StringBuilder(webUrl);
         urlBuilder.append("?code=").append(eventCode);
 
