@@ -12,9 +12,18 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import excluz.excluz.common.exception.error.ErrorResponseDto;
+import excluz.excluz.common.filter.LoggingService;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+	private final LoggingService loggingService;
+
 	@ExceptionHandler(CustomRuntimeException.class)
 	protected ResponseEntity<ErrorResponseDto> handleCustomException(final CustomRuntimeException e) {
 		ErrorResponseDto response = new ErrorResponseDto(e.getErrorCode());
@@ -51,18 +60,30 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(RuntimeException.class)
-	protected ResponseEntity<ErrorResponseDto> handleRuntimeException(final RuntimeException e) {
+	protected ResponseEntity<ErrorResponseDto> handleRuntimeException(final RuntimeException e, HttpServletRequest request) {
 		ErrorResponseDto response = new ErrorResponseDto(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+		exceptionLog(e, request, HttpStatus.INTERNAL_SERVER_ERROR);
+		loggingService.sendMessage("500 에러", e.getClass().getSimpleName(), request.getMethod(), request.getRequestURI(), e.getMessage());
 		return createResponseEntity(response);
 	}
 
 	@ExceptionHandler(Exception.class)
-	protected ResponseEntity<ErrorResponseDto> handleException(final Exception e) {
+	protected ResponseEntity<ErrorResponseDto> handleException(final Exception e, HttpServletRequest request) {
 		ErrorResponseDto response = new ErrorResponseDto(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+		exceptionLog(e, request, HttpStatus.INTERNAL_SERVER_ERROR);
+		loggingService.sendMessage("500 에러", e.getClass().getSimpleName(), request.getMethod(), request.getRequestURI(), e.getMessage());
 		return createResponseEntity(response);
 	}
 
 	private ResponseEntity<ErrorResponseDto> createResponseEntity(ErrorResponseDto response) {
 		return new ResponseEntity<>(response, response.getHttpStatus());
+	}
+
+	private static void exceptionLog(Exception e, HttpServletRequest request, HttpStatus httpStatus) {
+		String requestURL = request.getRequestURI();
+		String method = request.getMethod();
+		String exceptionName = e.getClass().getSimpleName();
+		log.error("[예외 발생!] 상태 코드 : {}, 예외 유형: {}, 요청 정보: {} {}, 예외 메세지: {}",
+			httpStatus, exceptionName, method, requestURL, e.getMessage());
 	}
 }
