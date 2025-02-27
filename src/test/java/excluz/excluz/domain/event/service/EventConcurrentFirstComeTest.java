@@ -2,7 +2,7 @@ package excluz.excluz.domain.event.service;
 
 import excluz.excluz.common.entity.*;
 import excluz.excluz.domain.event.event.dto.EventRequestDto;
-import excluz.excluz.domain.event.event.dto.EventResponseDto;
+import excluz.excluz.domain.event.event.dto.EventResponseWithEventItemDto;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
 import excluz.excluz.domain.event.event.repository.EventRepository;
 import excluz.excluz.domain.event.event.service.EventService;
@@ -108,7 +108,7 @@ public class EventConcurrentFirstComeTest {
                 ))
                 .build();
 
-        EventResponseDto responseDto = eventService.createEvent(streamer.getId(), eventRequestDto);
+        EventResponseWithEventItemDto responseDto = eventService.createEvent(streamer.getId(), eventRequestDto);
         event = eventRepository.findById(responseDto.getId())
                 .orElseThrow(() -> new IllegalStateException("생성된 이벤트가 없습니다."));
     }

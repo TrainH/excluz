@@ -39,6 +39,8 @@ public class EventClosingResponseDto {
                                    String selectionMethod,
                                    LocalDateTime startDatetime,
                                    LocalDateTime endDatetime,
+                                   LocalDateTime createdAt,
+                                   LocalDateTime updatedAt,
                                    Boolean isCompleted,
                                    List<EventItemDto> eventItems,
                                    List<EventApplicantResponseDto> eventApplicants) {
@@ -50,6 +52,8 @@ public class EventClosingResponseDto {
         this.selectionMethod = selectionMethod;
         this.startDatetime = startDatetime;
         this.endDatetime = endDatetime;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
         this.isCompleted = isCompleted;
         this.eventItems = eventItems;
         this.eventApplicants = eventApplicants;
@@ -81,6 +85,8 @@ public class EventClosingResponseDto {
                 .startDatetime(event.getStartDatetime())
                 .endDatetime(event.getEndDatetime())
                 .isCompleted(event.getIsCompleted())
+                .createdAt(event.getCreatedAt())
+                .updatedAt(event.getUpdatedAt())
                 .eventItems(eventItemDtos)
                 .eventApplicants(applicantDtos)
                 .build();

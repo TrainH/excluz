@@ -6,10 +6,7 @@ import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.UnauthorizedException;
 import excluz.excluz.common.exception.error.ErrorCode;
-import excluz.excluz.domain.event.event.dto.EventClosingResponseDto;
-import excluz.excluz.domain.event.event.dto.EventRequestDto;
-import excluz.excluz.domain.event.event.dto.EventResponseDto;
-import excluz.excluz.domain.event.event.dto.EventWithApplicantListResponseDto;
+import excluz.excluz.domain.event.event.dto.*;
 import excluz.excluz.domain.event.event.enums.ParticipantCondition;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
 import excluz.excluz.domain.event.event.repository.EventRepository;
@@ -121,6 +118,8 @@ public class EventServiceTest {
         ReflectionTestUtils.setField(testItem2, "id", 2);
 
 
+        when(storeRepository.findStoreWithStreamer(testStreamer.getId()))
+                .thenReturn(Optional.of(testStore));
 
         when(streamerRepository.findById(testStreamer.getId()))
                 .thenReturn(Optional.of(testStreamer));
@@ -182,7 +181,7 @@ public class EventServiceTest {
             return event;
         });
 
-        EventResponseDto responseDto = eventService.createEvent(testStreamer.getId(), requestDto);
+        EventResponseWithEventItemDto responseDto = eventService.createEvent(testStreamer.getId(), requestDto);
 
         // then
         Assertions.assertThat(responseDto).isNotNull();
@@ -190,8 +189,8 @@ public class EventServiceTest {
         Assertions.assertThat(responseDto.getStreamerStoreId()).isEqualTo(testStore.getId());
         Assertions.assertThat(responseDto.getNumberOfWinners()).isEqualTo(3);
         Assertions.assertThat(responseDto.getIsCompleted()).isFalse();
-        Assertions.assertThat(responseDto.getParticipantCondition()).isEqualTo(ParticipantCondition.ALL_USERS.name());
-        Assertions.assertThat(responseDto.getSelectionMethod()).isEqualTo(SelectionMethod.RANDOM_DRAW.name());
+        Assertions.assertThat(responseDto.getParticipantCondition()).isEqualTo(ParticipantCondition.ALL_USERS);
+        Assertions.assertThat(responseDto.getSelectionMethod()).isEqualTo(SelectionMethod.RANDOM_DRAW);
         Assertions.assertThat(responseDto.getGeneratedCode()).isNotNull();
         Assertions.assertThat(responseDto.getEventItemList()).hasSize(2);
 
@@ -337,21 +336,21 @@ public class EventServiceTest {
         ReflectionTestUtils.setField(event2, "id", 2);
         List<Event> events = Arrays.asList(event1, event2);
         // EventResponseDto로 변환하여 리스트 준비
-        List<EventResponseDto> dtoList = new ArrayList<>();
+        List<EventResponseWithoutEventItemDto> dtoList = new ArrayList<>();
         for (Event event : events) {
-            dtoList.add(EventResponseDto.fromWithoutItems(event));
+            dtoList.add(EventResponseWithoutEventItemDto.from(event));
         }
 
 // 페이징 객체 준비 (예: page=0, size=10)
         Pageable pageable = PageRequest.of(0, 10);
-        Page<EventResponseDto> page = new PageImpl<>(dtoList, pageable, dtoList.size());
+        Page<EventResponseWithoutEventItemDto> page = new PageImpl<>(dtoList, pageable, dtoList.size());
 
 // 변경된 Repository 메서드( findByStreamerId )를 stub 처리합니다.
         when(eventRepository.findByStreamerId(eq(testStreamer.getId()), any(Pageable.class)))
                 .thenReturn(page);
 
 // when
-        Page<EventResponseDto> eventListPage = eventService.getEventList(testStreamer.getId(), 0, 10);
+        Page<EventResponseWithoutEventItemDto> eventListPage = eventService.getEventList(testStreamer.getId(), 0, 10);
 
 // then
         Assertions.assertThat(eventListPage).isNotNull();
@@ -455,26 +454,6 @@ public class EventServiceTest {
                 });
     }
 
-    @Test
-    @DisplayName("fail: 존재하지 않는 스트리머 ID로 closeEvent 호출 -> USER_NOT_FOUND")
-    public void testCloseEventFailure_StreamerNotFound() {
-        // given
-        int invalidStreamerId = 9999;
-        when(streamerRepository.findById(invalidStreamerId)).thenReturn(Optional.empty());
-
-        // 이벤트는 존재한다고 가정
-        Event event = createTestEvent();
-        ReflectionTestUtils.setField(event, "id", 1);
-        when(eventRepository.findById(1)).thenReturn(Optional.of(event));
-
-        // when, then
-        Assertions.assertThatThrownBy(() -> eventService.closeEvent(invalidStreamerId, 1))
-                .isInstanceOf(NotFoundException.class)
-                .satisfies(ex -> {
-                    NotFoundException nfe = (NotFoundException) ex;
-                    Assertions.assertThat(nfe.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
-                });
-    }
 
     @Test
     @DisplayName("fail: 다른 스트리머가 이벤트 마감 -> STORE_NOT_MATCH")
@@ -593,7 +572,7 @@ public class EventServiceTest {
         });
         when(eventItemRepository.save(any(EventItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        EventResponseDto createdEvent = eventService.createEvent(testStreamer.getId(), requestDto);
+        EventResponseWithEventItemDto createdEvent = eventService.createEvent(testStreamer.getId(), requestDto);
         // 취소 전 상태: isDeleted false, 아이템 재고는 testItem1.remainingQuantity==100
         Event event = createTestEvent();
         ReflectionTestUtils.setField(event, "id", createdEvent.getId());
@@ -652,26 +631,6 @@ public class EventServiceTest {
                 });
     }
 
-    @Test
-    @DisplayName("fail: 존재하지 않는 스트리머 ID로 이벤트 취소 시 -> USER_NOT_FOUND")
-    public void testCancelEventFailure_StreamerNotFound() {
-        // given
-        int invalidStreamerId = 9999;
-        when(streamerRepository.findById(invalidStreamerId)).thenReturn(Optional.empty());
-
-        // 이벤트도 임시로 존재한다고 가정
-        Event event = createTestEvent();
-        ReflectionTestUtils.setField(event, "id", 1);
-        when(eventRepository.findById(1)).thenReturn(Optional.of(event));
-
-        // when, then
-        Assertions.assertThatThrownBy(() -> eventService.cancelEvent(invalidStreamerId, 1))
-                .isInstanceOf(NotFoundException.class)
-                .satisfies(ex -> {
-                    NotFoundException nfe = (NotFoundException) ex;
-                    Assertions.assertThat(nfe.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
-                });
-    }
 
 
     // --------------------7. applyForEvent 테스트--------------------

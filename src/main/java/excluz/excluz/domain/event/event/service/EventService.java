@@ -5,19 +5,16 @@ import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.UnauthorizedException;
 import excluz.excluz.common.exception.error.ErrorCode;
-import excluz.excluz.domain.event.event.dto.EventClosingResponseDto;
-import excluz.excluz.domain.event.event.dto.EventWithApplicantListResponseDto;
+import excluz.excluz.domain.event.event.dto.*;
 import excluz.excluz.domain.event.eventApplicant.enums.ApplicantStatus;
 import excluz.excluz.domain.event.eventApplicant.repository.EventApplicantRepository;
 import excluz.excluz.domain.event.eventItem.dto.EventItemRequestDto;
 import excluz.excluz.domain.event.eventItem.repository.EventItemRepository;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
-import excluz.excluz.domain.event.event.dto.EventRequestDto;
 import excluz.excluz.domain.event.event.enums.ParticipantCondition;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
 import excluz.excluz.domain.event.event.repository.EventRepository;
-import excluz.excluz.domain.event.event.dto.EventResponseDto;
 import excluz.excluz.domain.streamer.repository.StreamerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,10 +37,9 @@ public class EventService {
     private final EventItemRepository eventItemRepository;
     private final ItemRepository itemRepository;
     private final EventApplicantRepository eventApplicantRepository;
-    private final StreamerRepository streamerRepository;
 
     @Transactional
-    public EventResponseDto createEvent(Integer streamerId, EventRequestDto eventRequestDto) {
+    public EventResponseWithEventItemDto createEvent(Integer streamerId, EventRequestDto eventRequestDto) {
         Store store = storeRepository.findStoreWithStreamer(streamerId)
                 .orElseThrow(() ->  new NotFoundException(ErrorCode.STORE_NOT_FOUND));
 
@@ -83,13 +79,13 @@ public class EventService {
         }
 
         eventItemRepository.saveAll(eventItemList);
-        return EventResponseDto.fromWithItems(savedEvent, eventItemList);
+        return EventResponseWithEventItemDto.from(savedEvent, eventItemList);
     }
 
 
     // 이벤트 전체 조회 서비스 로직
     @Transactional(readOnly = true)
-    public Page<EventResponseDto> getEventList(Integer streamerId, int page, int size) {
+    public Page<EventResponseWithoutEventItemDto> getEventList(Integer streamerId, int page, int size) {
 
         Pageable pageable = PageRequest.of(Math.max(0, page), size);
 
