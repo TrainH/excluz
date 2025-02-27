@@ -3,7 +3,11 @@ package excluz.excluz.domain.cartItem.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import excluz.excluz.common.entity.CartItem;
 import excluz.excluz.common.entity.Item;
@@ -21,7 +25,6 @@ import excluz.excluz.domain.cartItem.repository.CartItemRepository;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.user.enums.UserRole;
 import excluz.excluz.domain.user.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -93,24 +96,23 @@ public class CartItemService {
 	}
 
 	// 물품 다건 조회
-	public CartItemListResponseDto getCartItemList(Integer userId, UserRole userRole) {
+	@Transactional(readOnly = true)
+	public CartItemListResponseDto getCartItemList(Integer userId, UserRole userRole, int page, int size) {
+
+		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
 		// 장바구니 이용은 CUSTOMER만 가능
 		if (userRole != UserRole.CUSTOMER) {
 			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
 		}
 
-		List<CartItem> cartItems = cartItemRepository.findByUserId(userId);
-
-		List<GetCartItemResponseDto> cartItemList = cartItems.stream()
-			.map(item -> GetCartItemResponseDto.builder()
-				.cartItemId(item.getId())
-				.itemId(item.getItem().getId())
-				.storeId(item.getItem().getStore().getId())
-				.quantity(item.getQuantity())
-				.itemPrice(item.getItem().getPrice())
-				.build()
-			)
-			.collect(Collectors.toList());
+		Page<CartItem> cartItems = cartItemRepository.findByUserId(userId, pageable);
+		Page<GetCartItemResponseDto> cartItemList = cartItems.map(item -> GetCartItemResponseDto.builder()
+			.cartItemId(item.getId())                  // 장바구니 아이템의 ID
+			.itemId(item.getItem().getId())              // 연결된 상품의 ID
+			.storeId(item.getItem().getStore().getId())    // 해당 상품이 속한 상점의 ID
+			.quantity(item.getQuantity())                // 주문 수량
+			.itemPrice(item.getItem().getPrice())          // 상품 가격
+			.build());
 
 		return new CartItemListResponseDto(cartItemList);
 	}
