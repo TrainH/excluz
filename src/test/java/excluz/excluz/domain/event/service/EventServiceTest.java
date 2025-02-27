@@ -9,7 +9,7 @@ import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.event.event.dto.EventClosingResponseDto;
 import excluz.excluz.domain.event.event.dto.EventRequestDto;
 import excluz.excluz.domain.event.event.dto.EventResponseDto;
-import excluz.excluz.domain.event.event.dto.EventWithApplicantsResponseDto;
+import excluz.excluz.domain.event.event.dto.EventWithApplicantListResponseDto;
 import excluz.excluz.domain.event.event.enums.ParticipantCondition;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
 import excluz.excluz.domain.event.event.repository.EventRepository;
@@ -31,7 +31,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -168,7 +167,6 @@ public class EventServiceTest {
         eventItemList.add(new EventItemRequestDto(testItem1.getId(), 5));
         eventItemList.add(new EventItemRequestDto(testItem2.getId(), 2));
         EventRequestDto requestDto = EventRequestDto.builder()
-                .storeId(testStore.getId())
                 .numberOfWinners(3)
                 .participantCondition(ParticipantCondition.ALL_USERS.name())
                 .selectionMethod(SelectionMethod.RANDOM_DRAW.name())
@@ -201,34 +199,6 @@ public class EventServiceTest {
         verify(eventRepository, times(1)).save(any(Event.class));
     }
 
-    @Test
-    @DisplayName("fail: 잘못된 스토어 ID로 이벤트 생성 시")
-    public void testCreateEventFailure_InvalidStore() {
-        // given
-        List<EventItemRequestDto> eventItemList = new ArrayList<>();
-        eventItemList.add(new EventItemRequestDto(testItem1.getId(), 5));
-        EventRequestDto requestDto = EventRequestDto.builder()
-                .storeId(-999)   // 존재하지 않는 스토어 ID
-                .numberOfWinners(3)
-                .participantCondition(ParticipantCondition.ALL_USERS.name())
-                .selectionMethod(SelectionMethod.RANDOM_DRAW.name())
-                .startDatetime(LocalDateTime.now().minusMinutes(1))
-                .endDatetime(LocalDateTime.now().plusDays(1))
-                .eventItemList(eventItemList)
-                .build();
-
-        when(storeRepository.findById(-999)).thenReturn(Optional.empty());
-
-        // when, then
-        Assertions.assertThatThrownBy(() -> {
-                    eventService.createEvent(testStreamer.getId(), requestDto);
-                })
-                .isInstanceOf(NotFoundException.class)
-                .satisfies(ex -> {
-                    NotFoundException notFoundEx = (NotFoundException) ex;
-                    Assertions.assertThat(notFoundEx.getErrorCode()).isEqualTo(ErrorCode.STORE_NOT_FOUND);
-                });
-    }
 
     @Test
     @DisplayName("fail: 다른 사람의 스토어로 이벤트 생성 시 -> STORE_NOT_MATCH")
@@ -280,7 +250,6 @@ public class EventServiceTest {
         // 기본 스토어(testStore)와 다른 아이템 사용
         eventItemList.add(new EventItemRequestDto(otherItem.getId(), 2));
         EventRequestDto requestDto = EventRequestDto.builder()
-                .storeId(testStore.getId())  // 기본 스토어 id 사용
                 .numberOfWinners(3)
                 .participantCondition(ParticipantCondition.ALL_USERS.name())
                 .selectionMethod(SelectionMethod.RANDOM_DRAW.name())
@@ -312,7 +281,6 @@ public class EventServiceTest {
         );
         // 종료 시간이 현재시간보다 과거가 되도록 설정
         EventRequestDto requestDto = EventRequestDto.builder()
-                .storeId(testStore.getId())
                 .numberOfWinners(3)
                 .participantCondition(ParticipantCondition.ALL_USERS.name())
                 .selectionMethod(SelectionMethod.RANDOM_DRAW.name())
@@ -339,7 +307,6 @@ public class EventServiceTest {
                 new EventItemRequestDto(nonExistentItemId, 5)
         );
         EventRequestDto requestDto = EventRequestDto.builder()
-                .storeId(testStore.getId())
                 .numberOfWinners(3)
                 .participantCondition(ParticipantCondition.ALL_USERS.name())
                 .selectionMethod(SelectionMethod.RANDOM_DRAW.name())
@@ -403,7 +370,7 @@ public class EventServiceTest {
         when(eventItemRepository.findByEvent(event)).thenReturn(new ArrayList<>());
 
 // when : eventService.getEvent(streamerId, eventId) 호출
-        EventWithApplicantsResponseDto fetchedEvent = eventService.getEvent(testStreamer.getId(), 10);
+        EventWithApplicantListResponseDto fetchedEvent = eventService.getEvent(testStreamer.getId(), 10);
         // then
         Assertions.assertThat(fetchedEvent).isNotNull();
         Assertions.assertThat(fetchedEvent.getId()).isEqualTo(1);
@@ -609,7 +576,6 @@ public class EventServiceTest {
 
 
         EventRequestDto requestDto = EventRequestDto.builder()
-                .storeId(testStore.getId())
                 .numberOfWinners(3)
                 .participantCondition(ParticipantCondition.ALL_USERS.name())
                 .selectionMethod(SelectionMethod.RANDOM_DRAW.name())
