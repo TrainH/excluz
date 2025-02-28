@@ -1,8 +1,10 @@
 package excluz.excluz.domain.cartItem.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+
 import excluz.excluz.common.entity.CartItem;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -21,28 +23,53 @@ import static excluz.excluz.common.entity.QUser.user;
 public class CartItemV2Repository {
     private final JPAQueryFactory queryFactory;
 
-    public Page<CartItem> findByUserId(Integer userId, Pageable pageable) {
+    // v2-1 : fetchJoin() 제외 QueryDSL 방식
+    public Page<CartItem> findByUserIdV1(Integer userId, Pageable pageable) {
         // 메인 쿼리 (데이터 조회)
         List<CartItem> cartItems = queryFactory
-                .selectFrom(cartItem)
-                .leftJoin(cartItem.item, item).fetchJoin()
-                .leftJoin(item.store, store).fetchJoin()
-                .leftJoin(cartItem.user, user).fetchJoin()
-                .where(cartItem.user.id.eq(userId))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
+            .selectFrom(cartItem)
+            .leftJoin(cartItem.item, item)
+            .leftJoin(item.store, store)
+            .leftJoin(cartItem.user, user)
+            .where(cartItem.user.id.eq(userId))
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
 
         // 전체 개수 조회 (페이징을 위해 필요)
         Long totalCount = Optional.ofNullable(
-                queryFactory
-                        .select(cartItem.count())
-                        .from(cartItem)
-                        .where(cartItem.user.id.eq(userId))
-                        .fetchOne()
+            queryFactory
+                .select(cartItem.count())
+                .from(cartItem)
+                .where(cartItem.user.id.eq(userId))
+                .fetchOne()
         ).orElse(0L);
 
         return new PageImpl<>(cartItems, pageable, totalCount);
     }
 
+    // v2-2 : fetchJoin() 포함 QueryDSL 방식
+    public Page<CartItem> findByUserIdV2(Integer userId, Pageable pageable) {
+        // 메인 쿼리 (데이터 조회)
+        List<CartItem> cartItems = queryFactory
+            .selectFrom(cartItem)
+            .leftJoin(cartItem.item, item).fetchJoin()
+            .leftJoin(item.store, store).fetchJoin()
+            .leftJoin(cartItem.user, user).fetchJoin()
+            .where(cartItem.user.id.eq(userId))
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        // 전체 개수 조회 (페이징을 위해 필요)
+        Long totalCount = Optional.ofNullable(
+            queryFactory
+                .select(cartItem.count())
+                .from(cartItem)
+                .where(cartItem.user.id.eq(userId))
+                .fetchOne()
+        ).orElse(0L);
+
+        return new PageImpl<>(cartItems, pageable, totalCount);
+    }
 }

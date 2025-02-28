@@ -13,13 +13,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface CartItemRepository extends JpaRepository<CartItem, Integer> {
 	// 특정 유저의 모든 장바구니 아이템 조회(다건 조회)
-	@Query("SELECT ci FROM CartItem ci " +
-			"LEFT JOIN FETCH ci.item " +
-			"LEFT JOIN FETCH ci.item.store " +
-			"LEFT JOIN FETCH ci.user " +  // N+1 문제 방지
-			"WHERE ci.user.id = :userId")
-	List<CartItem> findByUserId(@Param("userId") Integer userId);
-
 	@Query(
 		value = "SELECT ci FROM CartItem ci " +
 			"LEFT JOIN FETCH ci.item " +
