@@ -22,6 +22,7 @@ import excluz.excluz.domain.user.enums.UserRole;
 import excluz.excluz.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,8 +83,9 @@ public class OrderItemService {
 
         List<Item> itemList = itemRepository.findAllById(itemIdList);
 
-        List<CartItem> cartItemList = cartItemRepository.findByUserId(userOrStreamerId);
-
+        Pageable pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개 항목
+        Page<CartItem> cartItemPage = cartItemRepository.findByUserId(userOrStreamerId, pageable);
+        List<CartItem> cartItemList = cartItemPage.getContent();
 
         // 4. 모든 아이템의 Store가 동일한지 확인
         Set<Store> storeSet = itemList.stream()
