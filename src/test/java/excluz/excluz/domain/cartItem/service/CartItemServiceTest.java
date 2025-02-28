@@ -2,7 +2,6 @@ package excluz.excluz.domain.cartItem.service;
 
 import static org.mockito.Mockito.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +12,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import excluz.excluz.common.entity.CartItem;
@@ -57,9 +60,10 @@ class CartItemServiceTest {
 	@DisplayName("success: 장바구니 아이템 추가")
 	void addItemToCart() {
 		// given
+		Store store = new Store();
 		User user = mock(User.class);
 		Item item = new Item(
-			null,         // store: null (스토어 정보 없음)
+			store,         // store: 위에서 만든 store
 			"itemName",   // itemName: "itemName" (상품명)
 			"test",       // explanation: "test" (설명)
 			100,          // price: 100 (상품 가격)
@@ -105,9 +109,10 @@ class CartItemServiceTest {
 	@DisplayName("success: 요청 수량 = 재고")
 	void addItemToCartMatchingStockQuantityCase1() {
 		// given
+		Store store = new Store();
 		User user = mock(User.class);
 		Item item = new Item(
-			null,         // store: null (스토어 정보 없음)
+			store,         // store: 위에서 만든 store
 			"itemName",   // itemName: "itemName" (상품명)
 			"test",       // explanation: "test" (설명)
 			100,          // price: 100 (상품 가격)
@@ -147,9 +152,10 @@ class CartItemServiceTest {
 	@DisplayName("success: 장바구니에 있는 수량 + 추가 요청 수량 = 재고")
 	void addItemToCartMatchingStockQuantityCase2() {
 		// given
+		Store store = new Store();
 		User user = mock(User.class);
 		Item item = new Item(
-			null,         // store: null (스토어 정보 없음)
+			store,         // store: 위에서 만든 store
 			"itemName",   // itemName: "itemName" (상품명)
 			"test",       // explanation: "test" (설명)
 			100,          // price: 100 (상품 가격)
@@ -487,26 +493,32 @@ class CartItemServiceTest {
 			3      // quantity: 3 (현재 장바구니에 담긴 수량)
 		);
 
+		int page = 0; // 페이지 번호
+		int size = 10; // 페이지당 아이템 개수
+		Pageable pageable = PageRequest.of(page, size);
+
+		Page<CartItem> cartItemPage = new PageImpl<>(List.of(cartItem1, cartItem2), pageable, 2);
+
 		ReflectionTestUtils.setField(user, "id", 1);
 		ReflectionTestUtils.setField(cartItem1, "id", 1);
 		ReflectionTestUtils.setField(cartItem2, "id", 2);
 
 		UserRole userRole = UserRole.CUSTOMER;
 
-		when(cartItemRepository.findByUserId(user.getId()))
-			.thenReturn(List.of(cartItem1, cartItem2));
+		when(cartItemRepository.findByUserId(eq(user.getId()), any(Pageable.class)))
+			.thenReturn(cartItemPage);
 
 		// when
-		CartItemListResponseDto result = cartItemService.getCartItemList(user.getId(), userRole);
+		CartItemListResponseDto result = cartItemService.getCartItemList(user.getId(), userRole, page, size);
 
 		// then
-		verify(cartItemRepository, times(1)).findByUserId(user.getId()); // findByUserId()가 1번 호출되었는지 확인
+		verify(cartItemRepository, times(1)).findByUserId(eq(user.getId()), any(Pageable.class)); // findByUserIdV1()가 1번 호출되었는지 확인
 
 		Assertions.assertThat(result).isNotNull(); // 결과가 null이 아닌지 확인
 		Assertions.assertThat(result.getCartItemList()).hasSize(2); // 장바구니에 2개 아이템 있는지 확인
 		Assertions.assertThat(result.getTotalPrice()).isEqualTo(800); // (100*2 + 200*3) = 800 확인
-		Assertions.assertThat(result.getCartItemList().get(0).getQuantity()).isEqualTo(2); // 첫 번째 아이템 개수 확인
-		Assertions.assertThat(result.getCartItemList().get(1).getQuantity()).isEqualTo(3); // 두 번째 아이템 개수 확인
+		Assertions.assertThat(result.getCartItemList().getContent().get(0).getQuantity()).isEqualTo(2); // 첫 번째 아이템 개수 확인
+		Assertions.assertThat(result.getCartItemList().getContent().get(1).getQuantity()).isEqualTo(3); // 두 번째 아이템 개수 확인
 	}
 
 	@Test
@@ -516,18 +528,23 @@ class CartItemServiceTest {
 		Integer userId = 1;
 		UserRole userRole = UserRole.CUSTOMER;
 
-		when(cartItemRepository.findByUserId(userId))
-			.thenReturn(Collections.emptyList()); // 빈 리스트 반환
+		int page = 0; // 페이지 번호
+		int size = 10; // 페이지당 아이템 개수
+
+		Page<CartItem> emptyPage = Page.empty();
+
+		when(cartItemRepository.findByUserId(eq(userId), any(Pageable.class)))
+			.thenReturn(emptyPage); // 빈 페이지 반환
 
 		// when
-		CartItemListResponseDto result = cartItemService.getCartItemList(userId, userRole);
+		CartItemListResponseDto result = cartItemService.getCartItemList(userId, userRole, page, size);
 
 		// then
 		Assertions.assertThat(result).isNotNull();
 		Assertions.assertThat(result.getCartItemList()).isEmpty(); // 빈 리스트인지 확인
 		Assertions.assertThat(result.getTotalPrice()).isEqualTo(0); // 총 가격이 0인지 확인
 
-		verify(cartItemRepository, times(1)).findByUserId(userId); // findByUserId()가 1번 호출되었는지 확인
+		verify(cartItemRepository, times(1)).findByUserId(eq(userId), any(Pageable.class)); // findByUserIdV1()가 1번 호출되었는지 확인
 	}
 
 	@Test
@@ -537,8 +554,11 @@ class CartItemServiceTest {
 		Integer userId = 1;
 		UserRole userRole = UserRole.STREAMER; // CUSTOMER가 아닌 경우
 
+		int page = 0; // 페이지 번호
+		int size = 10; // 페이지당 아이템 개수
+
 		// when, then
-		Assertions.assertThatThrownBy(() -> cartItemService.getCartItemList(userId, userRole))
+		Assertions.assertThatThrownBy(() -> cartItemService.getCartItemList(userId, userRole, page, size))
 			.isInstanceOf(ForbiddenException.class); // ForbiddenException 예외 발생
 	}
 
@@ -552,8 +572,9 @@ class CartItemServiceTest {
 	void updateCartItemQuantity() {
 		// given
 		User user = mock(User.class);
+		Store store = new Store();
 		Item item = new Item(
-			null,         // store: null (스토어 정보 없음)
+			store,         // store: 위에서 만든 store
 			"itemName",   // itemName: "itemName" (상품명)
 			"test",       // explanation: "test" (설명)
 			100,          // price: 100 (상품 가격)

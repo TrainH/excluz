@@ -12,21 +12,35 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v2/cart-items")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class CartItemV2Controller {
 
     private final CartItemV2Service cartItemV2Service;
 
-    @GetMapping
-    public ResponseEntity<CartItemListResponseDto> getCartItemList(
-            @RequestParam(defaultValue = "0") int page,     // 기본값 0 (첫 페이지)
-            @RequestParam(defaultValue = "10") int size     // 기본값 10 (한 페이지당 10개)
+    // v2-1 : fetchJoin() 제외 QueryDSL 방식
+    @GetMapping("/v2-1/cart-items")
+    public ResponseEntity<CartItemListResponseDto> getCartItemListV1(
+        @RequestParam(defaultValue = "0") int page,     // 기본값 0 (첫 페이지)
+        @RequestParam(defaultValue = "10") int size     // 기본값 10 (한 페이지당 10개)
     ) {
         Integer userId = SecurityContextUtil.getUserOrStreamerId();
         UserRole userRole = SecurityContextUtil.getUserRole();
 
-        CartItemListResponseDto response = cartItemV2Service.getCartItemList(userId, userRole, page, size);
+        CartItemListResponseDto response = cartItemV2Service.getCartItemListV1(userId, userRole, page, size);
+        return ResponseEntity.ok(response);
+    }
+
+    // v2-2 : fetchJoin() 포함 QueryDSL 방식
+    @GetMapping("/v2-2/cart-items")
+    public ResponseEntity<CartItemListResponseDto> getCartItemListV2(
+        @RequestParam(defaultValue = "0") int page,     // 기본값 0 (첫 페이지)
+        @RequestParam(defaultValue = "10") int size     // 기본값 10 (한 페이지당 10개)
+    ) {
+        Integer userId = SecurityContextUtil.getUserOrStreamerId();
+        UserRole userRole = SecurityContextUtil.getUserRole();
+
+        CartItemListResponseDto response = cartItemV2Service.getCartItemListV2(userId, userRole, page, size);
         return ResponseEntity.ok(response);
     }
 }
