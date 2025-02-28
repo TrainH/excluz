@@ -1,4 +1,4 @@
-package excluz.excluz.domain.event.event.dto;
+package excluz.excluz.domain.event.event.dto.response;
 
 import excluz.excluz.common.entity.Event;
 import excluz.excluz.common.entity.EventApplicant;

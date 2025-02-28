@@ -2,9 +2,7 @@ package excluz.excluz.domain.event.event.controller;
 
 
 import excluz.excluz.auth.util.SecurityContextUtil;
-import excluz.excluz.domain.event.event.dto.EventResponseWithoutEventItemDto;
-import excluz.excluz.domain.event.event.dto.EventWithApplicantListResponseDto;
-import excluz.excluz.domain.event.event.service.EventService;
+import excluz.excluz.domain.event.event.dto.response.EventResponseWithoutEventItemDto;
 import excluz.excluz.domain.event.event.service.EventV2Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

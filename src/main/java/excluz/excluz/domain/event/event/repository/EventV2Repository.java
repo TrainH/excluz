@@ -1,19 +1,19 @@
 package excluz.excluz.domain.event.event.repository;
 
 import com.querydsl.core.types.Projections;
-import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import excluz.excluz.common.entity.Event;
 import excluz.excluz.common.entity.QEvent;
 import excluz.excluz.common.entity.QStore;
 import excluz.excluz.common.entity.QStreamer;
-import excluz.excluz.domain.event.event.dto.EventResponseWithoutEventItemDto;
+import excluz.excluz.domain.event.event.dto.response.EventResponseWithoutEventItemDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class EventV2Repository{
@@ -24,12 +24,12 @@ public class EventV2Repository{
         this.queryFactory = queryFactory;
     }
 
-    public Page<EventResponseWithoutEventItemDto> findDtoByStreamerIdUsingQueryDsl(Integer streamerId, Pageable pageable) {
+    public Page<EventResponseWithoutEventItemDto> findDtoByStreamerId(Integer streamerId, Pageable pageable) {
         QEvent event = QEvent.event;
         QStore store = QStore.store;
         QStreamer streamer = QStreamer.streamer;
 
-        JPQLQuery<EventResponseWithoutEventItemDto> query = queryFactory
+        List<EventResponseWithoutEventItemDto> eventList = queryFactory
                 .select(Projections.constructor(
                         EventResponseWithoutEventItemDto.class,
                         event.id,
@@ -45,17 +45,24 @@ public class EventV2Repository{
                         event.generatedCode
                 ))
                 .from(event)
-                .leftJoin(event.store, store)
-                .leftJoin(store.streamer, streamer)
-                .where(streamer.id.eq(streamerId));
-
-        long total = query.fetchCount();
-
-        List<EventResponseWithoutEventItemDto> content = query
+                .innerJoin(event.store, store)
+                .innerJoin(store.streamer, streamer)
+                .where(streamer.id.eq(streamerId))
+                .orderBy(event.id.desc()) // 추후 동적 제어 추가 여지
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        return new PageImpl<>(content, pageable, total);
+        Long totalCount = Optional.ofNullable(queryFactory
+                        .select(Wildcard.count)
+                        .from(event)
+                        .innerJoin(event.store, store)
+                        .innerJoin(store.streamer, streamer)
+                        .where(streamer.id.eq(streamerId))
+                        .fetchOne())
+                .orElse(0L);
+        // fetchCount()는 deprecated되어 잘 안 씀
+
+        return new PageImpl<>(eventList, pageable, totalCount);
     }
 }
