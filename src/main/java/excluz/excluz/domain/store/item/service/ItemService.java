@@ -1,21 +1,20 @@
 package excluz.excluz.domain.store.item.service;
 
-import java.util.Optional;
-
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import excluz.excluz.common.entity.Item;
 import excluz.excluz.common.entity.Store;
+import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.store.item.dto.request.ItemCreateRequestDto;
 import excluz.excluz.domain.store.item.dto.request.ItemUpdateRequestDto;
 import excluz.excluz.domain.store.item.dto.response.GetItemListResponseDto;
+import excluz.excluz.domain.store.item.dto.response.ItemListResponseDto;
 import excluz.excluz.domain.store.item.dto.response.ItemResponseDto;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
@@ -81,29 +80,24 @@ public class ItemService {
 	}
 
 	@Transactional(readOnly = true)
-	public GetItemListResponseDto getItemList(int page, int size, Integer minPrice, Integer maxPrice, String itemName) {
-
-		Pageable pageable = PageRequest.of(Math.max(page, 0), size);
-		int newMinPrice=minPrice, newMaxPrice=maxPrice;
-		Optional<Integer> highestPrice = itemRepository.findHighestItemPrice();
-
-		// 유효 가격 범위로 값 재설정
-		if (minPrice == Integer.MAX_VALUE) {
-			newMinPrice = highestPrice.orElse(0);
-			newMaxPrice = Integer.MAX_VALUE;
-		}
-		else if (maxPrice <= minPrice) {
-			newMaxPrice = highestPrice.orElse(minPrice + 1);
+	public GetItemListResponseDto getItemList(Pageable pageable,Integer minPrice, Integer maxPrice, String itemName) {
+		if (!isValidPrice(minPrice,maxPrice)) {
+			throw new BadRequestException(ErrorCode.INVALID_ITEM_PRICE);
 		}
 
-		Page<Item> items = itemRepository.findByPriceWithItemName(pageable, newMinPrice, newMaxPrice, itemName);
-		Page<ItemResponseDto> responseDtoPage = items.map(ItemResponseDto::from);
+		Page<Item> items = itemRepository.findByPriceWithItemName(pageable, minPrice, maxPrice, itemName);
+		Page<ItemListResponseDto> responseDtoPage = items.map(ItemListResponseDto::from);
 
-		return new GetItemListResponseDto(newMinPrice, newMaxPrice, responseDtoPage);
+		return new GetItemListResponseDto(minPrice, maxPrice, responseDtoPage);
+	}
+
+	private boolean isValidPrice(Integer minPrice, Integer maxPrice) {
+		return minPrice >= 0 && maxPrice >= 0 && (maxPrice >= minPrice);
 	}
 
 	// 삭제 되지 않은 아이템만 조회하는 메서드
-	private Item findItemByIdAndNotDeleted(Integer itemsId) {
+	@Transactional(readOnly = true)
+	public Item findItemByIdAndNotDeleted(Integer itemsId) {
 		return itemRepository.findItemByIdAndNotDeleted(itemsId).orElseThrow(
 			() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND)
 		);

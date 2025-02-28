@@ -11,11 +11,11 @@ public class GetItemListResponseDto {
 
 	private Integer minPrice;
 	private Integer maxPrice;
-	private Page<ItemResponseDto> responseDtoPage;
+	private Page<ItemListResponseDto> itemList;
 
-	public GetItemListResponseDto(Integer minPrice, Integer maxPrice, Page<ItemResponseDto> responseDtoPage) {
+	public GetItemListResponseDto(Integer minPrice, Integer maxPrice, Page<ItemListResponseDto> itemList) {
 		this.minPrice=minPrice;
 		this.maxPrice=maxPrice;
-		this.responseDtoPage=responseDtoPage;
+		this.itemList=itemList;
 	}
 }

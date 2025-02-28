@@ -22,14 +22,15 @@ public enum ErrorCode {
 	// 아이템 관련 예외 코드
 	ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "조회되는 아이템 정보가 없습니다."),
 	OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "해당 아이템의 재고가 부족합니다."),
-	ITEM_NOT_MATCH(HttpStatus.BAD_REQUEST, "아이템이 현재 스토어에 소속되어 있지 않습니다"),
+	ITEM_NOT_MATCH(HttpStatus.BAD_REQUEST, "아이템이 현재 스토어에 소속되어 있지 않습니다."),
+	INVALID_ITEM_PRICE(HttpStatus.BAD_REQUEST, "유효하지 않은 아이템 가격입니다."),
 
 	// 장바구니 아이템 관련 예외 코드
 	CART_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니에 해당 아이템이 존재하지 않습니다."),
 
 	//스토어 관련 예외 코드
 	STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "스토어 정보를 찾을 수 없습니다."),
-	STORE_NOT_MATCH(HttpStatus.BAD_REQUEST, "스토어에 대한 권한이 없습니다"),
+	STORE_NOT_MATCH(HttpStatus.BAD_REQUEST, "스토어에 대한 권한이 없습니다."),
 	DUPLICATE_REGISTRATION_NUMBER(HttpStatus.CONFLICT, "다른 스토어와 중복되는 사업자 등록번호입니다."),
 	STORE_ALREADY_EXIST(HttpStatus.CONFLICT, "운영중인 스토어가 이미 존재합니다."),
 
@@ -50,10 +51,10 @@ public enum ErrorCode {
 	//	이벤트 관련 예외 코드
 	EVENT_ENDDATETIME_TOO_EARLY(HttpStatus.BAD_REQUEST, "이벤트 종료일이 현재 시간보다 과거일 수 없습니다."),
 	EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 이벤트를 찾을 수 없습니다."),
-	EVENT_ALREADY_CLOSED(HttpStatus.BAD_REQUEST, "이미 마감된 이벤트입니다"),
-	EVENT_ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "취소된 이벤트입니다"),
-	EVENT_METHOD_NOT_SUPPORTED(HttpStatus.BAD_REQUEST, "지원되지 않는 선정 방식입니다"),
-	EVENT_APPLICANT_NOT_STARTED(HttpStatus.BAD_REQUEST, "이벤트가 아직 시작되지 않았습니다"),
+	EVENT_ALREADY_CLOSED(HttpStatus.BAD_REQUEST, "이미 마감된 이벤트입니다."),
+	EVENT_ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "취소된 이벤트입니다."),
+	EVENT_METHOD_NOT_SUPPORTED(HttpStatus.BAD_REQUEST, "지원되지 않는 선정 방식입니다."),
+	EVENT_APPLICANT_NOT_STARTED(HttpStatus.BAD_REQUEST, "이벤트가 아직 시작되지 않았습니다."),
 	EVENT_APPLICANT_EXPIRED(HttpStatus.BAD_REQUEST, "이벤트가 이미 종료되었습니다."),
 	EVENT_APPLICANT_NOT_FOUND(HttpStatus.NOT_FOUND, "응모 정보를 찾을 수 없거나 잘못된 인증 정보입니다."),
 	EVENT_APPLICANT_ALREADY_CONFIRMED(HttpStatus.BAD_REQUEST, "이미 수령 확정한 응모를 취소할 수 없습니다."),

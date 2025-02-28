@@ -12,9 +12,6 @@ import excluz.excluz.common.entity.Item;
 
 public interface ItemRepository extends JpaRepository<Item, Integer> {
 
-	@Query("SELECT MAX(i.price) FROM Item i")
-	Optional<Integer> findHighestItemPrice();
-
 	@Query("SELECT i FROM Item i " +
 		"WHERE (i.itemName LIKE CONCAT('%', :itemName, '%') OR :itemName IS NULL) " +
 		"AND (i.price >= :minPrice) " +
@@ -23,8 +20,8 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 		"ORDER BY i.id DESC")
 	Page<Item> findByPriceWithItemName(
 		Pageable pageable,
-		@Param("minPrice") Integer newMinPrice,
-		@Param("maxPrice") Integer newMaxPrice,
+		@Param("minPrice") Integer minPrice,
+		@Param("maxPrice") Integer maxPrice,
 		@Param("itemName") String itemName);
 
 	@Query("SELECT i FROM Item i " +
