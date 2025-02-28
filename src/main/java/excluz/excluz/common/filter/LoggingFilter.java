@@ -15,6 +15,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -27,9 +28,10 @@ public class LoggingFilter implements Filter {
 		ServletException {
 
 		HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
+		HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
 
 		try {
-			/* 클라이언트 정보 저장 */
+			// 요청 오딧 로그 기록
 			String clientIP = getClientIP(httpRequest);
 
 			// 한글 디코딩
@@ -44,8 +46,14 @@ public class LoggingFilter implements Filter {
 				httpRequest.getMethod(), requestParams);
 
 			filterChain.doFilter(servletRequest, servletResponse);
-		}finally {
 
+			// 응답 오딧 로그 기록
+			log.info("clientIP: {}, status: {}, requestURI: {}, requestMethod: {}", clientIP, httpResponse.getStatus(), httpRequest.getRequestURI(),
+				httpRequest.getMethod());
+
+		}catch (Exception e) {
+			log.error("Error in LoggingFilter", e);
+			throw e;
 		}
 	}
 
