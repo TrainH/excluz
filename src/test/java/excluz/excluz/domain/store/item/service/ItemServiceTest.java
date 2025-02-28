@@ -31,6 +31,7 @@ import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.domain.store.item.dto.response.GetItemListResponseDto;
+import excluz.excluz.domain.store.item.dto.response.ItemListResponseDto;
 import excluz.excluz.domain.store.item.dto.response.ItemResponseDto;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
@@ -290,100 +291,31 @@ class ItemServiceTest {
 	class GetItemList {
 
 		@Test
-		@DisplayName("success: 일반 케이스 - minPrice와 maxPrice가 정상 범위임")
+		@DisplayName("success: 일반 케이스")
 		void getItemListStandard() {
 			// given
-			int page = 0;
-			int size = 10;
-			Pageable pageable = PageRequest.of(page, size);
-			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(5000));
+			Pageable pageable = PageRequest.of(0, 20);
 			List<Item> itemList = Collections.singletonList(SharedData.ITEM2);
 			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
-			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString())).thenReturn(
-				itemPage);
+			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString()))
+				.thenReturn(itemPage);
+			ItemListResponseDto itemListResponseDto = new ItemListResponseDto(SharedData.ITEM_ID1, SharedData.ITEM_NAME2, SharedData.PRICE2);
 
-			try (MockedStatic<ItemResponseDto> mockedStatic = mockStatic(ItemResponseDto.class)) {
-				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
+
+			try (MockedStatic<ItemListResponseDto> mockedStatic = mockStatic(ItemListResponseDto.class)) {
+				given(ItemListResponseDto.from(any(Item.class))).willReturn(itemListResponseDto);
 
 				// when
-				GetItemListResponseDto actualResult = itemService.getItemList(page, size, 1000, 5000, SharedData.ITEM_NAME2);
+				GetItemListResponseDto actualResult = itemService.getItemList(pageable, 1000, 5000, SharedData.ITEM_NAME2);
 
 				// then
-				verify(itemRepository).findHighestItemPrice();
-				verify(itemRepository).findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString());
+				verify(itemRepository).findByPriceWithItemName(eq(pageable), anyInt(), anyInt(),  anyString());
 
 				assertThat(actualResult).isNotNull();
-				assertThat(actualResult.getMaxPrice()).isEqualTo(5000);
-				assertThat(actualResult.getMinPrice()).isEqualTo(1000);
 
-				ItemResponseDto dto = actualResult.getResponseDtoPage().getContent().get(0);
+				ItemListResponseDto dto = actualResult.getItemList().getContent().get(0);
 				assertThat(dto.getItemName()).isEqualTo(SharedData.ITEM2.getItemName());
-				assertThat(dto.getRemainingQuantity()).isEqualTo(SharedData.ITEM2.getRemainingQuantity());
 				assertThat(dto.getPrice()).isEqualTo(SharedData.ITEM2.getPrice());
-				assertThat(dto.getExplanation()).isEqualTo(SharedData.ITEM2.getExplanation());
-			}
-		}
-
-		@Test
-		@DisplayName("success: 가격 범위 재설정 - minPrice = Integer.Max_VALUE인 경우, 가격 범위를 '아이템 최고가 ~ Integer.MAX_VALUE'로 재설정")
-		void getItemListWhenMinPriceIsMaxValue() {
-			// given
-			int page = 0;
-			int size = 10;
-			Pageable pageable = PageRequest.of(page, size);
-			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(5000));
-			List<Item> itemList = Collections.singletonList(SharedData.ITEM2);
-			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
-			// minPrice가 Integer.MAX_VALUE일 경우 가격 범위를 '아이템 최고가 ~ Integer.MAX_VALUE'로 재설정
-			when(itemRepository.findByPriceWithItemName(pageable, 5000, Integer.MAX_VALUE,
-				SharedData.ITEM_NAME2)).thenReturn(itemPage);
-
-			try (MockedStatic<ItemResponseDto> mockedStatic = mockStatic(ItemResponseDto.class)) {
-				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
-
-				// when
-				GetItemListResponseDto actualResult = itemService.getItemList(page, size, Integer.MAX_VALUE, 5000,
-					SharedData.ITEM_NAME2);
-
-				// then
-				verify(itemRepository).findHighestItemPrice();
-				verify(itemRepository).findByPriceWithItemName(pageable, 5000, Integer.MAX_VALUE,
-					SharedData.ITEM_NAME2);
-
-				assertThat(actualResult).isNotNull();
-				assertThat(actualResult.getMaxPrice()).isEqualTo(Integer.MAX_VALUE);
-				assertThat(actualResult.getMinPrice()).isEqualTo(5000);
-			}
-		}
-
-		@Test
-		@DisplayName("success: maxPrice 재설정 - maxPrice <= minPrice인 경우, 가격 범위를 'minPrice ~ 아이템 최고가'로 재설정")
-		void getItemListWhenMaxPriceLessThanOrEqualToMinPrice() {
-			// given
-			int page = 0;
-			int size = 10;
-			Pageable pageable = PageRequest.of(page, size);
-			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(6000));
-			List<Item> itemList = Collections.singletonList(SharedData.ITEM2);
-			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
-
-			when(itemRepository.findByPriceWithItemName(pageable, 5000, 6000, SharedData.ITEM_NAME2)).thenReturn(
-				itemPage);
-
-			try (MockedStatic<ItemResponseDto> mockedStatic = mockStatic(ItemResponseDto.class)) {
-				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
-
-				// when
-				// maxPrice가 minPrice보다 작음
-				GetItemListResponseDto actualResult = itemService.getItemList(page, size, 5000, 1000, SharedData.ITEM_NAME2);
-
-				// then
-				verify(itemRepository).findHighestItemPrice();
-				verify(itemRepository).findByPriceWithItemName(pageable, 5000, 6000, SharedData.ITEM_NAME2);
-
-				assertThat(actualResult).isNotNull();
-				assertThat(actualResult.getMaxPrice()).isEqualTo(6000);
-				assertThat(actualResult.getMinPrice()).isEqualTo(5000);
 			}
 		}
 
@@ -391,51 +323,46 @@ class ItemServiceTest {
 		@DisplayName("success: 아이템이 없을 경우 빈 페이지 반환")
 		void getItemListWhenNoItems() {
 			// given
-			int page = 0;
-			int size = 10;
-			Pageable pageable = PageRequest.of(page, size);
-			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(5000));
+			Pageable pageable = PageRequest.of(0, 10);
 			Page<Item> emptyPage = Page.empty();
 			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString())).thenReturn(
 				emptyPage);
 
 			// when
-			GetItemListResponseDto actualResult = itemService.getItemList(page, size, 1000, 5000, SharedData.ITEM_NAME2);
+			GetItemListResponseDto actualResult = itemService.getItemList(pageable, 1000, 5000, SharedData.ITEM_NAME2);
 
 			// then
-			verify(itemRepository).findHighestItemPrice();
 			verify(itemRepository).findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString());
 
 			assertThat(actualResult).isNotNull();
-			assertThat(actualResult.getResponseDtoPage().getTotalElements()).isEqualTo(0);
+			assertThat(actualResult.getItemList().getTotalElements()).isEqualTo(0);
 		}
 
 		@Test
 		@DisplayName("success: itemName이 null일 때 전체 목록 반환")
 		void getItemListWhenItemNameIsNull() {
 			// given
-			int page = 0;
-			int size = 10;
-			Pageable pageable = PageRequest.of(page, size);
-			when(itemRepository.findHighestItemPrice()).thenReturn(Optional.of(5000));
+			Pageable pageable = PageRequest.of(0, 10);
 			List<Item> itemList = Arrays.asList(SharedData.ITEM1, SharedData.ITEM2);
 			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
+			ItemListResponseDto itemListResponseDto = new ItemListResponseDto(SharedData.ITEM_ID1, SharedData.ITEM_NAME2, SharedData.PRICE1);
 
 			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), isNull())).thenReturn(
 				itemPage);
 
-			try (MockedStatic<ItemResponseDto> mockedStatic = mockStatic(ItemResponseDto.class)) {
-				given(ItemResponseDto.from(any(Item.class))).willReturn(SharedData.ITEM_RESPONSE_DTO);
+			try (MockedStatic<ItemListResponseDto> mockedStatic = mockStatic(ItemListResponseDto.class)) {
+				given(ItemListResponseDto.from(any(Item.class))).willReturn(itemListResponseDto);
 
 				// when
-				GetItemListResponseDto actualResult = itemService.getItemList(page, size, 1000, 5000, null);
+				GetItemListResponseDto actualResult = itemService.getItemList(pageable, 1000, 5000, null);
 
 				// then
-				verify(itemRepository).findHighestItemPrice();
 				verify(itemRepository).findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), isNull());
 
-				assertThat(actualResult.getResponseDtoPage().getTotalElements()).isEqualTo(itemList.size());
+				assertThat(actualResult.getItemList().getTotalElements()).isEqualTo(itemList.size());
 			}
 		}
+
+		/*TODO fail case 추가(유효하지 않은 가격)*/
 	}
 }
