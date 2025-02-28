@@ -1,17 +1,13 @@
-package excluz.excluz.domain.event.event.dto;
+package excluz.excluz.domain.event.event.dto.response;
 
 import excluz.excluz.common.entity.Event;
-import excluz.excluz.common.entity.EventItem;
 import excluz.excluz.domain.event.event.enums.ParticipantCondition;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
-import excluz.excluz.domain.event.eventItem.dto.EventItemDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor

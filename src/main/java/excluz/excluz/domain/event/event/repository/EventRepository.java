@@ -1,7 +1,6 @@
 package excluz.excluz.domain.event.event.repository;
 
-import excluz.excluz.domain.event.event.dto.EventResponseWithEventItemDto;
-import excluz.excluz.domain.event.event.dto.EventResponseWithoutEventItemDto;
+import excluz.excluz.domain.event.event.dto.response.EventResponseWithoutEventItemDto;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,7 +15,7 @@ import java.util.Optional;
 public interface EventRepository extends JpaRepository<Event, Integer> {
 
 
-    @Query("SELECT new excluz.excluz.domain.event.event.dto.EventResponseWithoutEventItemDto(" +
+    @Query("SELECT new excluz.excluz.domain.event.event.dto.response.EventResponseWithoutEventItemDto(" +
             "e.id, e.store.id, e.numberOfWinners, e.participantCondition, e.selectionMethod, e.startDatetime, e.endDatetime, e.isCompleted, " +
             "e.createdAt, e.updatedAt, e.generatedCode) " +
             "FROM Event e " +
