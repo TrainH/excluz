@@ -1,7 +1,11 @@
 package excluz.excluz.domain.event.event.controller;
 
 import excluz.excluz.auth.util.SecurityContextUtil;
-import excluz.excluz.domain.event.event.dto.*;
+import excluz.excluz.domain.event.event.dto.request.EventRequestDto;
+import excluz.excluz.domain.event.event.dto.response.EventClosingResponseDto;
+import excluz.excluz.domain.event.event.dto.response.EventResponseWithEventItemDto;
+import excluz.excluz.domain.event.event.dto.response.EventResponseWithoutEventItemDto;
+import excluz.excluz.domain.event.event.dto.response.EventWithApplicantListResponseDto;
 import excluz.excluz.domain.event.event.service.EventService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +52,7 @@ public class EventController {
     @GetMapping()
     @PreAuthorize("hasRole('STREAMER')")
     public ResponseEntity<Page<EventResponseWithoutEventItemDto>> getAllEvents(@RequestParam(defaultValue = "0") int page,
-                                                                            @RequestParam(defaultValue = "10") int size) {
+                                                                               @RequestParam(defaultValue = "10") int size) {
         Integer streamerId = SecurityContextUtil.getUserOrStreamerId();
         Page<EventResponseWithoutEventItemDto> eventResponseDtoList = eventService.getEventList(streamerId, page, size);
         return ResponseEntity.ok(eventResponseDtoList);

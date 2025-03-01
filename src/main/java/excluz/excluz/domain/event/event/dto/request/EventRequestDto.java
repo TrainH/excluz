@@ -1,4 +1,4 @@
-package excluz.excluz.domain.event.event.dto;
+package excluz.excluz.domain.event.event.dto.request;
 
 import excluz.excluz.domain.event.eventItem.dto.EventItemRequestDto;
 import jakarta.validation.Valid;
