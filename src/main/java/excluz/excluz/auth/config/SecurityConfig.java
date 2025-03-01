@@ -69,6 +69,7 @@ public class SecurityConfig {
 					"/api/v1/users/{userId}",
 					// 아이템
 					"/api/v1/items",
+					"/api/v2/items",
 					"/api/v1/items/{itemsId}",
 					// 스토어
 					"/api/v1/stores/{storeId}",
