@@ -6,7 +6,6 @@ import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.cartItem.repository.CartItemRepository;
-import excluz.excluz.domain.order.order.dto.response.OrderResponseDto;
 import excluz.excluz.domain.order.order.enums.OrderStatus;
 import excluz.excluz.domain.order.order.repository.OrderRepository;
 import excluz.excluz.domain.order.orderItem.dto.request.OrderItemRequestDto;
@@ -16,18 +15,16 @@ import excluz.excluz.domain.point.point.repository.PointRepository;
 import excluz.excluz.domain.point.pointTransaction.enums.TransactionType;
 import excluz.excluz.domain.point.pointTransaction.repository.PointTransactionRepository;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
-import excluz.excluz.domain.store.store.repository.StoreRepository;
-import excluz.excluz.domain.streamer.repository.StreamerRepository;
 import excluz.excluz.domain.user.enums.UserRole;
 import excluz.excluz.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -82,8 +79,9 @@ public class OrderItemService {
 
         List<Item> itemList = itemRepository.findAllById(itemIdList);
 
-        List<CartItem> cartItemList = cartItemRepository.findByUserId(userOrStreamerId);
-
+        Pageable pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개 항목
+        Page<CartItem> cartItemPage = cartItemRepository.findByUserId(userOrStreamerId, pageable);
+        List<CartItem> cartItemList = cartItemPage.getContent();
 
         // 4. 모든 아이템의 Store가 동일한지 확인
         Set<Store> storeSet = itemList.stream()
