@@ -1,5 +1,6 @@
 package excluz.excluz.domain.store.item.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
