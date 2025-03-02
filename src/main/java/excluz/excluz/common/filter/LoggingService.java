@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class LoggingService {
-	final String webhookUrl = "https://hooks.slack.com/services/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";
+	final String webhookUrl = "https://hooks.slack.com/services/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";
 
 	public boolean sendMessage(String title, String exceptionName, String requestURI, String method, String message){
 		Slack slack = Slack.getInstance();
