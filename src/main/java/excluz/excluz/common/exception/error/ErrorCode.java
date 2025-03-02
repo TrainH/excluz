@@ -18,6 +18,9 @@ public enum ErrorCode {
 	PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
 	EMAIL_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 사용중인 이메일입니다."),
 	PASSWORD_RE_ENTER_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "비밀번호와 재입력 비밀번호가 일치하지 않습니다."),
+	FAIL_SEND_EMAIL(HttpStatus.BAD_REQUEST, "인증 코드 발송에 실패하였습니다."),
+	EMAIL_VERIFICATION_NOT_REQUESTED(HttpStatus.BAD_REQUEST, "이메일 인증을 먼저 진행해 주세요"),
+	EMAIL_VERIFICATION_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "이메일 인증이 완료 되지 않았습니다."),
 
 	// 아이템 관련 예외 코드
 	ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "조회되는 아이템 정보가 없습니다."),
