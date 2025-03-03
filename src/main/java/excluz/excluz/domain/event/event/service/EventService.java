@@ -223,5 +223,4 @@ public class EventService {
         return "EVENT_" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
-
 }
