@@ -24,12 +24,12 @@ public class EmailVerify {
 	private String email;
 
 	@Column(nullable = false)
-	private Boolean emailStatus;
+	private Boolean isVerified;
 
 	public EmailVerify(String email) {
 		this.email = email;
-		this.emailStatus = false;
+		this.isVerified = false;
 	}
 
-	public void updateEmailStatus(Boolean emailStatus) {this.emailStatus = emailStatus;}
+	public void updateEmailStatus(Boolean emailStatus) {this.isVerified = emailStatus;}
 }

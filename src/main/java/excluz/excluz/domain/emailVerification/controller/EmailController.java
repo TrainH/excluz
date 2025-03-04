@@ -19,9 +19,9 @@ public class EmailController {
 
 	private final EmailService emailService;
 
-	@PostMapping("/send")
+	@PostMapping("/sending")
 	public ResponseEntity<Void> emailSend(@RequestBody EmailVerifyRequestDto emailVerify) {
-		log.info("이메일 발송 로직 작동");
+		log.info("이메일 코드 발송 로직 작동");
 		emailService.sendEmail(emailVerify.getEmail());
 		return ResponseEntity.ok().build();
 	}
