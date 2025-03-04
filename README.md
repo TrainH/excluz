@@ -67,6 +67,10 @@
 > - sourceSets 설정을 통해 생성된 폴더를 컴파일에 포함  
 > - clean 태스크 시 build/generated/querydsl 폴더 삭제  
 
+**6. 배포 **
+> - 깃헙엑션을 통해 release/{버전}이 깃헙 리파지토리로 push
+> - release/{버전} 업데이트 될 때 자동으로 AWS ec2 리눅스 서버 배포
+
 ---
 
 ## 참고
