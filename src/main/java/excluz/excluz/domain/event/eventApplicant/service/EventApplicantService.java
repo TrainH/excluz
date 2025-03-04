@@ -39,7 +39,7 @@ public class EventApplicantService {
             backoff = @Backoff(delay = 100),
             recover = "recoverFromOptimisticLock"
     )
-    @Transactional(propagation = Propagation.REQUIRED, timeout = 5) // todo: 락 테스트
+    @Transactional(propagation = Propagation.REQUIRED, timeout = 5)
     public EventApplicantResponseDto applyForEventForOptimisticLock(String code, EventApplicantRequestDto requestDto) {
         try {
             Event event = eventRepository.findByGeneratedCodeForOptimisticLock(code)
@@ -93,6 +93,9 @@ public class EventApplicantService {
         } catch (OptimisticLockingFailureException e) {
             log.warn("Optimistic lock exception occurred while applying for event: {}", code);
             throw e;
+        } catch (Exception e) {
+            log.warn("error has occured: {}", code);
+            throw new BadRequestException(ErrorCode.EVENT_APPLICANT_NOT_STARTED);
         }
     }
 
