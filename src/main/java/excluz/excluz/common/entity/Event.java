@@ -51,6 +51,12 @@ public class Event extends BaseEntity  {
     @Column(name = "is_deleted",  nullable = false)
     private Boolean isDeleted;
 
+    @Version
+    private Integer version;
+
+    @Column(name = "current_winner_count", nullable = false)
+    private Integer currentWinnerCount;
+
     @Builder
     public Event(Store store,
                  Integer numberOfWinners,
@@ -68,6 +74,8 @@ public class Event extends BaseEntity  {
         this.endDatetime = endDatetime;
         this.isCompleted = false;
         this.isDeleted = false;
+        this.version = 0;
+        this.currentWinnerCount = 0;
     }
 
     public void updateNumberOfWinners(Integer numberOfWinners) {
@@ -88,5 +96,9 @@ public class Event extends BaseEntity  {
 
     public void completeEvent() {
         this.isCompleted = true;
+    }
+
+    public void increaseCurrentWinnerCount() {
+        this.currentWinnerCount = this.currentWinnerCount + 1;
     }
 }
