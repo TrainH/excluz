@@ -39,10 +39,10 @@ public class StreamerService {
 		}
 
 		EmailVerify emailVerify = emailVerifyRepository
-			.findByEmail(signupRequest.getEmail())
+			.findByEmail(signupRequestDto.getEmail())
 			.orElseThrow(() -> new BadRequestException(ErrorCode.EMAIL_VERIFICATION_NOT_REQUESTED));
 
-		if (!emailVerify.getEmailStatus()) {
+		if (!emailVerify.getIsVerified()) {
 			throw new BadRequestException(ErrorCode.EMAIL_VERIFICATION_NOT_COMPLETED);
 		}
 
