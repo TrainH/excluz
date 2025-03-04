@@ -2,6 +2,7 @@ package excluz.excluz.domain.event.service;
 
 import excluz.excluz.common.entity.*;
 
+import excluz.excluz.domain.event.event.enums.ParticipantCondition;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
 import excluz.excluz.domain.event.event.repository.EventRepository;
 import excluz.excluz.domain.event.event.service.EventService;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.ReflectionTestUtils;
 
 
 import java.time.LocalDateTime;
@@ -52,6 +54,9 @@ public class EventConcurrentFirstComeTest {
     private ItemRepository itemRepository;
 
     private final int NUMBER_OF_WINNERS = 3; // 선착순 당첨자 수
+    private Streamer testStreamer;
+    private Streamer savedStreamer;
+    private Store testStore;
     private Event testEvent;
     private String uniqueSuffix;
 
@@ -64,19 +69,38 @@ public class EventConcurrentFirstComeTest {
          */
         // 예시: 간략화
         uniqueSuffix = UUID.randomUUID().toString().substring(0, 5);
+
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        int middle = random.nextInt(1000, 10000); // 1000 이상 10000 미만 → 4자리
+        int last = random.nextInt(1000, 10000);   // 4자리
+
+        testStreamer = Streamer.builder()
+                .name("스트리머" + uniqueSuffix)
+                .nickName("스트리머" + uniqueSuffix)
+                .phoneNumber("010-" + middle +"-"+last)
+                .email("streamer" + uniqueSuffix + "@example.com")
+                .password("password")
+                .build();
+        savedStreamer = streamerRepository.save(testStreamer);
+
+        testStore = Store.builder()
+                .streamer(testStreamer)
+                .storeName("StoreName" + uniqueSuffix)
+                .address("StoreAddress" + uniqueSuffix)
+                .registrationNumber("RegNum" + uniqueSuffix)
+                .build();
+
+        storeRepository.save(testStore);
+
         testEvent = createTestEvent(uniqueSuffix);
     }
 
     private Event createTestEvent(String suffix) {
-        // 실제로는 Streamer, Store, Item 등을 생성하고,
-        // EventService.createEvent(...) 로직을 통해 선착순 이벤트를 만들었다고 가정
-        // ...
-        // 여기서는 간단히 데이터 한 건 만든다고 가정
         Event event = new Event(
-                null,  // store
+                testStore,  // store
                 NUMBER_OF_WINNERS,
                 "TEST_CODE_" + suffix,
-                null,  // participantCondition
+                ParticipantCondition.ALL_USERS,  // participantCondition
                 SelectionMethod.FIRST_COME_FIRST_SERVED,
                 LocalDateTime.now().minusMinutes(1),
                 LocalDateTime.now().plusHours(1)
@@ -135,7 +159,7 @@ public class EventConcurrentFirstComeTest {
         long totalTime = endTime - startTime;
 
         // 2. 이벤트 마감 로직 (테스트용)
-        eventService.closeEvent(null, testEvent.getId());
+        eventService.closeEvent(savedStreamer.getId(), testEvent.getId());
 
         List<EventApplicant> allApplicants = eventApplicantRepository.findByEvent(testEvent);
         long winnerCount = allApplicants.stream()
@@ -202,7 +226,7 @@ public class EventConcurrentFirstComeTest {
         long totalTime = endTime - startTime;
 
         // 2. 이벤트 마감 로직
-        eventService.closeEvent(null, testEvent.getId());
+        eventService.closeEvent(savedStreamer.getId(), testEvent.getId());
 
         List<EventApplicant> allApplicants = eventApplicantRepository.findByEvent(testEvent);
         long winnerCount = allApplicants.stream()
