@@ -65,6 +65,7 @@ public class SecurityConfig {
 					"/oauth/kakao",
 					"/oauth/kakao/**",
 					"/kakao/**",
+					"api/v1/email/**",
 					// 일반 유저
 					"/api/v1/users/{userId}",
 					// 아이템
