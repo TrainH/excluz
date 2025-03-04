@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -31,5 +30,5 @@ public class EmailVerify {
 		this.isVerified = false;
 	}
 
-	public void updateEmailStatus(Boolean emailStatus) {this.isVerified = emailStatus;}
+	public void updateEmailStatus(Boolean isVerified) {this.isVerified = isVerified;}
 }
