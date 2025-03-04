@@ -127,9 +127,9 @@ class OrderServiceTest {
         Integer userId = 1;
         UserRole userRole = UserRole.CUSTOMER;
         Pageable pageable = PageRequest.of(0, 10);
-        List<Order> orders = List.of(order1, order2); // Mock 데이터
+        List<OrderResponseDto> orderDtoList = List.of(OrderResponseDto.from(order1), OrderResponseDto.from(order2)); // Mock 데이터
 
-        Page<Order> orderPage = new PageImpl<>(orders, pageable, orders.size());
+        Page<OrderResponseDto> orderPage = new PageImpl<>(orderDtoList, pageable, orderDtoList.size());
 
         Mockito.when(orderRepository.findByUserId(userId, pageable)).thenReturn(orderPage);
 
@@ -278,48 +278,120 @@ class OrderServiceTest {
         Integer orderId = 1;
         OrderUpdateRequestDto requestDto = new OrderUpdateRequestDto(OrderStatus.CANCELED, "address11");
 
+        // Mock 객체 생성
+        PointTransaction pointTransaction = Mockito.mock(PointTransaction.class);
+        Store store = Mockito.mock(Store.class);
+        Streamer streamer = Mockito.mock(Streamer.class);
+        User user = Mockito.mock(User.class);
+
+        // Store 객체 설정
+        Mockito.when(pointTransaction.getStore()).thenReturn(store);
+        Mockito.when(store.getStreamer()).thenReturn(streamer);
+        Mockito.when(streamer.getUserRole()).thenReturn(UserRole.STREAMER);
+        Mockito.when(streamer.getId()).thenReturn(2); // 스트리머 ID
+
+        // User 객체 설정
+        Mockito.when(pointTransaction.getUser()).thenReturn(user);
+        Mockito.when(user.getUserRole()).thenReturn(UserRole.CUSTOMER);
+        Mockito.when(user.getId()).thenReturn(userOrStreamerId); // 고객 ID
+
+        // 환불할 금액 설정 (0보다 커야 함)
+        Mockito.when(pointTransaction.getAmount()).thenReturn(1000); // 1000원으로 설정
+
+        // 포인트 설정
+        Point userPoint = new Point(UserRole.CUSTOMER, userOrStreamerId, 100000);
+        ReflectionTestUtils.setField(userPoint, "id", 1);
+
+        Point streamerPoint = new Point(UserRole.STREAMER, 2, 5000);
+        ReflectionTestUtils.setField(streamerPoint, "id", 2);
+
+        // Mock Repository 설정
         Mockito.when(orderRepository.findByIdAndUserId(orderId, userOrStreamerId)).thenReturn(Optional.of(order1));
-        // String roleName = userRole.replace("ROLE_", "").toUpperCase();
+        Mockito.when(pointTransactionRepository.findByOrderId(orderId)).thenReturn(Optional.of(pointTransaction));
+
+        Mockito.when(pointRepository.findByUserRoleAndUserOrStreamerId(
+                UserRole.STREAMER, 2
+        )).thenReturn(Optional.of(streamerPoint));
+
+        Mockito.when(pointRepository.findByUserRoleAndUserOrStreamerId(
+                UserRole.CUSTOMER, userOrStreamerId
+        )).thenReturn(Optional.of(userPoint));
+
         // When
         orderService.updateOrder(userOrStreamerId, userRole, orderId, requestDto);
 
         // Then
-        assertEquals(OrderStatus.CANCELED, order1.getOrderStatus()); // 주문 상태가 변경되었는지 검증
+        assertEquals(OrderStatus.CANCELED, order1.getOrderStatus());
 
         ArgumentCaptor<Order> captorOrder = ArgumentCaptor.forClass(Order.class);
-        verify(orderRepository, times(3)).save(captorOrder.capture()); // 위에서 save로 저장하기 때문에 3개로 해줌
+        verify(orderRepository, times(3)).save(captorOrder.capture());
         List<Order> captorOrderList = captorOrder.getAllValues();
 
-
         System.out.println("captorOrder: " + objectMapper.writerWithDefaultPrettyPrinter()
-                .writeValueAsString(captorOrderList.get(2))); // service 단에서 .save는 맨마지만 꺼임
-
+                .writeValueAsString(captorOrderList.get(2)));
     }
+
 
     @Test
     @DisplayName("성공 - STREAMER가 주문 상태를 업데이트")
     void updateOrderAsStreamer() throws Exception {
         // Given
-        Integer userOrStreamerId = 1;
+        Integer userOrStreamerId = 1;  // 스트리머 ID
         UserRole userRole = UserRole.STREAMER;
         Integer orderId = 1;
         OrderUpdateRequestDto requestDto = new OrderUpdateRequestDto(OrderStatus.CANCELED, "address11");
 
+        // Mock 객체 생성
+        PointTransaction pointTransaction = Mockito.mock(PointTransaction.class);
+        Store store = Mockito.mock(Store.class);
+        Streamer streamer = Mockito.mock(Streamer.class);
+        User user = Mockito.mock(User.class);
+
+        // Store 객체 설정
+        Mockito.when(pointTransaction.getStore()).thenReturn(store);
+        Mockito.when(store.getStreamer()).thenReturn(streamer);
+        Mockito.when(streamer.getUserRole()).thenReturn(UserRole.STREAMER);
+        Mockito.when(streamer.getId()).thenReturn(userOrStreamerId); // 스트리머 ID
+
+        // User 객체 설정
+        Mockito.when(pointTransaction.getUser()).thenReturn(user);
+        Mockito.when(user.getUserRole()).thenReturn(UserRole.CUSTOMER);
+        Mockito.when(user.getId()).thenReturn(2); // 고객 ID
+
+        // 환불할 금액 설정 (0보다 커야 함)
+        Mockito.when(pointTransaction.getAmount()).thenReturn(2000); // 2000원으로 설정
+
+        // 포인트 설정
+        Point userPoint = new Point(UserRole.CUSTOMER, 2, 50000);
+        ReflectionTestUtils.setField(userPoint, "id", 2);
+
+        Point streamerPoint = new Point(UserRole.STREAMER, userOrStreamerId, 10000);
+        ReflectionTestUtils.setField(streamerPoint, "id", userOrStreamerId);
+
+        // Mock Repository 설정
         Mockito.when(orderRepository.findByIdAndStreamerId(orderId, userOrStreamerId)).thenReturn(Optional.of(order1));
-        // String roleName = userRole.replace("ROLE_", "").toUpperCase();
+        Mockito.when(pointTransactionRepository.findByOrderId(orderId)).thenReturn(Optional.of(pointTransaction));
+
+        Mockito.when(pointRepository.findByUserRoleAndUserOrStreamerId(
+                UserRole.STREAMER, userOrStreamerId
+        )).thenReturn(Optional.of(streamerPoint));
+
+        Mockito.when(pointRepository.findByUserRoleAndUserOrStreamerId(
+                UserRole.CUSTOMER, 2
+        )).thenReturn(Optional.of(userPoint));
+
         // When
         orderService.updateOrder(userOrStreamerId, userRole, orderId, requestDto);
 
         // Then
-        assertEquals(OrderStatus.CANCELED, order1.getOrderStatus()); // 주문 상태가 변경되었는지 검증
+        assertEquals(OrderStatus.CANCELED, order1.getOrderStatus());
 
         ArgumentCaptor<Order> captorOrder = ArgumentCaptor.forClass(Order.class);
-        verify(orderRepository, times(3)).save(captorOrder.capture()); // 위에서 save로 저장하기 때문에 3개로 해줌
+        verify(orderRepository, times(3)).save(captorOrder.capture());
         List<Order> captorOrderList = captorOrder.getAllValues();
 
-
         System.out.println("captorOrder: " + objectMapper.writerWithDefaultPrettyPrinter()
-                .writeValueAsString(captorOrderList.get(2))); // service 단에서 .save는 맨마지만 꺼임
-
+                .writeValueAsString(captorOrderList.get(2)));
     }
+
 }
