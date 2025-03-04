@@ -3,8 +3,8 @@
 //import excluz.excluz.common.entity.*;
 //import excluz.excluz.common.exception.NotFoundException;
 //import excluz.excluz.common.exception.error.ErrorCode;
-//import excluz.excluz.domain.event.event.dto.EventClosingResponseDto;
-//import excluz.excluz.domain.event.event.dto.EventRequestDto;
+//import excluz.excluz.domain.event.event.dto.response.EventClosingResponseDto;
+//import excluz.excluz.domain.event.event.dto.request.EventRequestDto;
 //import excluz.excluz.domain.event.event.dto.EventResponseDto;
 //import excluz.excluz.domain.event.event.enums.ParticipantCondition;
 //import excluz.excluz.domain.event.event.enums.SelectionMethod;

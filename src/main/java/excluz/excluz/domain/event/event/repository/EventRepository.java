@@ -26,5 +26,14 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT e FROM Event e WHERE e.generatedCode = :code")
+    Optional<Event> findByGeneratedCodeForPessimisticLock(@Param("code") String generatedCode);
+
+    @Lock(LockModeType.OPTIMISTIC)
+    @Query("SELECT e FROM Event e WHERE e.generatedCode = :code")
+    Optional<Event> findByGeneratedCodeForOptimisticLock(@Param("code") String generatedCode);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT e FROM Event e WHERE e.generatedCode = :code")
     Optional<Event> findByGeneratedCode(@Param("code") String generatedCode);
+
 }

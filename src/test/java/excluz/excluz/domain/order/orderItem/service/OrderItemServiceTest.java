@@ -22,6 +22,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.*;
@@ -130,8 +134,9 @@ class OrderItemServiceTest {
 
         // cartItemRepository: 유저의 장바구니 항목 반환
         List<CartItem> cartItemList = List.of(cartItem1, cartItem2); // cartItem 리스트 생성
-        Mockito.when(cartItemRepository.findByUserId(1)).thenReturn(cartItemList); // userOrStreamerId에 해당하는 cartItem 리스트 반환
-
+        Pageable pageable = PageRequest.of(0, 10); // 페이지 요청 객체 생성 (0페이지, 10개씩)
+        Page<CartItem> cartItemPage = new PageImpl<>(cartItemList, pageable, cartItemList.size());
+        Mockito.when(cartItemRepository.findByUserId(1, pageable)).thenReturn(cartItemPage);
 
 
         Point userPoint = new Point(UserRole.CUSTOMER, 1, 5000);

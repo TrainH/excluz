@@ -11,9 +11,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("oauth/kakao")
@@ -34,7 +34,6 @@ public class KakaoController {
         stringBuilder.append("&redirect_uri=").append(kakaoRedirectUri);
         stringBuilder.append("&response_type=code");
 
-
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.LOCATION, stringBuilder.toString())
                 .build();
@@ -43,8 +42,6 @@ public class KakaoController {
     // 2) 카카오에서 리다이렉트해줄 콜백: 인가코드(code) 수신
     @GetMapping()
     public ResponseEntity<Map<String, Object>> kakaoAuth(@RequestParam("code") String code) {
-
-        log.info(code);
 
         String accessToken = getKakaoAccessToken(code);
 
@@ -84,6 +81,7 @@ public class KakaoController {
         }
         return null;
     }
+
 }
 
 

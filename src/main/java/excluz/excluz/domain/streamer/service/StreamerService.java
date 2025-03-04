@@ -8,10 +8,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import excluz.excluz.auth.util.JwtUtil;
+import excluz.excluz.common.entity.EmailVerify;
 import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
+import excluz.excluz.domain.emailVerification.repository.EmailVerifyRepository;
 import excluz.excluz.domain.streamer.dto.request.StreamerLoginRequestDto;
 import excluz.excluz.domain.streamer.dto.request.StreamerSignupRequestDto;
 import excluz.excluz.domain.streamer.dto.request.StreamerUpdateRequestDto;
@@ -27,12 +29,21 @@ public class StreamerService {
 
 	private final StreamerRepository streamerRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final EmailVerifyRepository emailVerifyRepository;
 	private final JwtUtil jwtUtil;
 
 	@Transactional
 	public StreamerResponseDto streamerSignup(StreamerSignupRequestDto signupRequestDto) {
 		if (!signupRequestDto.getPassword().equals(signupRequestDto.getReEnterPassword())) {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
+		}
+
+		EmailVerify emailVerify = emailVerifyRepository
+			.findByEmail(signupRequestDto.getEmail())
+			.orElseThrow(() -> new BadRequestException(ErrorCode.EMAIL_VERIFICATION_NOT_REQUESTED));
+
+		if (!emailVerify.getIsVerified()) {
+			throw new BadRequestException(ErrorCode.EMAIL_VERIFICATION_NOT_COMPLETED);
 		}
 
 		String encodedPassword = passwordEncoder.encode(signupRequestDto.getPassword());

@@ -18,6 +18,9 @@ public enum ErrorCode {
 	PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
 	EMAIL_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 사용중인 이메일입니다."),
 	PASSWORD_RE_ENTER_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "비밀번호와 재입력 비밀번호가 일치하지 않습니다."),
+	FAIL_SEND_EMAIL(HttpStatus.BAD_REQUEST, "인증 코드 발송에 실패하였습니다."),
+	EMAIL_VERIFICATION_NOT_REQUESTED(HttpStatus.BAD_REQUEST, "이메일 인증을 먼저 진행해 주세요"),
+	EMAIL_VERIFICATION_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "이메일 인증이 완료 되지 않았습니다."),
 
 	// 아이템 관련 예외 코드
 	ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "조회되는 아이템 정보가 없습니다."),
@@ -58,8 +61,8 @@ public enum ErrorCode {
 	EVENT_APPLICANT_EXPIRED(HttpStatus.BAD_REQUEST, "이벤트가 이미 종료되었습니다."),
 	EVENT_APPLICANT_NOT_FOUND(HttpStatus.NOT_FOUND, "응모 정보를 찾을 수 없거나 잘못된 인증 정보입니다."),
 	EVENT_APPLICANT_ALREADY_CONFIRMED(HttpStatus.BAD_REQUEST, "이미 수령 확정한 응모를 취소할 수 없습니다."),
-	EVENT_APPLICANT_NOT_WINNER(HttpStatus.BAD_REQUEST, "당첨(WINNER) 상태가 아닌 유저의 수령 확정은 불가능합니다.")
-	;
+	EVENT_APPLICANT_NOT_WINNER(HttpStatus.BAD_REQUEST, "당첨(WINNER) 상태가 아닌 유저의 수령 확정은 불가능합니다."),
+    CONCURRENCY_FAILURE(HttpStatus.CONFLICT, "동시성 이슈에 따른 실패 상황입니다");
 
 	// 하단에 에러코드 추가하여 사용
 

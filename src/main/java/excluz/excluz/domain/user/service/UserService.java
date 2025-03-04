@@ -7,10 +7,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import excluz.excluz.auth.util.JwtUtil;
+import excluz.excluz.common.entity.EmailVerify;
 import excluz.excluz.common.entity.User;
 import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
+import excluz.excluz.domain.emailVerification.repository.EmailVerifyRepository;
 import excluz.excluz.domain.user.dto.request.UpdateMyProfileRequestDto;
 import excluz.excluz.domain.user.dto.request.UpdatePasswordRequestDto;
 import excluz.excluz.domain.user.dto.request.UserLoginRequestDto;
@@ -32,6 +34,7 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtUtil jwtUtil;
+	private final EmailVerifyRepository emailVerifyRepository;
 
 	// 유저 회원가입
 	public UserSignupResponseDto userSignup(UserSignupRequestDto signupRequest) {
@@ -46,8 +49,13 @@ public class UserService {
 			throw new BadRequestException(ErrorCode.EMAIL_ALREADY_EXISTS);
 		}
 
-		// 리퀘스트 요청에 들어온 비밀번호와 재확인 비밀번호가 일치 하지 않을 시 예외
-		matchPassword(signupRequest.getPassword(), signupRequest.getReEnterPassword());
+		EmailVerify emailVerify = emailVerifyRepository
+			.findByEmail(signupRequest.getEmail())
+			.orElseThrow(() -> new BadRequestException(ErrorCode.EMAIL_VERIFICATION_NOT_REQUESTED));
+
+		if (!emailVerify.getIsVerified()) {
+			throw new BadRequestException(ErrorCode.EMAIL_VERIFICATION_NOT_COMPLETED);
+		}
 
 		// 비밀번호 해싱 처리
 		String bcryptPassword = passwordEncoder.encode(signupRequest.getPassword());
@@ -88,9 +96,6 @@ public class UserService {
 
 		// 유저 정보를 userId 로 조회
 		User user = userProfile(userId);
-
-		// 리퀘스트 요청에 들어온 비밀번호와 재확인 비밀번호가 일치 하지 않을 시 예외
-		matchPassword(userWithdrawRequest.getPassword(), userWithdrawRequest.getReEnterPassword());
 
 		// 비밀번호 검증 로직
 		validatePassword(userWithdrawRequest.getPassword(), user.getPassword());
@@ -149,9 +154,6 @@ public class UserService {
 		// 비밀번호 검증 로직
 		validatePassword(updatePasswordRequest.getOldPassword(), user.getPassword());
 
-		// 새로운 비밀번호와 재입력 비밀번호 검증 로직
-		matchPassword(updatePasswordRequest.getNewPassword(), updatePasswordRequest.getReEnterPassword());
-
 		// 새로운 비밀번호가 이전에 사용하던 비밀번호와 같을 경우 예외처리
 		if(passwordEncoder.matches(updatePasswordRequest.getNewPassword(), user.getPassword())) {
 			throw new BadRequestException(ErrorCode.INVALID_PASSWORD);
@@ -169,13 +171,6 @@ public class UserService {
 	public void validatePassword(String rawPassword, String encodedPassword) {
 		if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
-		}
-	}
-
-	// 기타 메서드(비밀번호와 재입력 비밀번호 검증)
-	public void matchPassword(String inputPassword, String reEnterPassword) {
-		if(!inputPassword.equals(reEnterPassword)) {
-			throw new BadRequestException(ErrorCode.PASSWORD_RE_ENTER_PASSWORD_MISMATCH);
 		}
 	}
 
