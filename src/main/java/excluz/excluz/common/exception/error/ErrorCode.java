@@ -58,8 +58,8 @@ public enum ErrorCode {
 	EVENT_APPLICANT_EXPIRED(HttpStatus.BAD_REQUEST, "이벤트가 이미 종료되었습니다."),
 	EVENT_APPLICANT_NOT_FOUND(HttpStatus.NOT_FOUND, "응모 정보를 찾을 수 없거나 잘못된 인증 정보입니다."),
 	EVENT_APPLICANT_ALREADY_CONFIRMED(HttpStatus.BAD_REQUEST, "이미 수령 확정한 응모를 취소할 수 없습니다."),
-	EVENT_APPLICANT_NOT_WINNER(HttpStatus.BAD_REQUEST, "당첨(WINNER) 상태가 아닌 유저의 수령 확정은 불가능합니다.")
-	;
+	EVENT_APPLICANT_NOT_WINNER(HttpStatus.BAD_REQUEST, "당첨(WINNER) 상태가 아닌 유저의 수령 확정은 불가능합니다."),
+    CONCURRENCY_FAILURE(HttpStatus.CONFLICT, "동시성 이슈에 따른 실패 상황입니다");
 
 	// 하단에 에러코드 추가하여 사용
 
