@@ -93,9 +93,16 @@ public class EmailService {
 	// 인증코드 이메일 발송
 	public void sendEmail(String email) {
 		codeMap.remove(email);
+
+		// 인증 코드 발송후 테이블에 인증 상태를 저장하는 로직
+		EmailVerify sendCodeEmail = new EmailVerify(email);
+		emailVerifyRepository.save(sendCodeEmail);
+
+		// 새로운 코드 생성
 		String newCode = createCode();
 		long expiryTime = System.currentTimeMillis() + VALIDITY_DURATION;
 		codeMap.put(email, new CodeData(newCode, expiryTime));
+
 
 		try {
 			MimeMessage message = createEmailForm(email, newCode);
