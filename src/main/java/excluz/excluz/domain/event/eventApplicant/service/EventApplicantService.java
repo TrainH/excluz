@@ -14,6 +14,7 @@ import excluz.excluz.domain.event.eventApplicant.enums.ApplicantStatus;
 import excluz.excluz.domain.event.eventApplicant.repository.EventApplicantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
@@ -34,17 +35,17 @@ public class EventApplicantService {
     private final EventRepository eventRepository;
 
     @Retryable(
-            value = {OptimisticLockingFailureException.class, ObjectOptimisticLockingFailureException.class},
-            maxAttempts = 3,
+            value = {OptimisticLockingFailureException.class, ObjectOptimisticLockingFailureException.class, CannotAcquireLockException.class},
+            maxAttempts = 10,
             backoff = @Backoff(delay = 100),
             recover = "recoverFromOptimisticLock"
     )
     @Transactional(propagation = Propagation.REQUIRED, timeout = 5)
     public EventApplicantResponseDto applyForEventForOptimisticLock(String code, EventApplicantRequestDto requestDto) {
         try {
+            log.info("applyForEventForOptimisticLock called. attemptId= threadId={}", Thread.currentThread().getId());
             Event event = eventRepository.findByGeneratedCodeForOptimisticLock(code)
                     .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
-
 
             if (event.getIsCompleted()) {
                 throw new BadRequestException(ErrorCode.EVENT_ALREADY_CLOSED);
@@ -90,7 +91,15 @@ public class EventApplicantService {
 
             EventApplicant savedApplicant = eventApplicantRepository.save(eventApplicant);
             return EventApplicantResponseDto.from(savedApplicant);
+        } catch (CannotAcquireLockException e){
+            log.error("CannotAcquireLockException occured");
+            throw e;
+        } catch (ObjectOptimisticLockingFailureException e) {
+            log.error("ObjectOptimisticLockingFailureException");
+            log.warn("Object Optimistic Locking Failure Exception occurred while applying for event: {}", code);
+            throw e;
         } catch (OptimisticLockingFailureException e) {
+            log.error("OptimisticLockingFailureException");
             log.warn("Optimistic lock exception occurred while applying for event: {}", code);
             throw e;
         } catch (Exception e) {
