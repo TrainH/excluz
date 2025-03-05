@@ -50,9 +50,6 @@ public class EventConcurrentFirstComeTest {
     @Autowired
     private StoreRepository storeRepository;
 
-    @Autowired
-    private ItemRepository itemRepository;
-
     private final int NUMBER_OF_WINNERS = 3; // 선착순 당첨자 수
     private Streamer testStreamer;
     private Streamer savedStreamer;
@@ -113,7 +110,7 @@ public class EventConcurrentFirstComeTest {
     public void testConcurrentApplicants_FirstComeFirstServed_PessimisticLock() throws Exception {
         // 1. 비관적 락 방식 사용: eventApplicantService.applyForEvent()
 
-        int numberOfThreads = 100;
+        int numberOfThreads = 1000;
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch finishLatch = new CountDownLatch(numberOfThreads);
@@ -180,8 +177,8 @@ public class EventConcurrentFirstComeTest {
     @DisplayName("낙관적 락 - 동시성 테스트")
     public void testConcurrentApplicants_FirstComeFirstServed_OptimisticLock() throws Exception {
         // 1. 낙관적 락 방식 사용: eventApplicantService.applyForEventForOptimisticLock()
-
-        int numberOfThreads = 100;
+        System.out.println("🏁 [START] Optimistic Lock 테스트 시작");
+        int numberOfThreads = 1000;
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch finishLatch = new CountDownLatch(numberOfThreads);
@@ -198,6 +195,7 @@ public class EventConcurrentFirstComeTest {
                     startLatch.await();
 
                     String email = "optimistic_user" + idx + "_" + uniqueSuffix + "@test.com";
+                    System.out.println("🚀 [CALL] 스레드 " + idx + " 이벤트 신청 서비스 호출 직전 (email=" + email + ")");
                     eventApplicantService.applyForEventForOptimisticLock(
                             testEvent.getGeneratedCode(),
                             EventApplicantRequestDto.builder()
@@ -210,7 +208,8 @@ public class EventConcurrentFirstComeTest {
                     successCount.incrementAndGet();
 
                 } catch (Exception e) {
-                    System.err.println("OptimisticLock 응모 실패: " + e.getMessage());
+                    System.err.println("💥 [EXCEPTION] thread " + idx + " - " + e.getClass().getSimpleName() + " : " + e.getMessage());
+//                    System.err.println("OptimisticLock 응모 실패: " + e.getMessage());
                     exceptionCount.incrementAndGet();
                 } finally {
                     finishLatch.countDown();
@@ -220,6 +219,7 @@ public class EventConcurrentFirstComeTest {
 
         startLatch.countDown();
         finishLatch.await();
+        System.out.println("🎉 [FINISH] 모든 스레드 완료 대기 끝");
         executorService.shutdown();
 
         long endTime = System.currentTimeMillis();
@@ -233,6 +233,7 @@ public class EventConcurrentFirstComeTest {
                 .filter(a -> a.getApplicantStatus().name().equals("WINNER"))
                 .count();
 
+        System.out.println("📊 [RESULT] 신청자 수, 당첨자 수 집계 시작");
         System.out.println("===== Optimistic Lock Test Result =====");
         System.out.println("Total applicants: " + allApplicants.size());
         System.out.println("Winner count: " + winnerCount);
