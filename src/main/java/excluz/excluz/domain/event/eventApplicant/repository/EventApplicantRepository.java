@@ -24,7 +24,7 @@ public interface EventApplicantRepository extends JpaRepository<EventApplicant, 
     @Query("SELECT COUNT(ea) > 0 FROM EventApplicant ea WHERE ea.event = :event AND ea.email = :email")
     Boolean existsByEventAndEmail(Event event, String email);
 
-    @Lock(LockModeType.OPTIMISTIC)
+//    @Lock(LockModeType.OPTIMISTIC)
     @Query("SELECT COUNT(ea) > 0 FROM EventApplicant ea WHERE ea.event = :event AND ea.email = :email")
     boolean existsByEventAndEmailForOptimisticLock(@Param("event") Event event, @Param("email") String email);
 

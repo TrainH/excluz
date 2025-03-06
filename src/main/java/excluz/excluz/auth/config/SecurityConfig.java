@@ -57,6 +57,8 @@ public class SecurityConfig {
 //					"/api/v1/events/{eventId}/applicants"
 				).hasRole("STREAMER")
 				.requestMatchers( // 권한 불필요
+					// 상태 체크
+					"/actuator/health",
 					// 로그인 & 회원가입
 					"/api/v1/users/login",
 					"/api/v1/streamers/login",
