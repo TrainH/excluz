@@ -61,6 +61,13 @@ dependencies {
     implementation 'org.springframework:spring-aspects'
 
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // Cache
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
 }
 
 tasks.named('test') {
