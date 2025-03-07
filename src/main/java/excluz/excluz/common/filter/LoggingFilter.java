@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import jakarta.servlet.Filter;
@@ -22,6 +21,12 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class LoggingFilter implements Filter {
 
+	private final LoggingService loggingService;
+
+	public LoggingFilter(LoggingService loggingService) {
+		this.loggingService = loggingService;
+	}
+
 	@Override
 	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws
 		IOException,
@@ -29,11 +34,10 @@ public class LoggingFilter implements Filter {
 
 		HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
 		HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
+		String clientIP = getClientIP(httpRequest);
+		String requestURI = httpRequest.getRequestURI();
 
 		try {
-			// 요청 오딧 로그 기록
-			String clientIP = getClientIP(httpRequest);
-
 			// 한글 디코딩
 			Map<String, String[]> paramMap = httpRequest.getParameterMap();
 			String requestParams = paramMap.entrySet().stream() // 파라미터를 key=value 형식의 문자열로 변환
@@ -41,19 +45,38 @@ public class LoggingFilter implements Filter {
 					URLDecoder.decode(String.join(",", entry.getValue()), StandardCharsets.UTF_8))
 				.collect(Collectors.joining("&"));
 
-			log.info("clientIP: {}, userAgent: {}, requestURI: {}, requestMethod: {}, requestParams: {}",
-				clientIP, httpRequest.getHeader("User-Agent"), httpRequest.getRequestURI(),
+			log.info("[요청] clientIP: {}, userAgent: {}, requestURI: {}, requestMethod: {}, requestParams: {}",
+				clientIP, httpRequest.getHeader("User-Agent"), requestURI,
 				httpRequest.getMethod(), requestParams);
 
 			filterChain.doFilter(servletRequest, servletResponse);
 
-			// 응답 오딧 로그 기록
-			log.info("clientIP: {}, status: {}, requestURI: {}, requestMethod: {}", clientIP, httpResponse.getStatus(), httpRequest.getRequestURI(),
-				httpRequest.getMethod());
+		} catch (Exception e) {
 
-		}catch (Exception e) {
-			log.error("Error in LoggingFilter", e);
-			throw e;
+			log.error("[오류 발생] clientIP: {}, requestURI: {}, requestMethod={}, message={}",
+				clientIP, requestURI, httpRequest.getMethod(), e.getMessage(), e);
+			httpResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "서버 내부 오류 발생");
+
+			loggingService.sendMessage(
+				"필터에서 서버 오류",
+				e.getClass().getSimpleName(),
+				httpRequest.getMethod(),
+				requestURI,
+				e.getMessage()
+			);
+
+		}finally {
+
+			int status = httpResponse.getStatus();
+
+			if (status >= 400) { // 4xx, 5xx 오류 감지
+				log.warn("[오류 응답] clientIP: {}, status: {}, requestURI: {}, requestMethod: {}",
+					clientIP, status, requestURI, httpRequest.getMethod());
+			} else {
+				log.info("[응답] clientIP={}, status={}, requestURI={}, requestMethod={}",
+					clientIP, status, requestURI, httpRequest.getMethod());
+			}
+
 		}
 	}
 
