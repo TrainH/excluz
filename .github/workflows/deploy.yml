@@ -67,7 +67,7 @@ jobs:
             sleep 30
             
             # 8080 포트에서 Java 애플리케이션 시작
-            nohup java -jar ~/*.jar --server.port=8080 > ~/app_8080.log 2>&1 &
+            nohup java -jar $(ls -t ~/excluz*.jar | head -n 1) --server.port=8080 > ~/app_8080.log 2>&1 &
 
             sleep 60
             
@@ -85,4 +85,4 @@ jobs:
             sleep 30
             
             # 8081 포트에서 Java 애플리케이션 시작
-            nohup java -jar ~/*.jar --server.port=8081 > ~/app_8081.log 2>&1 &
+            nohup java -jar $(ls -t ~/excluz*.jar | head -n 1) --server.port=8081 > ~/app_8081.log 2>&1 &
