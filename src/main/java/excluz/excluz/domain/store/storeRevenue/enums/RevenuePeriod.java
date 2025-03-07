@@ -3,15 +3,13 @@ package excluz.excluz.domain.store.storeRevenue.enums;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
+import excluz.excluz.common.exception.BadRequestException;
+import excluz.excluz.common.exception.error.ErrorCode;
+
 public enum RevenuePeriod {
-    MINUTE_1(ChronoUnit.MINUTES, 1),
-    MINUTE_2(ChronoUnit.MINUTES, 2),
-    MINUTE_10(ChronoUnit.MINUTES, 10),
-    HOUR_1(ChronoUnit.HOURS, 1),
-    DAY_1(ChronoUnit.DAYS, 1),
-    WEEK_1(ChronoUnit.WEEKS, 1),
-    MONTH_1(ChronoUnit.MONTHS, 1),
-    YEAR_1(ChronoUnit.YEARS, 1);
+    DAY(ChronoUnit.DAYS, 1),
+    MONTH(ChronoUnit.MONTHS, 1),
+    YEAR(ChronoUnit.YEARS, 1);
 
     private final ChronoUnit unit;  // 시간 단위 (분, 시간, 일 등)
     private final long amount;       // 해당 단위의 기간 (1분, 2분, 1시간 등)
@@ -51,5 +49,17 @@ public enum RevenuePeriod {
      */
     private boolean isMinuteOrHour() {
         return unit == ChronoUnit.MINUTES || unit == ChronoUnit.HOURS;
+    }
+
+    /**
+     * 대소문자 구분 없이 Enum 값 변환
+     */
+    public static RevenuePeriod valueOfIgnoreCase(String period) {
+        for (RevenuePeriod revenuePeriod : values()) {
+            if (revenuePeriod.name().equalsIgnoreCase(period)) {
+                return revenuePeriod;
+            }
+        }
+        throw new BadRequestException(ErrorCode.PERIOD_NOT_MATCH);
     }
 }

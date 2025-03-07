@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "store_settlement")
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class StoreSettlement extends BaseEntity{
+public class StoreSettlement extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -69,14 +69,14 @@ public class StoreSettlement extends BaseEntity{
 		LocalDateTime startDate,
 		LocalDateTime endDate
 	) {
-		this.storeId=storeId;
-		this.totalRevenue=totalRevenue;
-		this.platformFeeRate= platformFeeRate;
-		this.settlementAmount=settlementAmount;
-		this.settlementStatus=SettlementStatus.WAITING;
-		this.settlementPeriod=settlementPeriod;
-		this.startDate=startDate;
-		this.endDate=endDate;
+		this.storeId = storeId;
+		this.totalRevenue = totalRevenue;
+		this.platformFeeRate = platformFeeRate;
+		this.settlementAmount = settlementAmount;
+		this.settlementStatus = SettlementStatus.WAITING;
+		this.settlementPeriod = settlementPeriod;
+		this.startDate = startDate;
+		this.endDate = endDate;
 	}
 
 	public void updateStoreSettlement(
@@ -87,5 +87,9 @@ public class StoreSettlement extends BaseEntity{
 		if (totalRevenue != null) this.totalRevenue = totalRevenue;
 		if (platformFeeRate != null) this.platformFeeRate = platformFeeRate;
 		if (settlementAmount != null) this.settlementAmount = settlementAmount;
+	}
+
+	public void updateSettlementStatus(SettlementStatus newStatus) {
+		this.settlementStatus = newStatus;
 	}
 }

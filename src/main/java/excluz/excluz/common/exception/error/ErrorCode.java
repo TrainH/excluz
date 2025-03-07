@@ -36,6 +36,13 @@ public enum ErrorCode {
 	STORE_NOT_MATCH(HttpStatus.BAD_REQUEST, "스토어에 대한 권한이 없습니다."),
 	DUPLICATE_REGISTRATION_NUMBER(HttpStatus.CONFLICT, "다른 스토어와 중복되는 사업자 등록번호입니다."),
 	STORE_ALREADY_EXIST(HttpStatus.CONFLICT, "운영중인 스토어가 이미 존재합니다."),
+	PERIOD_NOT_MATCH(HttpStatus.BAD_REQUEST, "잘못된 기간(period) 값입니다."),
+
+	// 정산 관련 예외 코드
+	SETTLEMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "정산 기록이 없습니다."),
+	SETTLEMENT_STATUS_NOT_MATCH(HttpStatus.BAD_REQUEST, "잘못된 정산 상태(settlementStatus) 값입니다."),
+	INVALID_SETTLEMENT_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "현재 상태 이전으로 변경할 수 없습니다."),
+	SETTLEMENT_ALREADY_COMPLETED(HttpStatus.BAD_REQUEST, "정산이 완료된 건은 상태변경이 불가합니다."),
 
 	// 포인트 관련 예외 코드
 	POINT_NOT_FOUND(HttpStatus.NOT_FOUND, "포인트를 충전해주세요."),
