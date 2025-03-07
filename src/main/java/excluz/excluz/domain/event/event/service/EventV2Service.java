@@ -27,21 +27,4 @@ public class EventV2Service {
         return eventV2Repository.findDtoByStreamerId(streamerId, pageable);
     }
 
-//    todo: 추후 기능 추가시 활용 예정
-//    @Transactional(readOnly = true)
-//    public EventWithApplicantListResponseDto getEvent(Integer streamerId, Integer eventId) {
-//
-//        Event event = eventV2Repository.findById(eventId)
-//                .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
-//
-//        if (!event.getStore().getStreamer().getId().equals(streamerId)) {
-//            throw new UnauthorizedException(ErrorCode.STORE_NOT_MATCH);
-//        }
-//
-//        List<EventItem> eventItemList = eventItemRepository.findByEvent(event);
-//        List<EventApplicant> eventApplicantList = eventApplicantRepository.findByEvent(event);
-//
-//        return EventWithApplicantListResponseDto.from(event, eventItemList, eventApplicantList);
-//    }
-//
 }
