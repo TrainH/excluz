@@ -35,4 +35,15 @@ public interface StoreRankingRepository extends JpaRepository<StoreRanking, Long
 		@Param("endDate") LocalDateTime endDate, // 검색 종료 날짜
 		Pageable pageable // 페이지 정보 (몇 번째 페이지, 몇 개씩)
 	);
+
+	// 전체 매장, 랭킹 기간, 날짜 범위에 맞는 정보 조회
+	// 주어진 period와 날짜 범위에 해당하는 모든 순위 데이터를 순위 오름차순(1등부터)으로 조회
+	@Query("SELECT sr FROM StoreRanking sr WHERE sr.rankingPeriod = :period AND "
+		+ "sr.rankDate BETWEEN :startDate AND :endDate ORDER BY sr.rankPosition ASC")
+	Page<StoreRanking> findByPeriodAndRankDateBetween(
+		@Param("period") RevenuePeriod period, // 조회할 랭킹 기간 (DAY, MONTH, YEAR)
+		@Param("startDate") LocalDateTime startDate, // 검색 시작 날짜
+		@Param("endDate") LocalDateTime endDate, // 검색 종료 날짜
+		Pageable pageable // 페이지 정보 (몇 번째 페이지, 몇 개씩)
+	);
 }

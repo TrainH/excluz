@@ -66,6 +66,19 @@ public class StoreRankingService {
 		return new StoreRankingResponseDtoList(toDtoList(rankingPage), rankingPage.getTotalElements());
 	}
 
+
+	// 역대 랭킹 조회(전체): 관리자가 모든 스토어의 랭킹 조회
+	public StoreRankingResponseDtoList getAllStoreRankingList(RevenuePeriod revenuePeriod, String date, Integer page, Integer size) {
+		// 날짜 범위 계산
+		LocalDateTime[] range = getDateRange(revenuePeriod, date);
+
+		// 지정된 period와 날짜 범위에 해당하는 모든 순위 정보를 조회
+		Page<StoreRanking> rankingPage = storeRankingRepository.findByPeriodAndRankDateBetween(
+			revenuePeriod, range[0], range[1], PageRequest.of(page, size)
+		);
+		return new StoreRankingResponseDtoList(toDtoList(rankingPage), rankingPage.getTotalElements());
+	}
+
 	// 날짜 범위 계산 메서드
 	// "yyyy-MM-dd" 또는 "yyyy-MM" 형식의 문자열과 period에 따라 시작 시간과 종료 시간을 계산하여 배열로 반환
 	private LocalDateTime[] getDateRange(RevenuePeriod period, String date) {

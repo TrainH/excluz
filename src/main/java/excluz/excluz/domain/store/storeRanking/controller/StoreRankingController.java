@@ -74,6 +74,29 @@ public class StoreRankingController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	// 역대 랭킹 조회(전체): 관리자가 모든 스토어의 랭킹 조회
+	// 요청 URL 예: /api/v1/store-ranking/all/rankings?date=2025-03-08&period=MONTH&page=0&size=10
+	@GetMapping("/all/rankings")
+	@PreAuthorize("hasRole('ADMIN')") // 관리자만 접근 허용
+	public ResponseEntity<StoreRankingResponseDtoList> getAllStoreRankingList(
+		@RequestParam(value = "date", required = false) String date, // "yyyy-MM-dd" 또는 "yyyy-MM"
+		@RequestParam(value = "period", defaultValue = "MONTH") String period, // "period" 값, 기본은 "MONTH"
+		@RequestParam(defaultValue = "0") Integer page, // 페이지 번호
+		@RequestParam(defaultValue = "10") Integer size // 페이지 크기 (한 페이지에 몇 개)
+	) {
+		// 날짜가 올바른 형식인지 확인
+		validateDate(date);
+
+		// period 문자열을 RevenuePeriod enum으로 변환
+		RevenuePeriod revenuePeriod = RevenuePeriod.valueOfIgnoreCase(period);
+
+		// 서비스에서 모든 가게의 순위 정보를 조회
+		StoreRankingResponseDtoList response = storeRankingService.getAllStoreRankingList(
+			revenuePeriod, date, page, size
+		);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	// targetStoreId 결정 로직 (개별 조회용)
 	// 사용자의 역할에 따라 어떤 가게를 조회할지 결정하는 메서드
 	private Integer resolveTargetStoreId(Integer userId, UserRole userRole, Integer storeId) {
