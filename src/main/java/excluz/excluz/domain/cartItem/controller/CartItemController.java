@@ -1,7 +1,5 @@
 package excluz.excluz.domain.cartItem.controller;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +29,7 @@ public class CartItemController {
 	private final CartItemService cartItemService;
 
 	// 물품 추가
+	// URL 예: /api/v1/cart-items
 	@PostMapping
 	public ResponseEntity<CreateCartItemResponseDto> addItemToCart(
 		@Valid @RequestBody CreateCartItemRequestDto requestDto
@@ -46,6 +45,7 @@ public class CartItemController {
 	}
 
 	// 물품 단건 조회
+	// URL 예: /api/v1/cart-items/1
 	@GetMapping("/{cartItemId}")
 	public ResponseEntity<GetCartItemResponseDto> getCartItem(
 		@PathVariable(name = "cartItemId") Integer cartItemId
@@ -58,6 +58,7 @@ public class CartItemController {
 	}
 
 	// 물품 다건 조회
+	// URL 예: /api/v1/cart-items
 	@GetMapping
 	public ResponseEntity<CartItemListResponseDto> getCartItemList(
 		@RequestParam(defaultValue = "0") int page,     // 기본값 0 (첫 페이지)
@@ -71,6 +72,7 @@ public class CartItemController {
 	}
 
 	// 물품 개수 수정
+	// URL 예: /api/v1/cart-items/1
 	@PatchMapping("/{cartItemId}")
 	public ResponseEntity<GetCartItemResponseDto> updateCartItemQuantity(
 		@PathVariable(name = "cartItemId") Integer cartItemId,
@@ -84,6 +86,7 @@ public class CartItemController {
 	}
 
 	// 물품 삭제(단건)
+	// URL 예: /api/v1/cart-items/1
 	@DeleteMapping("/{cartItemId}")
 	public ResponseEntity<Void> removeCartItem(
 		@PathVariable(name = "cartItemId") Integer cartItemId
