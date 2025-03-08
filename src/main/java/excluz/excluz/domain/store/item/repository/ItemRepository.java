@@ -18,12 +18,14 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 		"AND (i.price >= :minPrice) " +
 		"AND (i.price <= :maxPrice) " +
 		"AND (i.isDeleted = FALSE ) " +
+		"AND (:storeId IS NULL OR (:storeId IS NOT NULL AND i.store.id = :storeId) ) " +
 		"ORDER BY i.id DESC")
 	Page<Item> findByPriceWithItemName(
 		Pageable pageable,
 		@Param("minPrice") Integer minPrice,
 		@Param("maxPrice") Integer maxPrice,
-		@Param("itemName") String itemName);
+		@Param("itemName") String itemName,
+		@Param("storeId") Integer StoreId);
 
 	@Query("SELECT i FROM Item i " +
 		"WHERE (i.id = :itemsId)" +

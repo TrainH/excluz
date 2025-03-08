@@ -23,10 +23,11 @@ public class ItemV2Controller {
 		@RequestParam(defaultValue = "0") Integer minPrice,
 		@RequestParam(defaultValue = "2147483647") Integer maxPrice,
 		@RequestParam(required = false) String itemName,
+		@RequestParam(required = false) Integer storeId,
 		@RequestParam(required = false) Integer cursor,
 		@RequestParam(defaultValue = "20") int limit
 	) {
-		GetItemListResponseDtoV2 responseDto = itemV2Service.getItemList(minPrice, maxPrice, itemName, cursor, limit);
+		GetItemListResponseDtoV2 responseDto = itemV2Service.getItemList(minPrice, maxPrice, itemName, storeId, cursor, limit);
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 }

@@ -21,7 +21,7 @@ public class ItemV2Service {
 
 	@Transactional(readOnly = true)
 	public GetItemListResponseDtoV2 getItemList(
-		Integer minPrice, Integer maxPrice,	String itemName, Integer cursor, int limit
+		Integer minPrice, Integer maxPrice,	String itemName, Integer storeId, Integer cursor, int limit
 	) {
 		if (!isValidPrice(minPrice, maxPrice)) {
 			throw new BadRequestException(ErrorCode.INVALID_ITEM_PRICE);
@@ -29,7 +29,7 @@ public class ItemV2Service {
 
 		// 다음 페이지 존재 여부 확인
 		List<Item> itemList = itemV2Repository.findByPriceWithItemNameV2(
-			minPrice, maxPrice,	itemName, cursor, limit + 1);
+			minPrice, maxPrice,	itemName, storeId, cursor, limit + 1);
 
 		boolean hasNext = itemList.size() > limit;
 		if (hasNext) {

@@ -20,7 +20,7 @@ public class ItemV2Repository{
 	}
 
 	public List<Item> findByPriceWithItemNameV2(
-		Integer minPrice, Integer maxPrice, String itemName, Integer cursor, int limit
+		Integer minPrice, Integer maxPrice, String itemName, Integer storeId, Integer cursor, int limit
 	) {
 
 		return queryFactory
@@ -30,6 +30,7 @@ public class ItemV2Repository{
 				item.price.goe(minPrice),
 				item.price.loe(maxPrice),
 				itemNameEq(itemName),
+				storeIdEq(storeId),
 				cursorEq(cursor)
 				)
 			.orderBy(item.id.desc())
@@ -47,5 +48,9 @@ public class ItemV2Repository{
 	// 커서 값이 있으면 id가 cursor보다 작은 값만 조회 (내림차순 정렬 기준)
 	private BooleanExpression cursorEq(Integer cursor) {
 		return cursor != null ? item.id.lt(cursor) : null;
+	}
+
+	private BooleanExpression storeIdEq(Integer storeId) {
+		return storeId != null ? item.store.id.eq(storeId) : null;
 	}
 }
