@@ -1,0 +1,23 @@
+package excluz.excluz.domain.store.storeRanking.repository;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import excluz.excluz.common.entity.StoreRanking;
+import excluz.excluz.domain.store.storeRevenue.enums.RevenuePeriod;
+
+@Repository
+public interface StoreRankingRepository extends JpaRepository<StoreRanking, Long> {
+	// TOP 10 랭킹 조회 (매출 정보 제외)
+	// 주어진 period에 대해 순위가 높은 순으로 10개의 기록만 조회
+	@Query("SELECT sr FROM StoreRanking sr WHERE sr.rankingPeriod = :period "
+		+ "ORDER BY sr.rankPosition ASC")
+	Page<StoreRanking> findTop10ByRankingPeriod(
+		@Param("period") RevenuePeriod period, // 조회할 랭킹 기간 (DAY, MONTH, YEAR)
+		Pageable pageable // 페이지 정보 (여기서는 10개를 요청)
+	);
+}
