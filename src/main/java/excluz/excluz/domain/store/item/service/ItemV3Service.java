@@ -21,7 +21,9 @@ public class ItemV3Service {
 	private final ItemV2Repository itemV2Repository;
 
 	@Cacheable(value = "ITEM_LIST_CACHE",
-		key = "#cursor + '_' + #limit",
+		key = "(#storeId != null ? #storeId : 'null') + '_' +"
+			+ "(#itemName != null ? #itemName.trim().replaceAll('\\s', '').toLowerCase().hashCode() : 'null') + '_' +"
+			+ " #cursor + '_' + #limit",
 		unless = "#result == null"
 	)
 	@Transactional(readOnly = true)
