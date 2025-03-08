@@ -9,14 +9,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import excluz.excluz.domain.store.item.dto.response.GetItemListResponseDtoV2;
 import excluz.excluz.domain.store.item.service.ItemV2Service;
+import excluz.excluz.domain.store.item.service.ItemV3Service;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v2/items")
-public class ItemV2Controller {
+@RequestMapping("/api/v3/items")
+public class ItemV3Controller {
 
-	private final ItemV2Service itemV2Service;
+	private final ItemV3Service itemV3Service;
 
 	@GetMapping()
 	public ResponseEntity<GetItemListResponseDtoV2> getItemList(
@@ -27,7 +28,7 @@ public class ItemV2Controller {
 		@RequestParam(required = false) Integer cursor,
 		@RequestParam(defaultValue = "20") int limit
 	) {
-		GetItemListResponseDtoV2 responseDto = itemV2Service.getItemList(minPrice, maxPrice, itemName, storeId, cursor, limit);
+		GetItemListResponseDtoV2 responseDto = itemV3Service.getItemList(minPrice, maxPrice, itemName, storeId, cursor, limit);
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 }

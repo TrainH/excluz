@@ -80,12 +80,14 @@ public class ItemService {
 	}
 
 	@Transactional(readOnly = true)
-	public GetItemListResponseDto getItemList(Pageable pageable,Integer minPrice, Integer maxPrice, String itemName) {
+	public GetItemListResponseDto getItemList(Pageable pageable,Integer minPrice, Integer maxPrice,
+		String itemName, Integer storeId
+	) {
 		if (!isValidPrice(minPrice,maxPrice)) {
 			throw new BadRequestException(ErrorCode.INVALID_ITEM_PRICE);
 		}
 
-		Page<Item> items = itemRepository.findByPriceWithItemName(pageable, minPrice, maxPrice, itemName);
+		Page<Item> items = itemRepository.findByPriceWithItemName(pageable, minPrice, maxPrice, itemName, storeId);
 		Page<ItemListResponseDto> responseDtoPage = items.map(ItemListResponseDto::from);
 
 		return new GetItemListResponseDto(minPrice, maxPrice, responseDtoPage);

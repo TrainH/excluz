@@ -25,15 +25,18 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class StoreSettlementV2Service {
 
-	private StoreSettlementRepository settlementRepository;
-	private StoreSettlementV2Repository settlementV2Repository;
-	private StoreRepository storeRepository;
+	private final StoreSettlementRepository settlementRepository;
+	private final StoreSettlementV2Repository settlementV2Repository;
+	private final StoreRepository storeRepository;
 
 	@Transactional(readOnly = true)
 	public StoreSettlementResponseDtoList getSettlementList(Integer storeId, Integer settlementId,
 		LocalDateTime startDate, LocalDateTime endDate, String periodStr, Integer page, Integer size
 	) {
-		RevenuePeriod period = RevenuePeriod.valueOfIgnoreCase(periodStr);
+		RevenuePeriod period = null;
+		if (periodStr != null) {
+			period = RevenuePeriod.valueOfIgnoreCase(periodStr);
+		}
 
 		List<StoreSettlementResponseDto> responseDtoList = settlementV2Repository.findByPeriod(
 			storeId, settlementId, startDate, endDate, period, page, size);

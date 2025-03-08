@@ -71,9 +71,10 @@ public class ItemV1Controller {
 		Pageable pageable,
 		@RequestParam(defaultValue = "0") Integer minPrice,
 		@RequestParam(defaultValue = "2147483647") Integer maxPrice,
-		@RequestParam(required = false) String itemName
+		@RequestParam(required = false) String itemName,
+		@RequestParam(required = false) Integer storeId
 	) {
-		GetItemListResponseDto responseDto = itemService.getItemList(pageable, minPrice, maxPrice, itemName);
+		GetItemListResponseDto responseDto = itemService.getItemList(pageable, minPrice, maxPrice, itemName, storeId);
 
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}

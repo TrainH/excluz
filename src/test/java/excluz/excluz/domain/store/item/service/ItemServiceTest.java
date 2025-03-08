@@ -297,7 +297,7 @@ class ItemServiceTest {
 			Pageable pageable = PageRequest.of(0, 20);
 			List<Item> itemList = Collections.singletonList(SharedData.ITEM2);
 			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
-			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString()))
+			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString(), anyInt()))
 				.thenReturn(itemPage);
 			ItemListResponseDto itemListResponseDto = new ItemListResponseDto(SharedData.ITEM_ID1, SharedData.ITEM_NAME2, SharedData.PRICE2);
 
@@ -306,10 +306,10 @@ class ItemServiceTest {
 				given(ItemListResponseDto.from(any(Item.class))).willReturn(itemListResponseDto);
 
 				// when
-				GetItemListResponseDto actualResult = itemService.getItemList(pageable, 1000, 5000, SharedData.ITEM_NAME2);
+				GetItemListResponseDto actualResult = itemService.getItemList(pageable, 1000, 5000, SharedData.ITEM_NAME2, 1);
 
 				// then
-				verify(itemRepository).findByPriceWithItemName(eq(pageable), anyInt(), anyInt(),  anyString());
+				verify(itemRepository).findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString(), anyInt());
 
 				assertThat(actualResult).isNotNull();
 
@@ -325,14 +325,14 @@ class ItemServiceTest {
 			// given
 			Pageable pageable = PageRequest.of(0, 10);
 			Page<Item> emptyPage = Page.empty();
-			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString())).thenReturn(
+			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString(), anyInt())).thenReturn(
 				emptyPage);
 
 			// when
-			GetItemListResponseDto actualResult = itemService.getItemList(pageable, 1000, 5000, SharedData.ITEM_NAME2);
+			GetItemListResponseDto actualResult = itemService.getItemList(pageable, 1000, 5000, SharedData.ITEM_NAME2, 1);
 
 			// then
-			verify(itemRepository).findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString());
+			verify(itemRepository).findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), anyString(), anyInt());
 
 			assertThat(actualResult).isNotNull();
 			assertThat(actualResult.getItemList().getTotalElements()).isEqualTo(0);
@@ -347,17 +347,17 @@ class ItemServiceTest {
 			Page<Item> itemPage = new PageImpl<>(itemList, pageable, itemList.size());
 			ItemListResponseDto itemListResponseDto = new ItemListResponseDto(SharedData.ITEM_ID1, SharedData.ITEM_NAME2, SharedData.PRICE1);
 
-			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), isNull())).thenReturn(
+			when(itemRepository.findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), isNull(), anyInt())).thenReturn(
 				itemPage);
 
 			try (MockedStatic<ItemListResponseDto> mockedStatic = mockStatic(ItemListResponseDto.class)) {
 				given(ItemListResponseDto.from(any(Item.class))).willReturn(itemListResponseDto);
 
 				// when
-				GetItemListResponseDto actualResult = itemService.getItemList(pageable, 1000, 5000, null);
+				GetItemListResponseDto actualResult = itemService.getItemList(pageable, 1000, 5000, null, 1);
 
 				// then
-				verify(itemRepository).findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), isNull());
+				verify(itemRepository).findByPriceWithItemName(eq(pageable), anyInt(), anyInt(), isNull(), anyInt());
 
 				assertThat(actualResult.getItemList().getTotalElements()).isEqualTo(itemList.size());
 			}
