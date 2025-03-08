@@ -43,7 +43,9 @@ public class EventApplicantService {
     @Transactional(propagation = Propagation.REQUIRED, timeout = 5)
     public EventApplicantResponseDto applyForEventForOptimisticLock(String code, EventApplicantRequestDto requestDto) {
         try {
-            log.info("applyForEventForOptimisticLock called. attemptId= threadId={}", Thread.currentThread().getId());
+            assert (code != null && !code.isEmpty());
+            assert (requestDto != null);
+
             Event event = eventRepository.findByGeneratedCodeForOptimisticLock(code)
                     .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
 
@@ -73,17 +75,27 @@ public class EventApplicantService {
                     .deliveryAddress(requestDto.getDeliveryAddress())
                     .build();
 
-            if (event.getSelectionMethod() == SelectionMethod.FIRST_COME_FIRST_SERVED) {
+            SelectionMethod selectionMethod = event.getSelectionMethod();
+
+            assert (selectionMethod != null);
+            if (selectionMethod == SelectionMethod.FIRST_COME_FIRST_SERVED) {
 
                 // DB를 다시 조회하거나, event.getCurrentWinnerCount()를 바로 써도 됨
                 int currentWinners = event.getCurrentWinnerCount();
+                int finalWinners = event.getNumberOfWinners();
+                assert currentWinners >= 0;
+                assert finalWinners > 0;
 
-                if (currentWinners < event.getNumberOfWinners()) {
+                if (currentWinners < finalWinners) {
                     // Event의 당첨자 수 증가 → 실제 UPDATE 쿼리가 발생하며 version이 올라감
                     event.increaseCurrentWinnerCount();
                     eventApplicant.updateApplicantStatus(ApplicantStatus.WINNER);
-                } else { // 안 될 경우 LOSER 지정 추가
+
+
+                } else {
                     eventApplicant.updateApplicantStatus(ApplicantStatus.LOSER);
+                    event.completeEvent();
+                    eventRepository.save(event);
                 }
             } else {
                 eventApplicant.updateApplicantStatus(ApplicantStatus.WAITING);
@@ -102,13 +114,10 @@ public class EventApplicantService {
             log.error("OptimisticLockingFailureException");
             log.warn("Optimistic lock exception occurred while applying for event: {}", code);
             throw e;
-        } catch (Exception e) {
-            log.warn("error has occured: {}", code);
-            throw new BadRequestException(ErrorCode.EVENT_APPLICANT_NOT_STARTED);
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, timeout = 5) // todo: 락 테스트
+    @Transactional(propagation = Propagation.REQUIRED, timeout = 5)
     public EventApplicantResponseDto applyForEvent(String code, EventApplicantRequestDto requestDto) {
         Event event = eventRepository.findByGeneratedCode(code)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
@@ -145,8 +154,11 @@ public class EventApplicantService {
 
             if (numberOfCurrentWinners < event.getNumberOfWinners()) {
                 eventApplicant.updateApplicantStatus(ApplicantStatus.WINNER);
+
             } else {
                 eventApplicant.updateApplicantStatus(ApplicantStatus.LOSER);
+                event.completeEvent();
+                eventRepository.save(event);
             }
         } else {
             eventApplicant.updateApplicantStatus(ApplicantStatus.WAITING);
@@ -157,7 +169,6 @@ public class EventApplicantService {
     }
 
 
-    // (변경 없음) 낙관적 락 예외 발생 시 재시도 실패하면 호출되는 recover 메서드
     public EventApplicantResponseDto recoverFromOptimisticLock(
             OptimisticLockingFailureException ex,
             String code,
