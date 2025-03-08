@@ -28,9 +28,8 @@ public class StoreRankingController {
 	private final StoreRankingService storeRankingService;
 	private final StoreRepository storeRepository;
 
-	// TOP 10 랭킹 조회 (매출 정보 제외)
-	// RequestParam value의 enum(DAY, MONTH, YEAR)에 따라 동적으로 조회 가능
-	// 요청 URL 예:
+	// TOP 10 랭킹 조회 (매출 정보 제외) | RequestParam value의 enum(DAY, MONTH, YEAR)에 따라 동적으로 조회 가능
+	// 요청 URL 예: /api/v1/store-ranking/top10?period=DAY
 	@GetMapping("/top10")
 	public ResponseEntity<StoreRankingTop10ResponseDtoList> getTop10StoreRankingList(
 		@RequestParam(value = "period", defaultValue = "DAY") String period// "period" 값, 기본은 "DAY"
@@ -45,7 +44,7 @@ public class StoreRankingController {
 
 	// 역대 랭킹 조회 (스트리머: 자신의 가게 | 관리자: 특정 가게)
 	// 요청 URL 예(스트리머): /api/v1/store-ranking/store/rankings?date=2025-03&period=MONTH&page=0&size=10
-	// 요청 URL 예(관리자): /api/v1/store-ranking/store/rankings?date=2025-03&period=MONTH&page=0&size=10
+	// 요청 URL 예(관리자): /api/v1/store-ranking/store/rankings?storeId=1&date=2025-03&period=MONTH&page=0&size=10
 	@GetMapping("/store/rankings")
 	@PreAuthorize("hasAnyRole('STREAMER', 'ADMIN')") // 스트리머 or 관리자만 접근 허용
 	public ResponseEntity<StoreRankingResponseDtoList> getStoreRankingList(
@@ -75,7 +74,11 @@ public class StoreRankingController {
 	}
 
 	// 역대 랭킹 조회(전체): 관리자가 모든 스토어의 랭킹 조회
-	// 요청 URL 예: /api/v1/store-ranking/all/rankings?date=2025-03-08&period=MONTH&page=0&size=10
+	/**
+	 * 	요청 URL 예시
+	 * 	1️⃣ "yyyy-MM-dd" 형식: /api/v1/store-ranking/all/rankings?date=2025-03-08&period=MONTH&page=0&size=10
+	 * 	2️⃣ "yyyy-MM" 형식:    /api/v1/store-ranking/all/rankings?date=2025-03&period=MONTH&page=0&size=10
+ 	 */
 	@GetMapping("/all/rankings")
 	@PreAuthorize("hasRole('ADMIN')") // 관리자만 접근 허용
 	public ResponseEntity<StoreRankingResponseDtoList> getAllStoreRankingList(
