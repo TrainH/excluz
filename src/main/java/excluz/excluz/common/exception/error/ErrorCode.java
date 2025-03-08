@@ -45,7 +45,7 @@ public enum ErrorCode {
 	SETTLEMENT_ALREADY_COMPLETED(HttpStatus.BAD_REQUEST, "정산이 완료된 건은 상태변경이 불가합니다."),
 
 	// 랭킹 관련 예외 코드
-	INVALID_YEAR_MONTH_FORMAT(HttpStatus.BAD_REQUEST, "유효하지 않은 연월 형식입니다."),
+	INVALID_DATE_FORMAT(HttpStatus.BAD_REQUEST, "유효하지 않은 날짜 형식입니다."),
 	ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 	STORE_ID_REQUIRED(HttpStatus.BAD_REQUEST, "스토어 ID가 필요합니다."),
 
