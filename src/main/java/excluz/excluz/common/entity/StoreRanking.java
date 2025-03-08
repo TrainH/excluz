@@ -47,12 +47,12 @@ public class StoreRanking {
 	)
 	private Store store;
 
-	// 매출 타입 (D, M, Y)
+	// 매출 타입 (DAY, MONTH, YEAR)
 	@Comment("매출 타입")
 	@Enumerated(EnumType.STRING)
 	private RevenuePeriod rankingPeriod;
 
-	// 랭킹 날짜
+	// 랭킹 날짜 (랭킹 기준 시작 날짜)
 	@LastModifiedDate
 	@Column(name = "rank_date", nullable = false)
 	private LocalDateTime rankDate;
