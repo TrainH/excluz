@@ -76,6 +76,7 @@ public class CartItemService {
 	}
 
 	// 물품 단건 조회
+	@Transactional(readOnly = true)
 	public GetCartItemResponseDto getCartItem(Integer userId, UserRole userRole, Integer cartItemId) {
 		// 장바구니 이용은 CUSTOMER만 가능
 		if (userRole != UserRole.CUSTOMER) {
