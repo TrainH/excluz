@@ -44,6 +44,11 @@ public enum ErrorCode {
 	INVALID_SETTLEMENT_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "현재 상태 이전으로 변경할 수 없습니다."),
 	SETTLEMENT_ALREADY_COMPLETED(HttpStatus.BAD_REQUEST, "정산이 완료된 건은 상태변경이 불가합니다."),
 
+	// 랭킹 관련 예외 코드
+	INVALID_YEAR_MONTH_FORMAT(HttpStatus.BAD_REQUEST, "유효하지 않은 연월 형식입니다."),
+	ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+	STORE_ID_REQUIRED(HttpStatus.BAD_REQUEST, "스토어 ID가 필요합니다."),
+
 	// 포인트 관련 예외 코드
 	POINT_NOT_FOUND(HttpStatus.NOT_FOUND, "포인트를 충전해주세요."),
 
