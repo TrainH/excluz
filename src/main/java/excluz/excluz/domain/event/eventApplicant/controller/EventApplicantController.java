@@ -76,7 +76,7 @@ public class EventApplicantController {
     public ResponseEntity<EventApplicantResponseDto> confirmReceipt(
             @PathVariable Integer eventApplicantId,
             @RequestBody EventApplicantRequestDto requestDto) {
-        // todo: 필요한 경우 비회원 인증 여부를 확인할 수도 있음 (예: 비밀번호 체크 등)
+
         EventApplicantResponseDto updated = eventApplicantService.confirmReceipt(eventApplicantId, requestDto);
         return ResponseEntity.ok(updated);
     }
