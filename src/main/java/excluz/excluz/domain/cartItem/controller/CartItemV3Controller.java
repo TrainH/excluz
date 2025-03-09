@@ -1,6 +1,7 @@
 package excluz.excluz.domain.cartItem.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -83,5 +84,21 @@ public class CartItemV3Controller {
 
         GetCartItemResponseDto response = cartItemV3Service.updateCartItemQuantity(userId, userRole, cartItemId, requestDto);
         return ResponseEntity.ok(response);
+    }
+
+    // 물품 삭제(단건) (v3: 캐시 무효화 적용)
+    // URL 예: /api/v3/cart-items/1
+    @DeleteMapping("/{cartItemId}")
+    public ResponseEntity<Void> removeCartItem(
+        @PathVariable(name = "cartItemId") Integer cartItemId
+    ) {
+        Integer userId = SecurityContextUtil.getUserOrStreamerId();
+        UserRole userRole = SecurityContextUtil.getUserRole();
+
+        // cartItemId를 서비스 단으로 넘겨서 검증 및 삭제 진행
+        cartItemV3Service.removeCartItem(userId, userRole, cartItemId);
+
+        // HTTP 상태 코드 204(No Content) 반환
+        return ResponseEntity.noContent().build();
     }
 }

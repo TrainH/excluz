@@ -161,4 +161,18 @@ public class CartItemV3Service {
             .itemPrice(cartItem.getItem().getPrice())
             .build();
     }
+
+    // 물품 삭제(단건) (캐시 무효화)
+    @Transactional
+    @CacheEvict(value = "CART_ITEM_LIST_CACHE", key = "#userId + '_' + #userRole + '_' + '0' + '_' + '10'")
+    public void removeCartItem(Integer userId, UserRole userRole, Integer cartItemId) {
+        // 장바구니 이용은 CUSTOMER만 가능
+        checkCustomerRole(userRole);
+
+        // 장바구니에서 해당 아이템 찾기
+        CartItem cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.CART_ITEM_NOT_FOUND));
+
+        cartItemRepository.delete(cartItem);
+    }
 }
