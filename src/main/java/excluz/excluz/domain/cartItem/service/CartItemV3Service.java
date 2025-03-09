@@ -62,9 +62,9 @@ public class CartItemV3Service {
         return new CartItemListResponseDto(cartItemList);
     }
 
-    // 물품 추가 (캐시 무효화)
+    // 물품 추가 (캐시 무효화 - 사용자별 모든 페이지 캐시 제거)
     @Transactional
-    @CacheEvict(value = "CART_ITEM_LIST_CACHE", key = "#userId + '_' + #userRole + '_' + '0' + '_' + '10'")
+    @CacheEvict(value = "CART_ITEM_LIST_CACHE", condition = "#result != null", key = "#userId + '_' + #userRole")
     public CreateCartItemResponseDto addItemToCart(Integer userId, UserRole userRole, CreateCartItemRequestDto requestDto) {
         // 유저 존재 여부 확인
         User user = userRepository.findById(userId)
@@ -102,7 +102,7 @@ public class CartItemV3Service {
             .build();
     }
 
-    // 물품 단건 조회 (캐싱 미적용) -> 다건 조회와 단건 조회는 캐시를 별도로 관리해야 함. 캐싱 적용 시 오히려 단건 조회 응답 속도에 부정적일 것으로 판단.
+    // 물품 단건 조회 (캐싱 미적용 - 실시간성이 중요하고 요청 빈도가 낮을 것으로 판단해 캐싱 제외)
     // API 경로 일관성을 위해 추가함
     @Transactional(readOnly = true)
     public GetCartItemResponseDto getCartItem(Integer userId, UserRole userRole, Integer cartItemId) {
@@ -122,9 +122,9 @@ public class CartItemV3Service {
             .build();
     }
 
-    // 물품 개수 수정 (캐시 무효화)
+    // 물품 개수 수정 (캐시 무효화 - 사용자별 모든 페이지 캐시 제거)
     @Transactional
-    @CacheEvict(value = "CART_ITEM_LIST_CACHE", key = "#userId + '_' + #userRole + '_' + '0' + '_' + '10'")
+    @CacheEvict(value = "CART_ITEM_LIST_CACHE", condition = "#result != null", key = "#userId + '_' + #userRole")
     public GetCartItemResponseDto updateCartItemQuantity(
         Integer userId,
         UserRole userRole,
@@ -162,9 +162,9 @@ public class CartItemV3Service {
             .build();
     }
 
-    // 물품 삭제(단건) (캐시 무효화)
+    // 물품 삭제(단건) (캐시 무효화 - 사용자별 모든 페이지 캐시 제거)
     @Transactional
-    @CacheEvict(value = "CART_ITEM_LIST_CACHE", key = "#userId + '_' + #userRole + '_' + '0' + '_' + '10'")
+    @CacheEvict(value = "CART_ITEM_LIST_CACHE", key = "#userId + '_' + #userRole")
     public void removeCartItem(Integer userId, UserRole userRole, Integer cartItemId) {
         // 장바구니 이용은 CUSTOMER만 가능
         checkCustomerRole(userRole);
