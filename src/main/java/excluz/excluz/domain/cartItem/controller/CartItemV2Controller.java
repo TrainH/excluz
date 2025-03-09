@@ -19,6 +19,7 @@ public class CartItemV2Controller {
     private final CartItemV2Service cartItemV2Service;
 
     // v2-1 : fetchJoin() 제외 QueryDSL 방식
+    // URL 예: /api/v2-1/cart-items
     @GetMapping("/v2-1/cart-items")
     public ResponseEntity<CartItemListResponseDto> getCartItemListV1(
         @RequestParam(defaultValue = "0") int page,     // 기본값 0 (첫 페이지)
@@ -32,6 +33,7 @@ public class CartItemV2Controller {
     }
 
     // v2-2 : fetchJoin() 포함 QueryDSL 방식
+    // URL 예: /api/v2-2/cart-items
     @GetMapping("/v2-2/cart-items")
     public ResponseEntity<CartItemListResponseDto> getCartItemListV2(
         @RequestParam(defaultValue = "0") int page,     // 기본값 0 (첫 페이지)

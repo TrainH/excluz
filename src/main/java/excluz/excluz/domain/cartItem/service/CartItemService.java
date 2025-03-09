@@ -1,8 +1,5 @@
 package excluz.excluz.domain.cartItem.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +31,13 @@ public class CartItemService {
 	private final UserRepository userRepository;
 	private final ItemRepository itemRepository;
 
+	// 공통 권한 체크 메서드
+	private void checkCustomerRole(UserRole userRole) {
+		if (userRole != UserRole.CUSTOMER) {
+			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+		}
+	}
+
 	// 물품 추가
 	@Transactional
 	public CreateCartItemResponseDto addItemToCart(Integer userId, UserRole userRole, CreateCartItemRequestDto requestDto) {
@@ -42,9 +46,7 @@ public class CartItemService {
 			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
 		// 장바구니 이용은 CUSTOMER만 가능
-		if (userRole != UserRole.CUSTOMER) {
-			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
-		}
+		checkCustomerRole(userRole);
 
 		// 아이템 존재 여부 확인
 		Item item = itemRepository.findById(requestDto.getItemId())
@@ -76,11 +78,10 @@ public class CartItemService {
 	}
 
 	// 물품 단건 조회
+	@Transactional(readOnly = true)
 	public GetCartItemResponseDto getCartItem(Integer userId, UserRole userRole, Integer cartItemId) {
 		// 장바구니 이용은 CUSTOMER만 가능
-		if (userRole != UserRole.CUSTOMER) {
-			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
-		}
+		checkCustomerRole(userRole);
 
 		// 장바구니에서 해당 아이템 찾기
 		CartItem cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
@@ -101,9 +102,7 @@ public class CartItemService {
 
 		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
 		// 장바구니 이용은 CUSTOMER만 가능
-		if (userRole != UserRole.CUSTOMER) {
-			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
-		}
+		checkCustomerRole(userRole);
 
 		Page<CartItem> cartItems = cartItemRepository.findByUserId(userId, pageable);
 		Page<GetCartItemResponseDto> cartItemList = cartItems.map(item -> GetCartItemResponseDto.builder()
@@ -126,9 +125,7 @@ public class CartItemService {
 		UpdateCartItemQuantityRequestDto requestDto
 	) {
 		// 장바구니 이용은 CUSTOMER만 가능
-		if (userRole != UserRole.CUSTOMER) {
-			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
-		}
+		checkCustomerRole(userRole);
 
 		// 장바구니에서 해당 아이템 찾기
 		CartItem cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
@@ -162,9 +159,7 @@ public class CartItemService {
 	@Transactional
 	public void removeCartItem(Integer userId, UserRole userRole, Integer cartItemId) {
 		// 장바구니 이용은 CUSTOMER만 가능
-		if (userRole != UserRole.CUSTOMER) {
-			throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
-		}
+		checkCustomerRole(userRole);
 
 		// 장바구니에서 해당 아이템 찾기
 		CartItem cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)

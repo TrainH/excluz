@@ -20,15 +20,20 @@ public class CartItemV2Service {
 
     private final CartItemV2Repository cartItemV2Repository;
 
+    // 공통 권한 체크 메서드
+    private void checkCustomerRole(UserRole userRole) {
+        if (userRole != UserRole.CUSTOMER) {
+            throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+        }
+    }
+
     // v2-1 : fetchJoin() 제외 QueryDSL 방식
     @Transactional(readOnly = true)
     public CartItemListResponseDto getCartItemListV1(Integer userId, UserRole userRole, int page, int size) {
 
         Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
         // 장바구니 이용은 CUSTOMER만 가능
-        if (userRole != UserRole.CUSTOMER) {
-            throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
-        }
+        checkCustomerRole(userRole);
 
         Page<CartItem> cartItems = cartItemV2Repository.findByUserIdV1(userId, pageable);
 
@@ -49,9 +54,7 @@ public class CartItemV2Service {
 
         Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
         // 장바구니 이용은 CUSTOMER만 가능
-        if (userRole != UserRole.CUSTOMER) {
-            throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
-        }
+        checkCustomerRole(userRole);
 
         Page<CartItem> cartItems = cartItemV2Repository.findByUserIdV2(userId, pageable);
 
