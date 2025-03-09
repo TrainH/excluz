@@ -101,7 +101,8 @@ public class CartItemV3Service {
             .build();
     }
 
-    // 물품 단건 조회
+    // 물품 단건 조회 (캐싱 미적용) -> 다건 조회와 단건 조회는 캐싱을 따로 관리해야 함. 캐싱 적용 시 오히려 단건 조회 응답 속도에 부정적일 것으로 판단.
+    // API 경로 일관성을 위해 추가함
     @Transactional(readOnly = true)
     public GetCartItemResponseDto getCartItem(Integer userId, UserRole userRole, Integer cartItemId) {
         // 장바구니 이용은 CUSTOMER만 가능

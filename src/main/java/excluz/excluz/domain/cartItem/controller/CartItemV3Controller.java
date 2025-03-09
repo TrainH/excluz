@@ -55,7 +55,8 @@ public class CartItemV3Controller {
         return ResponseEntity.status(201).body(response);
     }
 
-    // 물품 단건 조회
+    // 물품 단건 조회 (캐싱 미적용)
+    // API 경로 일관성을 위해 추가함 (getCartItem 제외할 경우, 클라이언트는 단건 조회만 v1을 써야 함)
     // URL 예: /api/v3/cart-items/1
     @GetMapping("/{cartItemId}")
     public ResponseEntity<GetCartItemResponseDto> getCartItem(
