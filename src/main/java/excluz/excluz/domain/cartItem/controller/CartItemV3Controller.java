@@ -2,6 +2,7 @@ package excluz.excluz.domain.cartItem.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +13,7 @@ import excluz.excluz.auth.util.SecurityContextUtil;
 import excluz.excluz.domain.cartItem.dto.request.CreateCartItemRequestDto;
 import excluz.excluz.domain.cartItem.dto.response.CartItemListResponseDto;
 import excluz.excluz.domain.cartItem.dto.response.CreateCartItemResponseDto;
+import excluz.excluz.domain.cartItem.dto.response.GetCartItemResponseDto;
 import excluz.excluz.domain.cartItem.service.CartItemV3Service;
 import excluz.excluz.domain.user.enums.UserRole;
 import jakarta.validation.Valid;
@@ -51,5 +53,18 @@ public class CartItemV3Controller {
 
         // HTTP 상태 코드 201(create)와 함께 CreateCartItemResponseDto 응답
         return ResponseEntity.status(201).body(response);
+    }
+
+    // 물품 단건 조회
+    // URL 예: /api/v3/cart-items/1
+    @GetMapping("/{cartItemId}")
+    public ResponseEntity<GetCartItemResponseDto> getCartItem(
+        @PathVariable(name = "cartItemId") Integer cartItemId
+    ) {
+        Integer userId = SecurityContextUtil.getUserOrStreamerId();
+        UserRole userRole = SecurityContextUtil.getUserRole();
+
+        GetCartItemResponseDto response = cartItemV3Service.getCartItem(userId, userRole, cartItemId);
+        return ResponseEntity.ok(response);
     }
 }

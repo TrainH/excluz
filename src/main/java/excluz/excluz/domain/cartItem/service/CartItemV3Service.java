@@ -100,4 +100,25 @@ public class CartItemV3Service {
             .itemPrice(cartItem.getItem().getPrice())
             .build();
     }
+
+    // 물품 단건 조회
+    @Transactional(readOnly = true)
+    public GetCartItemResponseDto getCartItem(Integer userId, UserRole userRole, Integer cartItemId) {
+        // 장바구니 이용은 CUSTOMER만 가능
+        checkCustomerRole(userRole);
+
+        // 장바구니에서 해당 아이템 찾기
+        CartItem cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.CART_ITEM_NOT_FOUND));
+
+        return GetCartItemResponseDto.builder()
+            .cartItemId(cartItem.getId())
+            .itemId(cartItem.getItem().getId())
+            .storeId(cartItem.getItem().getStore().getId())
+            .quantity(cartItem.getQuantity())
+            .itemPrice(cartItem.getItem().getPrice())
+            .build();
+    }
+
+
 }
