@@ -12,14 +12,18 @@ import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.cartItem.dto.response.CartItemListResponseDto;
 import excluz.excluz.domain.cartItem.dto.response.GetCartItemResponseDto;
-import excluz.excluz.domain.cartItem.repository.CartItemV3Repository;
+import excluz.excluz.domain.cartItem.repository.CartItemRepository;
+import excluz.excluz.domain.store.item.repository.ItemRepository;
 import excluz.excluz.domain.user.enums.UserRole;
+import excluz.excluz.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class CartItemV3Service {
-    private final CartItemV3Repository cartItemV3Repository;
+    private final CartItemRepository cartItemRepository;
+    private final UserRepository userRepository;
+    private final ItemRepository itemRepository;
 
     // 공통 권한 체크 메서드
     private void checkCustomerRole(UserRole userRole) {
@@ -37,7 +41,7 @@ public class CartItemV3Service {
         // 장바구니 이용은 CUSTOMER만 가능
         checkCustomerRole(userRole);
 
-        Page<CartItem> cartItems = cartItemV3Repository.findByUserIdV3(userId, pageable);
+        Page<CartItem> cartItems = cartItemRepository.findByUserId(userId, pageable);
 
         Page<GetCartItemResponseDto> cartItemList = cartItems.map(item -> GetCartItemResponseDto.builder()
             .cartItemId(item.getId())                    // 장바구니 아이템의 ID
