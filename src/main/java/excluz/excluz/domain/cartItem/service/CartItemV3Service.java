@@ -16,6 +16,7 @@ import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.cartItem.dto.request.CreateCartItemRequestDto;
+import excluz.excluz.domain.cartItem.dto.request.UpdateCartItemQuantityRequestDto;
 import excluz.excluz.domain.cartItem.dto.response.CartItemListResponseDto;
 import excluz.excluz.domain.cartItem.dto.response.CreateCartItemResponseDto;
 import excluz.excluz.domain.cartItem.dto.response.GetCartItemResponseDto;
@@ -101,7 +102,7 @@ public class CartItemV3Service {
             .build();
     }
 
-    // 물품 단건 조회 (캐싱 미적용) -> 다건 조회와 단건 조회는 캐싱을 따로 관리해야 함. 캐싱 적용 시 오히려 단건 조회 응답 속도에 부정적일 것으로 판단.
+    // 물품 단건 조회 (캐싱 미적용) -> 다건 조회와 단건 조회는 캐시를 별도로 관리해야 함. 캐싱 적용 시 오히려 단건 조회 응답 속도에 부정적일 것으로 판단.
     // API 경로 일관성을 위해 추가함
     @Transactional(readOnly = true)
     public GetCartItemResponseDto getCartItem(Integer userId, UserRole userRole, Integer cartItemId) {
@@ -121,5 +122,43 @@ public class CartItemV3Service {
             .build();
     }
 
+    // 물품 개수 수정 (캐시 무효화)
+    @Transactional
+    @CacheEvict(value = "CART_ITEM_LIST_CACHE", key = "#userId + '_' + #userRole + '_' + '0' + '_' + '10'")
+    public GetCartItemResponseDto updateCartItemQuantity(
+        Integer userId,
+        UserRole userRole,
+        Integer cartItemId,
+        UpdateCartItemQuantityRequestDto requestDto
+    ) {
+        // 장바구니 이용은 CUSTOMER만 가능
+        checkCustomerRole(userRole);
 
+        // 장바구니에서 해당 아이템 찾기
+        CartItem cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.CART_ITEM_NOT_FOUND));
+
+        // 장바구니에 담긴 해당 아이템의 정보 가져오기
+        Item item = cartItem.getItem();
+
+        // 사용자가 입력한 개수를 장바구니 속 해당 아이템의 최종 개수로 설정
+        Integer updatedQuantity = requestDto.getQuantity();
+
+        // 재고 체크 (요청된 개수가 재고보다 많은 경우 예외 발생)
+        if (updatedQuantity > item.getRemainingQuantity()) {
+            throw new BadRequestException(ErrorCode.OUT_OF_STOCK);
+        }
+
+        // 개수 업데이트 (기존 개수와 관계없이 사용자가 입력한 개수로 설정)
+        cartItem.updateQuantity(updatedQuantity);
+        cartItemRepository.save(cartItem);
+
+        return GetCartItemResponseDto.builder()
+            .cartItemId(cartItem.getId())
+            .itemId(cartItem.getItem().getId())
+            .storeId(cartItem.getItem().getStore().getId())
+            .quantity(cartItem.getQuantity())
+            .itemPrice(cartItem.getItem().getPrice())
+            .build();
+    }
 }
