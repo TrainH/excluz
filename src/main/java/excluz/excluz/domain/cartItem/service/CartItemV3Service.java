@@ -1,5 +1,6 @@
 package excluz.excluz.domain.cartItem.service;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -8,9 +9,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import excluz.excluz.common.entity.CartItem;
+import excluz.excluz.common.entity.Item;
+import excluz.excluz.common.entity.User;
+import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.ForbiddenException;
+import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
+import excluz.excluz.domain.cartItem.dto.request.CreateCartItemRequestDto;
 import excluz.excluz.domain.cartItem.dto.response.CartItemListResponseDto;
+import excluz.excluz.domain.cartItem.dto.response.CreateCartItemResponseDto;
 import excluz.excluz.domain.cartItem.dto.response.GetCartItemResponseDto;
 import excluz.excluz.domain.cartItem.repository.CartItemRepository;
 import excluz.excluz.domain.store.item.repository.ItemRepository;
@@ -52,5 +59,45 @@ public class CartItemV3Service {
             .build());
 
         return new CartItemListResponseDto(cartItemList);
+    }
+
+    // 물품 추가 (캐시 무효화)
+    @Transactional
+    @CacheEvict(value = "CART_ITEM_LIST_CACHE", key = "#userId + '_' + #userRole + '_' + '0' + '_' + '10'")
+    public CreateCartItemResponseDto addItemToCart(Integer userId, UserRole userRole, CreateCartItemRequestDto requestDto) {
+        // 유저 존재 여부 확인
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+
+        // 장바구니 이용은 CUSTOMER만 가능
+        checkCustomerRole(userRole);
+
+        // 아이템 존재 여부 확인
+        Item item = itemRepository.findById(requestDto.getItemId())
+            .orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
+
+        // 기존 장바구니에서 동일한 상품이 있는지 확인
+        CartItem cartItem = cartItemRepository.findByUserIdAndItemId(userId, requestDto.getItemId())
+            .orElseGet(() -> new CartItem(user, item, 0));
+
+        // 총 수량 계산
+        Integer newQuantity = cartItem.getQuantity() + requestDto.getQuantity();
+
+        // 재고 초과 여부 확인
+        if (newQuantity > item.getRemainingQuantity()) {
+            throw new BadRequestException(ErrorCode.OUT_OF_STOCK);
+        }
+
+        // 수량 업데이트 및 저장
+        cartItem.updateQuantity(newQuantity);
+        cartItemRepository.save(cartItem);
+
+        return CreateCartItemResponseDto.builder()
+            .cartItemId(cartItem.getId())
+            .itemId(cartItem.getItem().getId())
+            .storeId(cartItem.getItem().getStore().getId())
+            .quantity(cartItem.getQuantity())
+            .itemPrice(cartItem.getItem().getPrice())
+            .build();
     }
 }

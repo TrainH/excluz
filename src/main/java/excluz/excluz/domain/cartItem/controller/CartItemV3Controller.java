@@ -2,14 +2,19 @@ package excluz.excluz.domain.cartItem.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import excluz.excluz.auth.util.SecurityContextUtil;
+import excluz.excluz.domain.cartItem.dto.request.CreateCartItemRequestDto;
 import excluz.excluz.domain.cartItem.dto.response.CartItemListResponseDto;
+import excluz.excluz.domain.cartItem.dto.response.CreateCartItemResponseDto;
 import excluz.excluz.domain.cartItem.service.CartItemV3Service;
 import excluz.excluz.domain.user.enums.UserRole;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -32,4 +37,19 @@ public class CartItemV3Controller {
         return ResponseEntity.ok(response);
     }
 
+    // 물품 추가 (v3: 캐시 무효화 적용)
+    // URL 예: /api/v3/cart-items
+    @PostMapping
+    public ResponseEntity<CreateCartItemResponseDto> addItemToCart(
+        @Valid @RequestBody CreateCartItemRequestDto requestDto
+    ) {
+        Integer userId = SecurityContextUtil.getUserOrStreamerId();
+        UserRole userRole = SecurityContextUtil.getUserRole();
+
+        // 서비스단으로 userId와 리퀘스트 정보 넘기기
+        CreateCartItemResponseDto response = cartItemV3Service.addItemToCart(userId, userRole, requestDto);
+
+        // HTTP 상태 코드 201(create)와 함께 CreateCartItemResponseDto 응답
+        return ResponseEntity.status(201).body(response);
+    }
 }
