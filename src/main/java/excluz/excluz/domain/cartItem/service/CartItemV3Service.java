@@ -41,8 +41,8 @@ public class CartItemV3Service {
     }
 
     // 물품 다건 조회 (인메모리 캐싱 적용)
-    @Cacheable(value = "CART_ITEM_LIST_CACHE", key = "#userId + '_' + #userRole + '_' + #page + '_' + #size")
     @Transactional(readOnly = true)
+    @Cacheable(value = "CART_ITEM_LIST_CACHE", key = "#userId+ '_' + #page + '_' + #size")
     public CartItemListResponseDto getCartItemList(Integer userId, UserRole userRole, int page, int size) {
 
         Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
@@ -64,7 +64,7 @@ public class CartItemV3Service {
 
     // 물품 추가 (캐시 무효화 - 사용자별 모든 페이지 캐시 제거)
     @Transactional
-    @CacheEvict(value = "CART_ITEM_LIST_CACHE", condition = "#result != null", key = "#userId + '_' + #userRole")
+    @CacheEvict(value = "CART_ITEM_LIST_CACHE", allEntries = true)
     public CreateCartItemResponseDto addItemToCart(Integer userId, UserRole userRole, CreateCartItemRequestDto requestDto) {
         // 유저 존재 여부 확인
         User user = userRepository.findById(userId)
@@ -124,7 +124,7 @@ public class CartItemV3Service {
 
     // 물품 개수 수정 (캐시 무효화 - 사용자별 모든 페이지 캐시 제거)
     @Transactional
-    @CacheEvict(value = "CART_ITEM_LIST_CACHE", condition = "#result != null", key = "#userId + '_' + #userRole")
+    @CacheEvict(value = "CART_ITEM_LIST_CACHE", allEntries = true)
     public GetCartItemResponseDto updateCartItemQuantity(
         Integer userId,
         UserRole userRole,
@@ -164,7 +164,7 @@ public class CartItemV3Service {
 
     // 물품 삭제(단건) (캐시 무효화 - 사용자별 모든 페이지 캐시 제거)
     @Transactional
-    @CacheEvict(value = "CART_ITEM_LIST_CACHE", key = "#userId + '_' + #userRole")
+    @CacheEvict(value = "CART_ITEM_LIST_CACHE", allEntries = true)
     public void removeCartItem(Integer userId, UserRole userRole, Integer cartItemId) {
         // 장바구니 이용은 CUSTOMER만 가능
         checkCustomerRole(userRole);
