@@ -5,11 +5,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
-public class OrderItemResponseDto {
+public class OrderItemResponseDto implements Serializable {
 
     private Integer orderId;
     private Integer orderItemId;

@@ -7,11 +7,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
-public class OrderResponseDto {
+public class OrderResponseDto implements Serializable {
     private Integer orderId;
     private OrderStatus orderStatus;
     private String address;
