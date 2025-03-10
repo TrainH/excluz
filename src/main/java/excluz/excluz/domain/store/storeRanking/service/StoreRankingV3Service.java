@@ -6,6 +6,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -23,19 +24,21 @@ import excluz.excluz.domain.store.storeRanking.dto.response.StoreRankingTop10Res
 import excluz.excluz.domain.store.storeRanking.dto.response.StoreRankingTop10ResponseDtoList;
 import excluz.excluz.domain.store.storeRanking.repository.StoreRankingRepository;
 import excluz.excluz.domain.store.storeRevenue.enums.RevenuePeriod;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class StoreRankingService {
+public class StoreRankingV3Service {
 	private final StoreRankingRepository storeRankingRepository;
 	private final StoreRepository storeRepository;
 
+	// ✅ 인메모리 캐싱 적용 버전 (v3)
+
 	// TOP 10 랭킹 조회 (매출 정보 제외)
 	@Transactional(readOnly = true)
+	@Cacheable(value = "TOP_10_STORE_RANKING_CACHE", key = "#revenuePeriod + '-' + #date")
 	public StoreRankingTop10ResponseDtoList getTop10StoreRankingList(
 		String date,
 		RevenuePeriod revenuePeriod
@@ -59,6 +62,7 @@ public class StoreRankingService {
 
 	// 역대 랭킹 조회 (스트리머: 자신의 가게 | 관리자: 특정 가게)
 	@Transactional(readOnly = true)
+	@Cacheable(value = "STORE_RANKING_CACHE", key = "#storeId + '_' + #revenuePeriod + '_' + #date + '_' + #page + '_' + #size")
 	public StoreRankingResponseDtoList getStoreRankingList(
 		Integer storeId,
 		RevenuePeriod revenuePeriod,
@@ -84,8 +88,10 @@ public class StoreRankingService {
 		return new StoreRankingResponseDtoList(toDtoList(rankingPage), rankingPage.getTotalElements());
 	}
 
+
 	// 역대 랭킹 조회(전체): 관리자가 모든 스토어의 랭킹 조회
 	@Transactional(readOnly = true)
+	@Cacheable(value = "ALL_STORE_RANKING_CACHE", key = "#revenuePeriod + '_' + #date + '_' + #page + '_' + #size")
 	public StoreRankingResponseDtoList getAllStoreRankingList(
 		RevenuePeriod revenuePeriod,
 		String date,

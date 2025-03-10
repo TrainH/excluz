@@ -1,11 +1,12 @@
 package excluz.excluz.domain.store.storeRanking.dto.response;
 
+import java.io.Serializable;
 import java.util.List;
 
 import lombok.Getter;
 
 @Getter
-public class StoreRankingResponseDtoList {
+public class StoreRankingResponseDtoList implements Serializable {
 	private final List<StoreRankingResponseDto> rankingList; // 랭킹 리스트
 	private final Long totalCount; // 총 개수
 
