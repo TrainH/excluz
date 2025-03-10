@@ -32,13 +32,17 @@ public class StoreRankingV3Controller {
 	// 요청 URL 예: /api/v3/store-ranking/top10?period=DAY
 	@GetMapping("/top10")
 	public ResponseEntity<StoreRankingTop10ResponseDtoList> getTop10StoreRankingList(
-		@RequestParam(value = "period", defaultValue = "DAY") String period// "period" 값, 기본은 "DAY"
+		@RequestParam(value = "date", required = false) String date, // "yyyy-MM-dd" 또는 "yyyy-MM" (date 없으면 현재 날짜 기준으로 조회)
+		@RequestParam(value = "period", defaultValue = "DAY") String period // "period" 값, 기본은 "DAY"
 	) {
+		// 날짜가 올바른 형식인지 확인
+		validateDate(date);
+
 		// 문자열 period를 대소문자 구분 없이 RevenuePeriod(enum)으로 변환
 		RevenuePeriod revenuePeriod = RevenuePeriod.valueOfIgnoreCase(period);
 
 		// 서비스로부터 TOP 10 순위 데이터를 받아옴
-		StoreRankingTop10ResponseDtoList response = storeRankingV3Service.getTop10StoreRankingList(revenuePeriod);
+		StoreRankingTop10ResponseDtoList response = storeRankingV3Service.getTop10StoreRankingList(date, revenuePeriod);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -95,14 +99,21 @@ public class StoreRankingV3Controller {
 
 		// 서비스에서 모든 가게의 순위 정보를 조회
 		StoreRankingResponseDtoList response = storeRankingV3Service.getAllStoreRankingList(
-			revenuePeriod, date, page, size
+			revenuePeriod,
+			date,
+			page,
+			size
 		);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	// targetStoreId 결정 로직 (개별 조회용)
 	// 사용자의 역할에 따라 어떤 가게를 조회할지 결정하는 메서드
-	private Integer resolveTargetStoreId(Integer userId, UserRole userRole, Integer storeId) {
+	private Integer resolveTargetStoreId(
+		Integer userId,
+		UserRole userRole,
+		Integer storeId
+	) {
 		if (userRole == UserRole.STREAMER) {
 			// 스트리머는 자신의 가게만 조회 가능
 			return storeRepository.findStoreByStreamerIdAndNotDeleted(userId)
