@@ -18,7 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderItemV3Service {
     private final OrderItemV2Repository orderItemV2Repository;
 
-    @Cacheable(value = "ORDER_ITEM_LIST_CACHE", key = "#userOrStreamerId + '_' + #userRole + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
+    @Cacheable(value = "ORDER_ITEM_LIST_CACHE", cacheManager = "caffeineCacheManager",
+            key = "#userOrStreamerId + '_' + #userRole + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
     @Transactional(readOnly = true)
     public Page<OrderItemResponseDto> getOrderItemList(Integer userOrStreamerId, UserRole userRole, Pageable pageable) {
 
