@@ -43,7 +43,7 @@ public class CartItemV3Service {
     // 물품 다건 조회 (인메모리 캐싱 적용)
     @Transactional(readOnly = true)
     @Cacheable(value = "CART_ITEM_LIST_CACHE", cacheManager = "caffeineCacheManager",
-        key = "#userId+ '_' + #page + '_' + #size")
+        key = "#userId + '_' + #userRole + '_' + #page + '_' + #size")
     public CartItemListResponseDto getCartItemList(Integer userId, UserRole userRole, int page, int size) {
 
         Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
