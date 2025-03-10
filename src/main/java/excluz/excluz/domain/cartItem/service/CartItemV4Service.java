@@ -28,10 +28,12 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class CartItemV3Service {
+public class CartItemV4Service {
     private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
+
+    // ✅ Redis 적용
 
     // 공통 권한 체크 메서드
     private void checkCustomerRole(UserRole userRole) {
@@ -40,9 +42,9 @@ public class CartItemV3Service {
         }
     }
 
-    // 물품 다건 조회 (인메모리 캐싱 적용)
+    // 물품 다건 조회
     @Transactional(readOnly = true)
-    @Cacheable(value = "CART_ITEM_LIST_CACHE", cacheManager = "caffeineCacheManager",
+    @Cacheable(value = "CART_ITEM_LIST_REDIS", cacheManager = "redisCacheManager",
         key = "#userId + '_' + #userRole + '_' + #page + '_' + #size")
     public CartItemListResponseDto getCartItemList(Integer userId, UserRole userRole, int page, int size) {
 
@@ -63,9 +65,9 @@ public class CartItemV3Service {
         return new CartItemListResponseDto(cartItemList);
     }
 
-    // 물품 추가 (캐시 무효화 - 사용자별 모든 페이지 캐시 제거)
+    // 물품 추가
     @Transactional
-    @CacheEvict(value = "CART_ITEM_LIST_CACHE", cacheManager = "caffeineCacheManager",
+    @CacheEvict(value = "CART_ITEM_LIST_REDIS", cacheManager = "redisCacheManager",
         allEntries = true)
     public CreateCartItemResponseDto addItemToCart(Integer userId, UserRole userRole, CreateCartItemRequestDto requestDto) {
         // 유저 존재 여부 확인
@@ -104,7 +106,7 @@ public class CartItemV3Service {
             .build();
     }
 
-    // 물품 단건 조회 (캐싱 미적용 - 실시간성이 중요하고 요청 빈도가 낮을 것으로 판단해 캐싱 제외)
+    // 물품 단건 조회
     // API 경로 일관성을 위해 추가함
     @Transactional(readOnly = true)
     public GetCartItemResponseDto getCartItem(Integer userId, UserRole userRole, Integer cartItemId) {
@@ -124,9 +126,9 @@ public class CartItemV3Service {
             .build();
     }
 
-    // 물품 개수 수정 (캐시 무효화 - 사용자별 모든 페이지 캐시 제거)
+    // 물품 개수 수정
     @Transactional
-    @CacheEvict(value = "CART_ITEM_LIST_CACHE", cacheManager = "caffeineCacheManager",
+    @CacheEvict(value = "CART_ITEM_LIST_REDIS", cacheManager = "redisCacheManager",
         allEntries = true)
     public GetCartItemResponseDto updateCartItemQuantity(
         Integer userId,
@@ -165,9 +167,9 @@ public class CartItemV3Service {
             .build();
     }
 
-    // 물품 삭제(단건) (캐시 무효화 - 사용자별 모든 페이지 캐시 제거)
+    // 물품 삭제(단건)
     @Transactional
-    @CacheEvict(value = "CART_ITEM_LIST_CACHE", cacheManager = "caffeineCacheManager",
+    @CacheEvict(value = "CART_ITEM_LIST_REDIS", cacheManager = "redisCacheManager",
         allEntries = true)
     public void removeCartItem(Integer userId, UserRole userRole, Integer cartItemId) {
         // 장바구니 이용은 CUSTOMER만 가능

@@ -1,10 +1,12 @@
 package excluz.excluz.domain.cartItem.dto.response;
 
+import java.io.Serializable;
+
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class CreateCartItemResponseDto {
+public class CreateCartItemResponseDto implements Serializable {
 	// 카트 아이템 아이디
 	private final Integer cartItemId;
 

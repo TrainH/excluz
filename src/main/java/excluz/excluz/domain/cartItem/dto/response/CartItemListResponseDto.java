@@ -1,12 +1,13 @@
 package excluz.excluz.domain.cartItem.dto.response;
 
 import lombok.Getter;
-import java.util.List;
+
+import java.io.Serializable;
 
 import org.springframework.data.domain.Page;
 
 @Getter
-public class CartItemListResponseDto {
+public class CartItemListResponseDto implements Serializable {
 	// 전체 장바구니 가격
 	private final Integer totalPrice;
 
