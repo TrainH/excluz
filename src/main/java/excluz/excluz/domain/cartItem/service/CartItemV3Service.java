@@ -65,7 +65,7 @@ public class CartItemV3Service {
 
     // 물품 추가 (캐시 무효화 - 사용자별 모든 페이지 캐시 제거)
     @Transactional
-    @CacheEvict(value = "CART_ITEM_LIST_CACHE",  cacheManager = "caffeineCacheManager",
+    @CacheEvict(value = "CART_ITEM_LIST_CACHE", cacheManager = "caffeineCacheManager",
         allEntries = true)
     public CreateCartItemResponseDto addItemToCart(Integer userId, UserRole userRole, CreateCartItemRequestDto requestDto) {
         // 유저 존재 여부 확인
@@ -126,7 +126,7 @@ public class CartItemV3Service {
 
     // 물품 개수 수정 (캐시 무효화 - 사용자별 모든 페이지 캐시 제거)
     @Transactional
-    @CacheEvict(value = "CART_ITEM_LIST_CACHE",  cacheManager = "caffeineCacheManager",
+    @CacheEvict(value = "CART_ITEM_LIST_CACHE", cacheManager = "caffeineCacheManager",
         allEntries = true)
     public GetCartItemResponseDto updateCartItemQuantity(
         Integer userId,
@@ -167,7 +167,7 @@ public class CartItemV3Service {
 
     // 물품 삭제(단건) (캐시 무효화 - 사용자별 모든 페이지 캐시 제거)
     @Transactional
-    @CacheEvict(value = "CART_ITEM_LIST_CACHE",  cacheManager = "caffeineCacheManager",
+    @CacheEvict(value = "CART_ITEM_LIST_CACHE", cacheManager = "caffeineCacheManager",
         allEntries = true)
     public void removeCartItem(Integer userId, UserRole userRole, Integer cartItemId) {
         // 장바구니 이용은 CUSTOMER만 가능
