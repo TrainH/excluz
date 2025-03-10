@@ -1,9 +1,11 @@
 package excluz.excluz.domain.store.storeRanking.dto.response;
 
+import java.io.Serializable;
+
 import lombok.Getter;
 
 @Getter
-public class StoreRankingResponseDto {
+public class StoreRankingResponseDto implements Serializable {
 	private final Integer storeId; // 스토어 ID
 	private final String storeName; // 스토어 이름
 	private final Long revenue; // 총 매출
