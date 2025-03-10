@@ -12,24 +12,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 @Service
 @RequiredArgsConstructor
-public class OrderItemV3Service {
+public class OrderItemV4Service {
     private final OrderItemV2Repository orderItemV2Repository;
 
-    @Cacheable(value = "ORDER_ITEM_LIST_CACHE", cacheManager = "caffeineCacheManager",
+    @Cacheable(value = "ORDER_ITEM_LIST_REDIS", cacheManager = "redisCacheManager",
             key = "#userOrStreamerId + '_' + #userRole + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
     @Transactional(readOnly = true)
     public Page<OrderItemResponseDto> getOrderItemList(Integer userOrStreamerId, UserRole userRole, Pageable pageable) {
-
-        if (userRole.equals(UserRole.CUSTOMER)) {
-            return orderItemV2Repository.findByUserId(userOrStreamerId, pageable);
-        }
-
-        if (userRole.equals(UserRole.STREAMER)) {
-            return orderItemV2Repository.findByStreamerId(userOrStreamerId, pageable);
-        }
-        throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+        return switch (userRole) {
+            case CUSTOMER -> orderItemV2Repository.findByUserId(userOrStreamerId, pageable);
+            case STREAMER -> orderItemV2Repository.findByStreamerId(userOrStreamerId, pageable);
+            default -> throw new ForbiddenException(ErrorCode.FORBIDDEN_USER_ACCESS);
+        };
     }
 }

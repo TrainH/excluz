@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 @EnableCaching
 @Configuration
 public class CaffeineCachingConfig {
-    @Bean
+    @Bean(name = "caffeineCacheManager")
     public CacheManager cacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager();
         cacheManager.setCaffeine(
