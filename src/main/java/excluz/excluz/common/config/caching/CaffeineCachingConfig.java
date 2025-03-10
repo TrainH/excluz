@@ -1,4 +1,4 @@
-package excluz.excluz.common.config;
+package excluz.excluz.common.config.caching;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.cache.CacheManager;
@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 @EnableCaching
 @Configuration
-public class CachingConfig {
+public class CaffeineCachingConfig {
     @Bean
     public CacheManager cacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager();
