@@ -100,7 +100,10 @@ public class StoreRankingController {
 
 		// 서비스에서 모든 가게의 순위 정보를 조회
 		StoreRankingResponseDtoList response = storeRankingService.getAllStoreRankingList(
-			revenuePeriod, date, page, size
+			revenuePeriod,
+			date,
+			page,
+			size
 		);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

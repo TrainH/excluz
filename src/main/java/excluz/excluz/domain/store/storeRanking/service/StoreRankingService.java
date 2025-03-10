@@ -29,13 +29,13 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class StoreRankingService {
 	private final StoreRankingRepository storeRankingRepository;
 	private final StoreRepository storeRepository;
 
 	// TOP 10 랭킹 조회 (매출 정보 제외)
+	@Transactional(readOnly = true)
 	public StoreRankingTop10ResponseDtoList getTop10StoreRankingList(
 		String date,
 		RevenuePeriod revenuePeriod
@@ -58,6 +58,7 @@ public class StoreRankingService {
 	}
 
 	// 역대 랭킹 조회 (스트리머: 자신의 가게 | 관리자: 특정 가게)
+	@Transactional(readOnly = true)
 	public StoreRankingResponseDtoList getStoreRankingList(
 		Integer storeId,
 		RevenuePeriod revenuePeriod,
@@ -84,6 +85,7 @@ public class StoreRankingService {
 	}
 
 	// 역대 랭킹 조회(전체): 관리자가 모든 스토어의 랭킹 조회
+	@Transactional(readOnly = true)
 	public StoreRankingResponseDtoList getAllStoreRankingList(
 		RevenuePeriod revenuePeriod,
 		String date,
