@@ -1,5 +1,6 @@
 package excluz.excluz.domain.store.item.dto.response;
 
+import java.io.Serializable;
 import java.util.List;
 
 import lombok.Builder;
@@ -8,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class GetItemListResponseDtoV2 {
+public class GetItemListResponseDtoV2 implements Serializable {
 
 	private Integer minPrice;
 	private Integer maxPrice;

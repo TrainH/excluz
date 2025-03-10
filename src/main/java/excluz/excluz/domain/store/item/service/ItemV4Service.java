@@ -10,17 +10,16 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class ItemV3Service {
+public class ItemV4Service {
 
 	private final ItemV2Repository itemV2Repository;
 	private final ItemV2Service itemV2Service;
 
-	@Cacheable(value = "ITEM_LIST_CACHE_V3",
+	@Cacheable(value = "ITEM_LIST_CACHE_V4",
 		key = "(#storeId != null ? #storeId : 'null') + '_' +"
 			+ "(#itemName != null ? #itemName.trim().replaceAll('\\s', '').toLowerCase().hashCode() : 'null') + '_' +"
 			+ " #cursor + '_' + #limit",
-		cacheManager = "caffeineCacheManager",
-		unless = "#result == null"
+		cacheManager = "redisCacheManager"
 	)
 	@Transactional(readOnly = true)
 	public GetItemListResponseDtoV2 getItemList(
