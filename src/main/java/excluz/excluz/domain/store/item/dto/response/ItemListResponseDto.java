@@ -1,5 +1,7 @@
 package excluz.excluz.domain.store.item.dto.response;
 
+import java.io.Serializable;
+
 import excluz.excluz.common.entity.Item;
 import lombok.Builder;
 import lombok.Getter;
@@ -7,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class ItemListResponseDto {
+public class ItemListResponseDto implements Serializable {
 
 	private Integer itemId;
 	private String itemName;
