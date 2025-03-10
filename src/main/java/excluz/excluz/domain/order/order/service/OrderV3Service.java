@@ -18,7 +18,8 @@ public class OrderV3Service {
 
     private final OrderV2Repository orderV2Repository;
 
-    @Cacheable(value = "ORDER_LIST_CACHE", key = "#userOrStreamerId + '_' + #userRole + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
+    @Cacheable(value = "ORDER_LIST_CACHE",  cacheManager = "caffeineCacheManager",
+            key = "#userOrStreamerId + '_' + #userRole + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
     @Transactional(readOnly = true)
     public Page<OrderResponseDto> getOrderList(Integer userOrStreamerId, UserRole userRole, Pageable pageable) {
         if (userRole.equals(UserRole.CUSTOMER)) {
