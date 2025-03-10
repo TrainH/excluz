@@ -16,11 +16,13 @@ import excluz.excluz.domain.store.storeRevenue.enums.RevenuePeriod;
 @Repository
 public interface StoreRankingRepository extends JpaRepository<StoreRanking, Long> {
 	// TOP 10 랭킹 조회 (매출 정보 제외)
-	// 주어진 period에 대해 순위가 높은 순으로 10개의 기록만 조회
+	// 주어진 period와 날짜 범위에 대해 순위가 높은 순으로 10개의 기록만 조회
 	@Query("SELECT sr FROM StoreRanking sr WHERE sr.rankingPeriod = :period "
-		+ "ORDER BY sr.rankPosition ASC")
+		+ "AND sr.rankDate BETWEEN :startDate AND :endDate ORDER BY sr.rankPosition ASC")
 	Page<StoreRanking> findTop10ByRankingPeriod(
 		@Param("period") RevenuePeriod period, // 조회할 랭킹 기간 (DAY, MONTH, YEAR)
+		@Param("startDate") LocalDateTime startDate, // 검색 시작 날짜
+		@Param("endDate") LocalDateTime endDate, // 검색 종료 날짜
 		Pageable pageable // 페이지 정보 (여기서는 10개를 요청)
 	);
 

@@ -28,17 +28,22 @@ public class StoreRankingController {
 	private final StoreRankingService storeRankingService;
 	private final StoreRepository storeRepository;
 
-	// TOP 10 랭킹 조회 (매출 정보 제외) | RequestParam value의 enum(DAY, MONTH, YEAR)에 따라 동적으로 조회 가능
-	// 요청 URL 예: /api/v1/store-ranking/top10?period=DAY
+	// TOP 10 랭킹 조회 (매출 정보 제외)
+	// RequestParam value의 enum(DAY, MONTH, YEAR)와 date(yyyy-MM-dd 또는 yyyy-MM)에 따라 동적으로 조회 가능
+	// 요청 URL 예: /api/v1/store-ranking/top10?period=DAY&date=2025-03-10
 	@GetMapping("/top10")
 	public ResponseEntity<StoreRankingTop10ResponseDtoList> getTop10StoreRankingList(
-		@RequestParam(value = "period", defaultValue = "DAY") String period// "period" 값, 기본은 "DAY"
+		@RequestParam(value = "date", required = false) String date, // "yyyy-MM-dd" 또는 "yyyy-MM" (date 없으면 현재 날짜 기준으로 조회)
+		@RequestParam(value = "period", defaultValue = "DAY") String period // "period" 값, 기본은 "DAY"
 	) {
+		// 날짜가 올바른 형식인지 확인
+		validateDate(date);
+
 		// 문자열 period를 대소문자 구분 없이 RevenuePeriod(enum)으로 변환
 		RevenuePeriod revenuePeriod = RevenuePeriod.valueOfIgnoreCase(period);
 
 		// 서비스로부터 TOP 10 순위 데이터를 받아옴
-		StoreRankingTop10ResponseDtoList response = storeRankingService.getTop10StoreRankingList(revenuePeriod);
+		StoreRankingTop10ResponseDtoList response = storeRankingService.getTop10StoreRankingList(date, revenuePeriod);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -102,7 +107,11 @@ public class StoreRankingController {
 
 	// targetStoreId 결정 로직 (개별 조회용)
 	// 사용자의 역할에 따라 어떤 가게를 조회할지 결정하는 메서드
-	private Integer resolveTargetStoreId(Integer userId, UserRole userRole, Integer storeId) {
+	private Integer resolveTargetStoreId(
+		Integer userId,
+		UserRole userRole,
+		Integer storeId
+	) {
 		if (userRole == UserRole.STREAMER) {
 			// 스트리머는 자신의 가게만 조회 가능
 			return storeRepository.findStoreByStreamerIdAndNotDeleted(userId)

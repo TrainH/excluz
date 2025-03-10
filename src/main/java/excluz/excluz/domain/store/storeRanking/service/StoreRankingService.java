@@ -36,9 +36,17 @@ public class StoreRankingService {
 	private final StoreRepository storeRepository;
 
 	// TOP 10 랭킹 조회 (매출 정보 제외)
-	public StoreRankingTop10ResponseDtoList getTop10StoreRankingList(RevenuePeriod period) {
+	public StoreRankingTop10ResponseDtoList getTop10StoreRankingList(
+		String date,
+		RevenuePeriod revenuePeriod
+	) {
+		// 날짜 범위 계산
+		LocalDateTime[] range = getDateRange(revenuePeriod, date);
+
 		// 리포지토리에서 지정된 period의 TOP 10 순위를 조회 (순위 오름차순 정렬)
-		Page<StoreRanking> rankingPage = storeRankingRepository.findTop10ByRankingPeriod(period, PageRequest.of(0, 10));
+		Page<StoreRanking> rankingPage = storeRankingRepository.findTop10ByRankingPeriod(
+			revenuePeriod, range[0], range[1], PageRequest.of(0, 10)
+		);
 		// 각 StoreRanking 엔티티를 StoreRankingTop10ResponseDto로 변환 (리스트)
 		List<StoreRankingTop10ResponseDto> list = rankingPage.getContent().stream()
 			.map(r -> new StoreRankingTop10ResponseDto(
@@ -50,8 +58,13 @@ public class StoreRankingService {
 	}
 
 	// 역대 랭킹 조회 (스트리머: 자신의 가게 | 관리자: 특정 가게)
-	public StoreRankingResponseDtoList getStoreRankingList(Integer storeId, RevenuePeriod revenuePeriod, String date,
-		Integer page, Integer size) {
+	public StoreRankingResponseDtoList getStoreRankingList(
+		Integer storeId,
+		RevenuePeriod revenuePeriod,
+		String date,
+		Integer page,
+		Integer size
+	) {
 		// storeId가 유효한지 확인 (가게가 존재하는지 체크) -> 필수 검증 한 번 더 수행
 		Store store = storeRepository.findById(storeId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
@@ -61,14 +74,22 @@ public class StoreRankingService {
 
 		// 해당 가게, period, 날짜 범위에 해당하는 순위 정보를 조회
 		Page<StoreRanking> rankingPage = storeRankingRepository.findByStoreAndPeriodAndRankDateBetween(
-			store, revenuePeriod, range[0], range[1], PageRequest.of(page, size)
+			store,
+			revenuePeriod,
+			range[0],
+			range[1],
+			PageRequest.of(page, size)
 		);
 		return new StoreRankingResponseDtoList(toDtoList(rankingPage), rankingPage.getTotalElements());
 	}
 
-
 	// 역대 랭킹 조회(전체): 관리자가 모든 스토어의 랭킹 조회
-	public StoreRankingResponseDtoList getAllStoreRankingList(RevenuePeriod revenuePeriod, String date, Integer page, Integer size) {
+	public StoreRankingResponseDtoList getAllStoreRankingList(
+		RevenuePeriod revenuePeriod,
+		String date,
+		Integer page,
+		Integer size
+	) {
 		// 날짜 범위 계산
 		LocalDateTime[] range = getDateRange(revenuePeriod, date);
 
