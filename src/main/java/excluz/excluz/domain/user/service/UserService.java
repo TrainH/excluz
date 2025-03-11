@@ -38,8 +38,15 @@ public class UserService {
 
 	// 유저 회원가입
 	public UserSignupResponseDto userSignup(UserSignupRequestDto signupRequest) {
+		if (userRepository.findByNickName(signupRequest.getNickName()).isPresent()) {
+			throw new BadRequestException(ErrorCode.NICKNAME_ALREADY_EXISTS);
+		}
 
-		// 가입된 유저의 이메일 여부를 확인
+		if (userRepository.findByPhoneNumber(signupRequest.getPhoneNumber()).isPresent()) {
+			throw new BadRequestException(ErrorCode.PHONE_NUMBER_ALREADY_EXISTS);
+		}
+
+		// 가입된 유저의 이메일 여부를 확인 (비즈니스 규칙: 탈퇴한 이메일로 재가입 불가능)
 		Optional<User> existingUser = userRepository.findByEmail(signupRequest.getEmail());
 
 		// Oauth 소셜 로그인을 진행했을때 로그인된 이메일과 소셜 로그인 연동을 처리한다. 소셜 로그인이 연동 되어있는 경우에만 메일 발송

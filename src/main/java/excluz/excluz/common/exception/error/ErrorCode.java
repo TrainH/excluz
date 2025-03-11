@@ -17,6 +17,8 @@ public enum ErrorCode {
 	INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "이전과 동일한 비밀번호로 수정할 수 없습니다."),
 	PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
 	EMAIL_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 사용중인 이메일입니다."),
+	PHONE_NUMBER_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 사용중인 전화번호입니다."),
+	NICKNAME_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 사용중인 닉네임입니다."),
 	PASSWORD_RE_ENTER_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "비밀번호와 재입력 비밀번호가 일치하지 않습니다."),
 	FAIL_SEND_EMAIL(HttpStatus.BAD_REQUEST, "인증 코드 발송에 실패하였습니다."),
 	EMAIL_VERIFICATION_NOT_REQUESTED(HttpStatus.BAD_REQUEST, "이메일 인증을 먼저 진행해 주세요"),

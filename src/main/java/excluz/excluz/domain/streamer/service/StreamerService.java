@@ -34,6 +34,8 @@ public class StreamerService {
 
 	@Transactional
 	public StreamerResponseDto streamerSignup(StreamerSignupRequestDto signupRequestDto) {
+		validateStreamerSignupInfo(signupRequestDto);
+
 		if (!signupRequestDto.getPassword().equals(signupRequestDto.getReEnterPassword())) {
 			throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
 		}
@@ -57,6 +59,21 @@ public class StreamerService {
 			.build();
 
 		return StreamerResponseDto.from(streamerRepository.save(streamer));
+	}
+
+	private void validateStreamerSignupInfo(StreamerSignupRequestDto signupRequestDto) {
+		// 비즈니스 규칙: 탈퇴 후 동일한 이메일로 재가입 불가.
+		if (streamerRepository.findByEmail(signupRequestDto.getEmail()).isPresent()) {
+			throw new BadRequestException(ErrorCode.EMAIL_ALREADY_EXISTS);
+		}
+
+		if (streamerRepository.findByPhoneNumber(signupRequestDto.getPhoneNumber()).isPresent()) {
+			throw new BadRequestException(ErrorCode.PHONE_NUMBER_ALREADY_EXISTS);
+		}
+
+		if (streamerRepository.findByNickName(signupRequestDto.getNickName()).isPresent()) {
+			throw new BadRequestException(ErrorCode.NICKNAME_ALREADY_EXISTS);
+		}
 	}
 
 	public StreamerLoginResponseDto streamerLogin(StreamerLoginRequestDto loginRequestDto) {
@@ -117,7 +134,7 @@ public class StreamerService {
 	public Page<StreamerSummaryResponseDto> getStreamerList(int page, int size, String nickName) {
 		Pageable pageable = PageRequest.of(Math.max(page, 0), size);
 
-		Page<Streamer> streamerList = streamerRepository.findByNickName(pageable, nickName);
+		Page<Streamer> streamerList = streamerRepository.findStreamersByNickName(pageable, nickName);
 
 		return streamerList.map(StreamerSummaryResponseDto::from);
 	}
