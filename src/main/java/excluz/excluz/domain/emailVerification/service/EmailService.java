@@ -89,7 +89,6 @@ public class EmailService {
 	public void sendEmail(String email) {
 		codeMap.remove(email);
 
-		// 인증 코드 발송후 테이블에 인증 상태를 저장하는 로직
 		EmailVerify emailVerify = emailVerifyRepository.findByEmail(email)
 			.orElse(new EmailVerify(email));
 
