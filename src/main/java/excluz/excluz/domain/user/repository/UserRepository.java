@@ -18,5 +18,5 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 	Optional<User> findByNickName(@Param("nickName") String nickName);
 
 	@Query("SELECT u FROM User u WHERE (u.phoneNumber LIKE :phoneNumber) AND u.isDeleted=false")
-	Optional<Streamer> findByPhoneNumber(@Param("phoneNumber") String phoneNumber);
+	Optional<User> findByPhoneNumber(@Param("phoneNumber") String phoneNumber);
 }
