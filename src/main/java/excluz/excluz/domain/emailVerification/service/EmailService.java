@@ -1,7 +1,6 @@
 package excluz.excluz.domain.emailVerification.service;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -28,7 +27,6 @@ public class EmailService {
 	private final EmailVerifyRepository emailVerifyRepository;
 	private final JavaMailSender javaMailSender;
 	private static final String senderEmail = "excluzofficial@gmail.com";
-	// 이메일을 key로, CodeData를 value로 저장하는 in-memory Map
 	private static final Map<String, CodeData> codeMap = new ConcurrentHashMap<>();
 	private static final long VALIDITY_DURATION = 300_000;
 
@@ -65,7 +63,6 @@ public class EmailService {
 
 		context.setVariable("code", code); // 템플릿에서 사용할 변수 "code"에 전달받은 code 값을 넣는 로직
 
-		// 리졸버 설정
 		// prefix, suffix는 템플릿의 경로를 지정 하는 로직
 		templateResolver.setPrefix("templates/");
 		templateResolver.setSuffix(".html");
@@ -92,14 +89,18 @@ public class EmailService {
 	public void sendEmail(String email) {
 		codeMap.remove(email);
 
-		// 인증 코드 발송후 테이블에 인증 상태를 저장하는 로직
-		EmailVerify sendCodeEmail = new EmailVerify(email);
-		emailVerifyRepository.save(sendCodeEmail);
+		EmailVerify emailVerify = emailVerifyRepository.findByEmail(email)
+			.orElse(new EmailVerify(email));
 
-		// 새로운 코드 생성
+		// 이메일 전송 전, 인증 상태를 초기화 (false)
+		emailVerify.updateEmailStatus(false);
+		emailVerifyRepository.save(emailVerify);
+
+		// 새로운 인증 코드 생성 및 만료 시간 설정
 		String newCode = createCode();
 		long expiryTime = System.currentTimeMillis() + VALIDITY_DURATION;
 		codeMap.put(email, new CodeData(newCode, expiryTime));
+
 
 		try {
 			MimeMessage message = createEmailForm(email, newCode);
