@@ -1,7 +1,6 @@
 package excluz.excluz.domain.emailVerification.service;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -90,9 +89,9 @@ public class EmailService {
 	public void sendEmail(String email) {
 		codeMap.remove(email);
 
-		// 데이터베이스에서 해당 이메일의 EmailVerify 엔티티 조회
+		// 인증 코드 발송후 테이블에 인증 상태를 저장하는 로직
 		EmailVerify emailVerify = emailVerifyRepository.findByEmail(email)
-			.orElse(new EmailVerify(email)); // 존재하지 않으면 새 객체 생성
+			.orElse(new EmailVerify(email));
 
 		// 이메일 전송 전, 인증 상태를 초기화 (false)
 		emailVerify.updateEmailStatus(false);
@@ -102,6 +101,7 @@ public class EmailService {
 		String newCode = createCode();
 		long expiryTime = System.currentTimeMillis() + VALIDITY_DURATION;
 		codeMap.put(email, new CodeData(newCode, expiryTime));
+
 
 		try {
 			MimeMessage message = createEmailForm(email, newCode);
@@ -125,10 +125,10 @@ public class EmailService {
 		if (data.code.equals(code)) {
 			codeMap.remove(email);
 
-			// 이메일 인증 상태 저장 (EmailVerify 테이블 활용)
+			// 이메일 인증 상태 저장
 			EmailVerify emailVerify = emailVerifyRepository
 				.findByEmail(email)
-				.orElseGet(() -> new EmailVerify(email)); // 없으면 새로 생성
+				.orElseGet(() -> new EmailVerify(email));
 			emailVerify.updateEmailStatus(true);
 			emailVerifyRepository.save(emailVerify);
 
