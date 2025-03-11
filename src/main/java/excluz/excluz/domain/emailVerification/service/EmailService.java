@@ -1,6 +1,7 @@
 package excluz.excluz.domain.emailVerification.service;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -25,7 +26,11 @@ import lombok.RequiredArgsConstructor;
 public class EmailService {
 
 	private final EmailVerifyRepository emailVerifyRepository;
-
+	private final JavaMailSender javaMailSender;
+	private static final String senderEmail = "excluzofficial@gmail.com";
+	// 이메일을 key로, CodeData를 value로 저장하는 in-memory Map
+	private static final Map<String, CodeData> codeMap = new ConcurrentHashMap<>();
+	private static final long VALIDITY_DURATION = 300_000;
 
 	private static class CodeData {
 		String code;
@@ -37,13 +42,6 @@ public class EmailService {
 		}
 	}
 
-	private final JavaMailSender javaMailSender;
-	private static final String senderEmail = "excluzofficial@gmail.com";
-	// 이메일을 key로, CodeData를 value로 저장하는 in-memory Map
-	private static final Map<String, CodeData> codeMap = new ConcurrentHashMap<>();
-	private static final long VALIDITY_DURATION = 300_000;
-
-	// 인증코드 생성 기능
 	private String createCode() {
 
 		// 이메일 인증 코드 길이 수
@@ -103,7 +101,6 @@ public class EmailService {
 		long expiryTime = System.currentTimeMillis() + VALIDITY_DURATION;
 		codeMap.put(email, new CodeData(newCode, expiryTime));
 
-
 		try {
 			MimeMessage message = createEmailForm(email, newCode);
 			javaMailSender.send(message);
@@ -126,10 +123,10 @@ public class EmailService {
 		if (data.code.equals(code)) {
 			codeMap.remove(email);
 
-			// 이메일 인증 상태 저장 (EmailVerify 테이블 활용)
+			// 이메일 인증 상태 저장
 			EmailVerify emailVerify = emailVerifyRepository
 				.findByEmail(email)
-				.orElseGet(() -> new EmailVerify(email)); // 없으면 새로 생성
+				.orElseGet(() -> new EmailVerify(email));
 			emailVerify.updateEmailStatus(true);
 			emailVerifyRepository.save(emailVerify);
 
