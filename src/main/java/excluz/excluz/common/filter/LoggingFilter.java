@@ -37,6 +37,12 @@ public class LoggingFilter implements Filter {
 		String clientIP = getClientIP(httpRequest);
 		String requestURI = httpRequest.getRequestURI();
 
+		// /actuator/health URL에 대한 로깅을 제외
+		if (requestURI.contains("/actuator/health")) {
+			filterChain.doFilter(servletRequest, servletResponse);
+			return;
+		}
+
 		try {
 			// 한글 디코딩
 			Map<String, String[]> paramMap = httpRequest.getParameterMap();
