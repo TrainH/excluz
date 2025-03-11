@@ -1,8 +1,6 @@
 package excluz.excluz.domain.store.storeRevenue.service;
 
 import excluz.excluz.common.entity.Store;
-import excluz.excluz.common.entity.StoreRevenue;
-import excluz.excluz.common.exception.ForbiddenException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.store.store.repository.StoreRepository;

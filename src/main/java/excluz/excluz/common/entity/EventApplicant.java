@@ -3,11 +3,11 @@ package excluz.excluz.common.entity;
 
 import excluz.excluz.domain.event.eventApplicant.enums.ApplicantStatus;
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 
 @Getter
 @Entity

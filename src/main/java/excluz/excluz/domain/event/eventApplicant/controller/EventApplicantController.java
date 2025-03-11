@@ -1,8 +1,8 @@
 package excluz.excluz.domain.event.eventApplicant.controller;
 
-import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantReadRequestDto;
-import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantRequestDto;
-import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantResponseDto;
+import excluz.excluz.domain.event.eventApplicant.dto.request.EventApplicantReadRequestDto;
+import excluz.excluz.domain.event.eventApplicant.dto.request.EventApplicantRequestDto;
+import excluz.excluz.domain.event.eventApplicant.dto.response.EventApplicantResponseDto;
 import excluz.excluz.domain.event.eventApplicant.service.EventApplicantService;
 import excluz.excluz.domain.kakao.kakao.service.KakaoMessageService;
 import jakarta.validation.Valid;
@@ -50,10 +50,10 @@ public class EventApplicantController {
 
         // 2) 카카오 메시지 전송 로직은 “별도 서비스”로 분리
         //    사용자가 Kakao-Authorization 헤더를 보냈다면 메시지를 전송
-//        if (kakaoAuthorizationHeader != null && !kakaoAuthorizationHeader.isEmpty()) {
-//            responseDto.updateEventCode(code);
-//            kakaoMessageService.sendApplicationResultMessage(kakaoAuthorizationHeader, responseDto);
-//        }
+        if (kakaoAuthorizationHeader != null && !kakaoAuthorizationHeader.isEmpty()) {
+            responseDto.updateEventCode(code);
+            kakaoMessageService.sendApplicationResultMessage(kakaoAuthorizationHeader, responseDto);
+        }
 
         return responseDto;
     }

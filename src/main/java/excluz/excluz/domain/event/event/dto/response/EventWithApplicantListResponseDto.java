@@ -5,7 +5,7 @@ import excluz.excluz.common.entity.EventApplicant;
 import excluz.excluz.common.entity.EventItem;
 import excluz.excluz.domain.event.event.enums.ParticipantCondition;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
-import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantReviewResponseDto;
+import excluz.excluz.domain.event.eventApplicant.dto.response.EventApplicantReviewResponseDto;
 import excluz.excluz.domain.event.eventItem.dto.EventItemDto;
 import lombok.*;
 

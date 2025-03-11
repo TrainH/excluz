@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import excluz.excluz.domain.store.item.dto.response.GetItemListResponseDtoV2;
-import excluz.excluz.domain.store.item.service.ItemV3Service;
 import excluz.excluz.domain.store.item.service.ItemV4Service;
 import lombok.RequiredArgsConstructor;
 

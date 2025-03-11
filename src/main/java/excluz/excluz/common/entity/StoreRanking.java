@@ -26,8 +26,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-//  @LastModifiedDate는 Spring Data JPA의 AuditingEntityListener를 활성화해야 적용됨
-@EntityListeners(AuditingEntityListener.class) // '마지막 수정 시간'을 자동으로 기록
+@EntityListeners(AuditingEntityListener.class)
 @Table(name="store_rankings")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StoreRanking {
