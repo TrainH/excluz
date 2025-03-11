@@ -20,5 +20,11 @@ public interface StreamerRepository extends JpaRepository<Streamer, Integer> {
 		"WHERE (:nickName IS NULL OR s.nickName LIKE concat('%', :nickName , '%')) " +
 		"AND s.isDeleted=false " +
 		"ORDER BY s.id DESC")
-	Page<Streamer> findByNickName(Pageable pageable, @Param("nickName") String nickName);
+	Page<Streamer> findStreamersByNickName(Pageable pageable, @Param("nickName") String nickName);
+
+	@Query("SELECT s FROM Streamer s WHERE (s.phoneNumber LIKE :phoneNumber) AND s.isDeleted=false")
+	Optional<Streamer> findByPhoneNumber(@Param("phoneNumber") String phoneNumber);
+
+	@Query("SELECT s FROM Streamer s WHERE (s.nickName LIKE :nickName) AND s.isDeleted=false")
+	Optional<Streamer> findByNickName(@Param("nickName") String nickName);
 }
