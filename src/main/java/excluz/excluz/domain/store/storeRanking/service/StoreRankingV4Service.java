@@ -30,15 +30,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class StoreRankingV3Service {
+public class StoreRankingV4Service {
 	private final StoreRankingRepository storeRankingRepository;
 	private final StoreRepository storeRepository;
 
-	// ✅ 인메모리 캐싱 적용 버전 (v3)
+	// ✅ Redis 적용 버전 (v4)
 
 	// TOP 10 랭킹 조회 (매출 정보 제외)
 	@Transactional(readOnly = true)
-	@Cacheable(value = "TOP_10_STORE_RANKING_CACHE", cacheManager = "caffeineCacheManager",
+	@Cacheable(value = "TOP_10_STORE_RANKING_REDIS", cacheManager = "redisCacheManager",
 		key = "#revenuePeriod + '-' + #date")
 	public StoreRankingTop10ResponseDtoList getTop10StoreRankingList(
 		RevenuePeriod revenuePeriod,
@@ -63,7 +63,7 @@ public class StoreRankingV3Service {
 
 	// 역대 랭킹 조회 (스트리머: 자신의 가게 | 관리자: 특정 가게)
 	@Transactional(readOnly = true)
-	@Cacheable(value = "STORE_RANKING_CACHE", cacheManager = "caffeineCacheManager",
+	@Cacheable(value = "STORE_RANKING_REDIS", cacheManager = "redisCacheManager",
 		key = "#storeId + '_' + #revenuePeriod + '_' + #date + '_' + #page + '_' + #size")
 	public StoreRankingResponseDtoList getStoreRankingList(
 		Integer storeId,
@@ -93,7 +93,7 @@ public class StoreRankingV3Service {
 
 	// 역대 랭킹 조회(전체): 관리자가 모든 스토어의 랭킹 조회
 	@Transactional(readOnly = true)
-	@Cacheable(value = "ALL_STORE_RANKING_CACHE", cacheManager = "caffeineCacheManager",
+	@Cacheable(value = "ALL_STORE_RANKING_REDIS", cacheManager = "redisCacheManager",
 		key = "#revenuePeriod + '_' + #date + '_' + #page + '_' + #size")
 	public StoreRankingResponseDtoList getAllStoreRankingList(
 		RevenuePeriod revenuePeriod,

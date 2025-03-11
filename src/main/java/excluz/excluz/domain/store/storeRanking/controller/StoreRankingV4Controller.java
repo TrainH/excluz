@@ -16,20 +16,20 @@ import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
 import excluz.excluz.domain.store.storeRanking.dto.response.StoreRankingResponseDtoList;
 import excluz.excluz.domain.store.storeRanking.dto.response.StoreRankingTop10ResponseDtoList;
-import excluz.excluz.domain.store.storeRanking.service.StoreRankingV3Service;
+import excluz.excluz.domain.store.storeRanking.service.StoreRankingV4Service;
 import excluz.excluz.domain.store.storeRevenue.enums.RevenuePeriod;
 import excluz.excluz.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v3/store-ranking")
+@RequestMapping("/api/v4/store-ranking")
 @RequiredArgsConstructor
-public class StoreRankingV3Controller {
-	private final StoreRankingV3Service storeRankingV3Service;
+public class StoreRankingV4Controller {
+	private final StoreRankingV4Service storeRankingV4Service;
 	private final StoreRepository storeRepository;
 
 	// TOP 10 랭킹 조회 (매출 정보 제외) | RequestParam value의 enum(DAY, MONTH, YEAR)에 따라 동적으로 조회 가능
-	// 요청 URL 예: /api/v3/store-ranking/top10?period=DAY
+	// 요청 URL 예: /api/v4/store-ranking/top10?period=DAY
 	@GetMapping("/top10")
 	public ResponseEntity<StoreRankingTop10ResponseDtoList> getTop10StoreRankingList(
 		@RequestParam(value = "date", required = false) String date, // "yyyy-MM-dd" 또는 "yyyy-MM" (date 없으면 현재 날짜 기준으로 조회)
@@ -42,13 +42,13 @@ public class StoreRankingV3Controller {
 		RevenuePeriod revenuePeriod = RevenuePeriod.valueOfIgnoreCase(period);
 
 		// 서비스로부터 TOP 10 순위 데이터를 받아옴
-		StoreRankingTop10ResponseDtoList response = storeRankingV3Service.getTop10StoreRankingList(revenuePeriod, date);
+		StoreRankingTop10ResponseDtoList response = storeRankingV4Service.getTop10StoreRankingList(revenuePeriod, date);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	// 역대 랭킹 조회 (스트리머: 자신의 가게 | 관리자: 특정 가게)
-	// 요청 URL 예(스트리머): /api/v3/store-ranking/store/rankings?date=2025-03&period=MONTH&page=0&size=10
-	// 요청 URL 예(관리자): /api/v3/store-ranking/store/rankings?storeId=1&date=2025-03&period=MONTH&page=0&size=10
+	// 요청 URL 예(스트리머): /api/v4/store-ranking/store/rankings?date=2025-03&period=MONTH&page=0&size=10
+	// 요청 URL 예(관리자): /api/v4/store-ranking/store/rankings?storeId=1&date=2025-03&period=MONTH&page=0&size=10
 	@GetMapping("/store/rankings")
 	@PreAuthorize("hasAnyRole('STREAMER', 'ADMIN')") // 스트리머 or 관리자만 접근 허용
 	public ResponseEntity<StoreRankingResponseDtoList> getStoreRankingList(
@@ -71,7 +71,7 @@ public class StoreRankingV3Controller {
 		Integer targetStoreId = resolveTargetStoreId(userId, userRole, storeId);
 
 		// 서비스에서 해당 가게의 순위 정보를 조회
-		StoreRankingResponseDtoList response = storeRankingV3Service.getStoreRankingList(
+		StoreRankingResponseDtoList response = storeRankingV4Service.getStoreRankingList(
 			targetStoreId, revenuePeriod, date, page, size
 		);
 		return new ResponseEntity<>(response, HttpStatus.OK);
@@ -80,8 +80,8 @@ public class StoreRankingV3Controller {
 	// 역대 랭킹 조회(전체): 관리자가 모든 스토어의 랭킹 조회
 	/**
 	 * 	요청 URL 예시
-	 * 	1️⃣ "yyyy-MM-dd" 형식: /api/v3/store-ranking/all/rankings?date=2025-03-08&period=MONTH&page=0&size=10
-	 * 	2️⃣ "yyyy-MM" 형식:    /api/v3/store-ranking/all/rankings?date=2025-03&period=MONTH&page=0&size=10
+	 * 	1️⃣ "yyyy-MM-dd" 형식: /api/v4/store-ranking/all/rankings?date=2025-03-08&period=MONTH&page=0&size=10
+	 * 	2️⃣ "yyyy-MM" 형식:    /api/v4/store-ranking/all/rankings?date=2025-03&period=MONTH&page=0&size=10
  	 */
 	@GetMapping("/all/rankings")
 	@PreAuthorize("hasRole('ADMIN')") // 관리자만 접근 허용
@@ -98,7 +98,7 @@ public class StoreRankingV3Controller {
 		RevenuePeriod revenuePeriod = RevenuePeriod.valueOfIgnoreCase(period);
 
 		// 서비스에서 모든 가게의 순위 정보를 조회
-		StoreRankingResponseDtoList response = storeRankingV3Service.getAllStoreRankingList(
+		StoreRankingResponseDtoList response = storeRankingV4Service.getAllStoreRankingList(
 			revenuePeriod,
 			date,
 			page,
