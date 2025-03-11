@@ -3,7 +3,7 @@ package excluz.excluz.domain.event.event.dto.response;
 import excluz.excluz.common.entity.Event;
 import excluz.excluz.common.entity.EventApplicant;
 import excluz.excluz.common.entity.EventItem;
-import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantResponseDto;
+import excluz.excluz.domain.event.eventApplicant.dto.response.EventApplicantResponseDto;
 import excluz.excluz.domain.event.eventItem.dto.EventItemDto;
 import lombok.Builder;
 import lombok.Getter;

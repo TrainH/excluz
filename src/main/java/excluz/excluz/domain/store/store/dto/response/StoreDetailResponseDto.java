@@ -1,7 +1,5 @@
 package excluz.excluz.domain.store.store.dto.response;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 
 import excluz.excluz.common.entity.Store;

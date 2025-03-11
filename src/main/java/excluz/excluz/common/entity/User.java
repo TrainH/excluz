@@ -1,7 +1,6 @@
 package excluz.excluz.common.entity;
 
 import org.hibernate.annotations.Comment;
-import org.hibernate.usertype.UserType;
 
 import excluz.excluz.domain.user.enums.UserRole;
 import jakarta.persistence.Column;

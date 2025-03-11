@@ -8,8 +8,8 @@ import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
 import excluz.excluz.domain.event.event.repository.EventRepository;
-import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantRequestDto;
-import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantResponseDto;
+import excluz.excluz.domain.event.eventApplicant.dto.request.EventApplicantRequestDto;
+import excluz.excluz.domain.event.eventApplicant.dto.response.EventApplicantResponseDto;
 import excluz.excluz.domain.event.eventApplicant.enums.ApplicantStatus;
 import excluz.excluz.domain.event.eventApplicant.repository.EventApplicantRepository;
 import lombok.RequiredArgsConstructor;
@@ -49,16 +49,21 @@ public class EventApplicantService {
             Event event = eventRepository.findByGeneratedCodeForOptimisticLock(code)
                     .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
 
+            assert (event != null);
+            assert (event.getIsCompleted() != null);
             if (event.getIsCompleted()) {
                 throw new BadRequestException(ErrorCode.EVENT_ALREADY_CLOSED);
             }
+            assert (event.getIsDeleted() != null);
             if (event.getIsDeleted()) {
                 throw new BadRequestException(ErrorCode.EVENT_ALREADY_CANCELED);
             }
             LocalDateTime now = LocalDateTime.now();
+            assert (event.getStartDatetime() != null);
             if (now.isBefore(event.getStartDatetime())) {
                 throw new BadRequestException(ErrorCode.EVENT_APPLICANT_NOT_STARTED);
             }
+            assert (event.getEndDatetime() != null);
             if (now.isAfter(event.getEndDatetime())) {
                 throw new BadRequestException(ErrorCode.EVENT_APPLICANT_EXPIRED);
             }
