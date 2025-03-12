@@ -100,8 +100,8 @@ public class EventApplicantService {
 
                 } else {
                     eventApplicant.updateApplicantStatus(ApplicantStatus.LOSER);
-//                    event.completeEvent();
-//                    eventRepository.save(event);
+                    event.completeEvent();
+                    eventRepository.save(event);
                     eventRepository.flush();
                 }
             } else {
