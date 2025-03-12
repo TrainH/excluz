@@ -94,6 +94,7 @@ public class EventApplicantService {
                 if (currentWinners < finalWinners) {
                     // Event의 당첨자 수 증가 → 실제 UPDATE 쿼리가 발생하며 version이 올라감
                     event.increaseCurrentWinnerCount();
+                    eventRepository.flush();
                     eventApplicant.updateApplicantStatus(ApplicantStatus.WINNER);
 
 
@@ -101,6 +102,7 @@ public class EventApplicantService {
                     eventApplicant.updateApplicantStatus(ApplicantStatus.LOSER);
                     event.completeEvent();
                     eventRepository.save(event);
+                    eventRepository.flush();
                 }
             } else {
                 eventApplicant.updateApplicantStatus(ApplicantStatus.WAITING);

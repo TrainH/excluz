@@ -6,7 +6,7 @@ import excluz.excluz.domain.event.event.enums.ParticipantCondition;
 import excluz.excluz.domain.event.event.enums.SelectionMethod;
 import excluz.excluz.domain.event.event.repository.EventRepository;
 import excluz.excluz.domain.event.event.service.EventService;
-import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantRequestDto;
+import excluz.excluz.domain.event.eventApplicant.dto.request.EventApplicantRequestDto;
 import excluz.excluz.domain.event.eventApplicant.repository.EventApplicantRepository;
 import excluz.excluz.domain.event.eventApplicant.service.EventApplicantService;
 import excluz.excluz.domain.store.store.repository.StoreRepository;
@@ -49,7 +49,7 @@ public class EventConcurrentFirstComeTest {
     private StoreRepository storeRepository;
 
     private final int NUMBER_OF_WINNERS = 3; // 선착순 당첨자 수
-    private final int NUMBER_OF_THREADS = 1;
+    private final int NUMBER_OF_THREADS = 100;
     private Streamer testStreamer;
     private Streamer savedStreamer;
     private Store testStore;
