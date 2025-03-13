@@ -4,8 +4,9 @@ import excluz.excluz.common.entity.EventApplicant;
 import excluz.excluz.common.entity.Event;
 import excluz.excluz.domain.event.eventApplicant.enums.ApplicantStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
+
 
 
 import java.util.List;
@@ -25,5 +26,7 @@ public interface EventApplicantRepository extends JpaRepository<EventApplicant, 
 //    @Lock(LockModeType.OPTIMISTIC)
     @Query("SELECT COUNT(ea) > 0 FROM EventApplicant ea WHERE ea.event = :event AND ea.email = :email")
     boolean existsByEventAndEmailForOptimisticLock(@Param("event") Event event, @Param("email") String email);
+
+
 
 }

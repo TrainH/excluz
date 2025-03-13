@@ -48,12 +48,17 @@ public class EventApplicantController {
         // 1) 이벤트에 응모
         EventApplicantResponseDto responseDto = eventApplicantService.applyForEventForOptimisticLock(code, requestDto);
 
-        // 2) 카카오 메시지 전송 로직은 “별도 서비스”로 분리
-        //    사용자가 Kakao-Authorization 헤더를 보냈다면 메시지를 전송
-        if (kakaoAuthorizationHeader != null && !kakaoAuthorizationHeader.isEmpty()) {
-            responseDto.updateEventCode(code);
-            kakaoMessageService.sendApplicationResultMessage(kakaoAuthorizationHeader, responseDto);
-        }
+        return responseDto;
+    }
+
+    @PostMapping("/optimistic/logic")
+    public EventApplicantResponseDto applyForEventOptimisticLogicRevised(
+            @RequestParam("code") String code,
+            @RequestHeader(value = "Kakao-Authorization", required = false) String kakaoAuthorizationHeader,
+            @Valid @RequestBody EventApplicantRequestDto requestDto
+    ) {
+        // 1) 이벤트에 응모
+        EventApplicantResponseDto responseDto = eventApplicantService.applyForEventForOptimisticLockLogicRevised(code, requestDto);
 
         return responseDto;
     }
