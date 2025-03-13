@@ -38,6 +38,9 @@ dependencies {
     // Bcrypt
     implementation 'at.favre.lib:bcrypt:0.10.2'
 
+    //oauth 2.0 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
     // 이메일 발송 의존성
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'ognl:ognl:3.2.21'
