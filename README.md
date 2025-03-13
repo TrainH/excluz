@@ -370,7 +370,8 @@
 
 ## 4. 인프라 아키택처 및 적용 기술
 ### < 아키텍처 다이어그램 >
-![img_4](https://github.com/user-attachments/assets/155f0655-448d-47ea-9395-8a610239ab16)
+![image](https://github.com/user-attachments/assets/2f79349e-86d9-42fa-a0a1-1bc68bdce660)
+
 
 - 위 아키텍처는 **스트리머 이커머스 서비스** 구조를 나타냅니다.  
 - AWS EC2 서버의 내부망에서 Redis, mysql은 통신하며,깃헙 액션의 CI/CD를 통해 exluz와 excluz-scheduler에 자동 배포됩니다.
