@@ -28,10 +28,12 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import excluz.excluz.auth.util.JwtUtil;
 import excluz.excluz.common.datas.SharedData;
+import excluz.excluz.common.entity.EmailVerify;
 import excluz.excluz.common.entity.Streamer;
 import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.NotFoundException;
 import excluz.excluz.common.exception.error.ErrorCode;
+import excluz.excluz.domain.emailVerification.repository.EmailVerifyRepository;
 import excluz.excluz.domain.streamer.dto.request.StreamerLoginRequestDto;
 import excluz.excluz.domain.streamer.dto.request.StreamerSignupRequestDto;
 import excluz.excluz.domain.streamer.dto.request.StreamerUpdateRequestDto;
@@ -51,6 +53,8 @@ class StreamerServiceTest {
 	@Mock
 	StreamerRepository streamerRepository;
 	@Mock
+	EmailVerifyRepository emailVerifyRepository;
+	@Mock
 	PasswordEncoder passwordEncoder;
 	@Mock
 	JwtUtil jwtUtil;
@@ -64,7 +68,15 @@ class StreamerServiceTest {
 		void streamerSignup() {
 			// given
 			StreamerSignupRequestDto signupRequestDto = SharedData.STREAMER_SIGNUP_REQUEST_DTO;
-			StreamerResponseDto responseDto = new StreamerResponseDto(SharedData.STREAMER_ID1, SharedData.STREAMER_NAME1, SharedData.STREAMER_NICKNAME1, SharedData.STREAMER_PHONE_NUMBER1, SharedData.STREAMER_EMAIL1);
+			StreamerResponseDto responseDto = new StreamerResponseDto(SharedData.STREAMER_ID1, SharedData.STREAMER_NAME1,
+				SharedData.STREAMER_NICKNAME1, SharedData.STREAMER_PHONE_NUMBER1, SharedData.STREAMER_EMAIL1);
+			EmailVerify emailVerify = mock(EmailVerify.class);
+
+			when(streamerRepository.findByEmail(signupRequestDto.getEmail())).thenReturn(Optional.empty());
+			when(streamerRepository.findByPhoneNumber(signupRequestDto.getPhoneNumber())).thenReturn(Optional.empty());
+			when(streamerRepository.findByNickName(signupRequestDto.getNickName())).thenReturn(Optional.empty());
+			when(emailVerifyRepository.findByEmail(signupRequestDto.getEmail())).thenReturn(Optional.of(emailVerify));
+			when(emailVerify.getIsVerified()).thenReturn(true);
 			when(passwordEncoder.encode(signupRequestDto.getPassword())).thenReturn("encodedPassword");
 			when(streamerRepository.save(any(Streamer.class))).thenReturn(SharedData.STREAMER1);
 
@@ -76,6 +88,7 @@ class StreamerServiceTest {
 
 				// then
 				verify(passwordEncoder).encode(signupRequestDto.getPassword());
+				verify(emailVerifyRepository).findByEmail(signupRequestDto.getEmail());
 
 				assertThat(actualResult.getEmail()).isEqualTo(signupRequestDto.getEmail());
 				assertThat(actualResult.getName()).isEqualTo(signupRequestDto.getName());
@@ -91,7 +104,7 @@ class StreamerServiceTest {
 		}
 
 		@Test
-		@DisplayName("fail: 재입력 비밀번호 불일치 시 회원가입할 수 없음")
+		@DisplayName("fail: 재입력 비밀번호 불일치 시 회원가입 실패")
 		void streamerSignupPasswordMismatch() {
 			// given
 			StreamerSignupRequestDto signupRequestDto = new StreamerSignupRequestDto(
@@ -410,7 +423,7 @@ class StreamerServiceTest {
 			List<Streamer> streamerList = Collections.singletonList(SharedData.STREAMER1);
 			Page<Streamer> streamerPage = new PageImpl<>(streamerList, pageable, streamerList.size());
 
-			when(streamerRepository.findByNickName(pageable, SharedData.STREAMER_NICKNAME1)).thenReturn(streamerPage);
+			when(streamerRepository.findStreamersByNickName(pageable, SharedData.STREAMER_NICKNAME1)).thenReturn(streamerPage);
 
 			try (MockedStatic<StreamerSummaryResponseDto> mockedStatic = mockStatic(StreamerSummaryResponseDto.class)) {
 				given(StreamerSummaryResponseDto.from(SharedData.STREAMER1)).willReturn(responseDto);
@@ -419,7 +432,7 @@ class StreamerServiceTest {
 				Page<StreamerSummaryResponseDto> actualResult = streamerService.getStreamerList(page, size,	SharedData.STREAMER_NICKNAME1);
 
 				// then
-				verify(streamerRepository).findByNickName(pageable, SharedData.STREAMER_NICKNAME1);
+				verify(streamerRepository).findStreamersByNickName(pageable, SharedData.STREAMER_NICKNAME1);
 				assertThat(actualResult).isNotNull();
 
 				StreamerSummaryResponseDto dto = actualResult.getContent().get(0);
