@@ -58,7 +58,11 @@ public class User extends BaseEntity{
 	@Column(name = "is_deleted", columnDefinition = "TINYINT")
 	private Boolean isDeleted;
 
-	@Builder // 매개변수가 4개이상은 빌더 패턴을 사용.
+	@Comment("OAuth 회원 여부")
+	@Column(name = "oauth_user", columnDefinition = "TINYINT")
+	private Boolean oauthUser;
+
+	@Builder(toBuilder = true) // 매개변수가 4개이상은 빌더 패턴을 사용.
 	public User(
 				String name,
 				String nickName,
@@ -74,6 +78,7 @@ public class User extends BaseEntity{
 		this.password = password;
 		this.userRole = UserRole.CUSTOMER;
 		this.isDeleted = false;
+		this.oauthUser = false;
 	}
 
 	// 회원 탈퇴 시 변경될 유저 상태
@@ -84,6 +89,8 @@ public class User extends BaseEntity{
 	public void updatePassword(String password) {
 		this.password = password;
 	}
+
+	public void updateOAuthUser(boolean oauthUser) {this.oauthUser = oauthUser; }
 
 	public void updateUserProfile(
 			String nickName,
