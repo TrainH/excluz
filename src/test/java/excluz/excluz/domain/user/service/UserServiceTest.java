@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.*;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,9 +16,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 import excluz.excluz.auth.util.JwtUtil;
 import excluz.excluz.common.datas.SharedData;
+import excluz.excluz.common.entity.EmailVerify;
 import excluz.excluz.common.entity.User;
 import excluz.excluz.common.exception.BadRequestException;
 import excluz.excluz.common.exception.NotFoundException;
+import excluz.excluz.domain.emailVerification.repository.EmailVerifyRepository;
 import excluz.excluz.domain.user.dto.request.UpdateMyProfileRequestDto;
 import excluz.excluz.domain.user.dto.request.UpdatePasswordRequestDto;
 import excluz.excluz.domain.user.dto.request.UserLoginRequestDto;
@@ -38,6 +41,9 @@ class UserServiceTest {
 	private UserRepository userRepository;
 
 	@Mock
+	private EmailVerifyRepository emailVerifyRepository;
+
+	@Mock
 	private PasswordEncoder passwordEncoder;
 
 	@Mock
@@ -47,155 +53,179 @@ class UserServiceTest {
 	@InjectMocks
 	private UserService userService;
 
-	@Test
-	@DisplayName("회원 가입 - 성공 케이스")
-	public void userSignup() {
-		// give
-		UserSignupRequestDto signupRequest = SharedData.USER_SIGNUP_REQUEST_DTO;
+	@Nested
+	@DisplayName("userSignup 메서드")
+	class UserSignup {
+		@Test
+		@DisplayName("회원가입 - 성공 케이스")
+		public void userSignup() {
+			// give
+			UserSignupRequestDto signupRequest = SharedData.USER_SIGNUP_REQUEST_DTO;
 
-		// 실제로 동작할건 서비스 만 작동 시킬것이기 때문에 가짜 데이터를 넣어줌
-		when(userRepository.findByEmail(signupRequest.getEmail())).thenReturn(Optional.empty());
-		when(passwordEncoder.encode(signupRequest.getPassword())).thenReturn("&@a2djksladsaksllasrwpookl");
+			EmailVerify emailVerify = new EmailVerify();
 
-		// when
-		UserSignupResponseDto userSignupResponse = userService.userSignup(signupRequest);
+			// 실제로 동작할건 서비스 만 작동 시킬것이기 때문에 가짜 데이터를 넣어줌
+			ReflectionTestUtils.setField(emailVerify, "email", SharedData.USER_EMAIL1);
+			ReflectionTestUtils.setField(emailVerify, "isVerified", true);
+			when(userRepository.findByEmail(signupRequest.getEmail())).thenReturn(Optional.empty());
+			when(passwordEncoder.encode(signupRequest.getPassword())).thenReturn("&@a2djksladsaksllasrwpookl");
+			when(emailVerifyRepository.findByEmail(signupRequest.getEmail())).thenReturn(Optional.of(emailVerify));
 
-		// then
-		assertEquals(signupRequest.getName(), userSignupResponse.getName());
-		assertEquals(signupRequest.getNickName(), userSignupResponse.getNickName());
-		assertEquals(signupRequest.getPhoneNumber(), userSignupResponse.getPhoneNumber());
-		assertEquals(signupRequest.getAddress(), userSignupResponse.getAddress());
-		assertEquals(signupRequest.getEmail(), userSignupResponse.getEmail());
+			// when
+			UserSignupResponseDto userSignupResponse = userService.userSignup(signupRequest);
 
-		// 실제로 코드가 실행됐는지 확인하는 로직 (PasswordEncoder)
-		verify(userRepository).findByEmail(signupRequest.getEmail());
-		verify(passwordEncoder).encode(signupRequest.getPassword());
+			// then
+			assertEquals(signupRequest.getName(), userSignupResponse.getName());
+			assertEquals(signupRequest.getNickName(), userSignupResponse.getNickName());
+			assertEquals(signupRequest.getPhoneNumber(), userSignupResponse.getPhoneNumber());
+			assertEquals(signupRequest.getAddress(), userSignupResponse.getAddress());
+			assertEquals(signupRequest.getEmail(), userSignupResponse.getEmail());
+
+			// 실제로 코드가 실행됐는지 확인하는 로직 (PasswordEncoder)
+			verify(userRepository).findByEmail(signupRequest.getEmail());
+			verify(passwordEncoder).encode(signupRequest.getPassword());
+		}
+
+		@Test
+		@DisplayName("회원가입 - 실패 케이스(이미 가입된 회원)")
+		public void userSignup_BadRequestException() {
+			// give
+			UserSignupRequestDto signupRequest = SharedData.USER_SIGNUP_REQUEST_DTO;
+			User user = mock(User.class);
+
+			when(userRepository.findByEmail(signupRequest.getEmail())).thenReturn(Optional.of(user));
+
+			// when, then
+			Assertions.assertThrows(BadRequestException.class, () -> {
+				userService.userSignup(signupRequest);
+			});
+		}
 	}
 
-	@Test
-	@DisplayName("회원 가입 - 실패 케이스(이미 가입된 회원)")
-	public void userSignup_BadRequestException() {
-		// give
-		UserSignupRequestDto signupRequest = SharedData.USER_SIGNUP_REQUEST_DTO;
-		User user = mock(User.class);
 
-		when(userRepository.findByEmail(signupRequest.getEmail())).thenReturn(Optional.of(user));
+	@Nested
+	@DisplayName("userLogin 메소드")
+	class UserLogin {
+		@Test
+		@DisplayName("로그인 - 성공 케이스")
+		public void userLogin() {
+			//give
+			UserLoginRequestDto loginRequest = new UserLoginRequestDto(
+				SharedData.USER_EMAIL1, SharedData.USER_PASSWORD1);
 
-		// when, then
-		Assertions.assertThrows(BadRequestException.class, () -> {
-			userService.userSignup(signupRequest);
-		});
-	}
-
-	@Test
-	@DisplayName("로그인 - 성공 케이스")
-	public void userLogin() {
-		//give
-		UserLoginRequestDto loginRequest = new UserLoginRequestDto(
-			SharedData.USER_EMAIL1, SharedData.USER_PASSWORD1);
-
-		User user = User.builder()
-			.email(SharedData.USER_EMAIL1)
+			User user = User.builder()
+				.email(SharedData.USER_EMAIL1)
 				.build();
 
-		String token = "token";
+			String token = "token";
 
-		// when
-		when(userRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.of(user));
-		when(passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())).thenReturn(true);
-		when(jwtUtil.createToken(user.getEmail(), user.getId(), user.getUserRole())).thenReturn(token);
+			// when
+			when(userRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.of(user));
+			when(passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())).thenReturn(true);
+			when(jwtUtil.createToken(user.getEmail(), user.getId(), user.getUserRole())).thenReturn(token);
 
-		UserLoginResponseDto userLoginResponse = userService.userLogin(loginRequest);
+			UserLoginResponseDto userLoginResponse = userService.userLogin(loginRequest);
 
-		// dto의 반환 값이 null이 아닌지 검증 하는 로직이 필요
-		assertNotNull(userLoginResponse);
+			// dto의 반환 값이 null이 아닌지 검증 하는 로직이 필요
+			assertNotNull(userLoginResponse);
 
-		// 토큰값이 null 인지 혹은 empty String 인지 검증 필요
-		assertNotNull(userLoginResponse.getToken());
-		assertFalse(userLoginResponse.getToken().isEmpty());
-		assertEquals(userLoginResponse.getToken(), token);
+			// 토큰값이 null 인지 혹은 empty String 인지 검증 필요
+			assertNotNull(userLoginResponse.getToken());
+			assertFalse(userLoginResponse.getToken().isEmpty());
+			assertEquals(userLoginResponse.getToken(), token);
 
-		// then
-		verify(userRepository).findByEmail(loginRequest.getEmail());
-		verify(passwordEncoder).matches(loginRequest.getPassword(), user.getPassword());
-		verify(jwtUtil).createToken(user.getEmail(), user.getId(), user.getUserRole());
+			// then
+			verify(userRepository).findByEmail(loginRequest.getEmail());
+			verify(passwordEncoder).matches(loginRequest.getPassword(), user.getPassword());
+			verify(jwtUtil).createToken(user.getEmail(), user.getId(), user.getUserRole());
+		}
+
+		@Test
+		@DisplayName("로그인 - 실패 케이스")
+		public void userLoginFailed() {
+			// give
+			UserLoginRequestDto LoginRequest = new UserLoginRequestDto(SharedData.USER_EMAIL1,
+				SharedData.USER_PASSWORD1);
+
+			when(userRepository.findByEmail(LoginRequest.getEmail())).thenReturn(Optional.empty());
+
+			// when
+			Assertions.assertThrows(NotFoundException.class, () -> {
+				userService.userLogin(LoginRequest);
+			});
+		}
 	}
 
-	@Test
-	@DisplayName("로그인 - 실패 케이스")
-	public void userLoginFailed() {
-		// give
-		UserLoginRequestDto LoginRequest = new UserLoginRequestDto(SharedData.USER_EMAIL1, SharedData.USER_PASSWORD1);
+	@Nested
+	@DisplayName("userWithdraw 메서드")
+	class UserWithdraw {
+		@Test
+		@DisplayName("회원탈퇴 - 성공 케이스")
+		public void userWithdraw() {
+			// give
+			UserWithdrawRequestDto withdrawRequest = new UserWithdrawRequestDto(SharedData.USER_PASSWORD1,
+				SharedData.USER_REENTER_PASSWORD1);
 
-		when(userRepository.findByEmail(LoginRequest.getEmail())).thenReturn(Optional.empty());
-
-		// when
-		Assertions.assertThrows(NotFoundException.class, () -> {
-			userService.userLogin(LoginRequest);
-		});
-	}
-
-	@Test
-	@DisplayName("회원탈퇴 - 성공 케이스")
-	public void userWithdraw() {
-		// give
-		UserWithdrawRequestDto withdrawRequest = new UserWithdrawRequestDto(SharedData.USER_PASSWORD1, SharedData.USER_REENTER_PASSWORD1);
-
-		User user = User.builder()
+			User user = User.builder()
 				.build();
 
-		// user Entity의 생성자에 userId값이 존재하지 않으므로 id값을 강제로 설정해 줌
-		ReflectionTestUtils.setField(user, "id", SharedData.USER_ID);
+			// user Entity의 생성자에 userId값이 존재하지 않으므로 id값을 강제로 설정해 줌
+			ReflectionTestUtils.setField(user, "id", SharedData.USER_ID);
 
-		when(userRepository.findById(anyInt())).thenReturn(Optional.of(user));
-		when(passwordEncoder.matches(withdrawRequest.getPassword(), user.getPassword())).thenReturn(true);
+			when(userRepository.findById(anyInt())).thenReturn(Optional.of(user));
+			when(passwordEncoder.matches(withdrawRequest.getPassword(), user.getPassword())).thenReturn(true);
 
-		// when
-		userService.userWithdraw(user.getId(), withdrawRequest);
+			// when
+			userService.userWithdraw(user.getId(), withdrawRequest);
 
-		//then
-		assertThat(user.getIsDeleted()).isEqualTo(true);
+			//then
+			assertThat(user.getIsDeleted()).isEqualTo(true);
 
-		verify(userRepository).findById(user.getId());
-		verify(passwordEncoder).matches(withdrawRequest.getPassword(), user.getPassword());
+			verify(userRepository).findById(user.getId());
+			verify(passwordEncoder).matches(withdrawRequest.getPassword(), user.getPassword());
+		}
 	}
 
-	@Test
-	@DisplayName("회원조회 - 성공 케이스")
-	public void userGetProfile() {
-		//give
-		User user = User.builder()
-			.email(SharedData.USER_EMAIL1)
-			.nickName(SharedData.USER_NICKNAME1)
-			.build();
+	@Nested
+	@DisplayName("userGetProfile")
+	class UserGetProfile {
+		@Test
+		@DisplayName("회원조회 - 성공 케이스")
+		public void userGetProfile() {
+			//give
+			User user = User.builder()
+				.email(SharedData.USER_EMAIL1)
+				.nickName(SharedData.USER_NICKNAME1)
+				.build();
 
-		ReflectionTestUtils.setField(user, "id", SharedData.USER_ID);
-		when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+			ReflectionTestUtils.setField(user, "id", SharedData.USER_ID);
+			when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
 
-		//when
-		UserProfileResponseDto userProfileResponse = userService.userGetProfile(user.getId());
+			//when
+			UserProfileResponseDto userProfileResponse = userService.userGetProfile(user.getId());
 
-		//then
-		assertEquals(user.getNickName(), userProfileResponse.getNickName());
-		assertEquals(user.getEmail(), userProfileResponse.getEmail());
+			//then
+			assertEquals(user.getNickName(), userProfileResponse.getNickName());
+			assertEquals(user.getEmail(), userProfileResponse.getEmail());
 
-		verify(userRepository).findById(user.getId());
-	}
+			verify(userRepository).findById(user.getId());
+		}
 
-	@Test
-	@DisplayName("회원조회 - 실패 케이스")
-	public void userGetProfile_NotFoundException() {
-		// give
-		User user = User.builder()
-			.build();
+		@Test
+		@DisplayName("회원조회 - 실패 케이스")
+		public void userGetProfile_NotFoundException() {
+			// give
+			User user = User.builder()
+				.build();
 
-		ReflectionTestUtils.setField(user, "id", SharedData.USER_ID);
-		ReflectionTestUtils.setField(user, "isDeleted", true);
-		when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+			ReflectionTestUtils.setField(user, "id", SharedData.USER_ID);
+			ReflectionTestUtils.setField(user, "isDeleted", true);
+			when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
 
-		// then
-		Assertions.assertThrows(NotFoundException.class, () ->
-			userService.userGetProfile(user.getId()));
+			// then
+			Assertions.assertThrows(NotFoundException.class, () ->
+				userService.userGetProfile(user.getId()));
+		}
 	}
 
 	@Test

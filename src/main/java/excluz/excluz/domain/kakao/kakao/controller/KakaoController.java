@@ -4,8 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import excluz.excluz.auth.util.JwtUtil;
+import excluz.excluz.common.entity.User;
 import excluz.excluz.common.exception.UnauthorizedException;
 import excluz.excluz.common.exception.error.ErrorCode;
+import excluz.excluz.domain.user.enums.UserRole;
 import excluz.excluz.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
