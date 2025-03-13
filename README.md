@@ -1,4 +1,4 @@
-![img_8](https://github.com/user-attachments/assets/40e38c40-7876-4f01-b156-eac47bfc78e6)![img_7](https://github.com/user-attachments/assets/db3ac79e-59f6-450f-b38d-21a34534adc1)# README
+# README
 
 ---
 ## 목차
