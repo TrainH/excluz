@@ -75,8 +75,9 @@ public class EventApplicantService {
                     .deliveryAddress(requestDto.getDeliveryAddress())
                     .build();
 
-            SelectionMethod selectionMethod = event.getSelectionMethod();
 
+            SelectionMethod selectionMethod = event.getSelectionMethod();
+            ApplicantStatus applicantStatus;
             assert (selectionMethod != null);
             if (selectionMethod == SelectionMethod.FIRST_COME_FIRST_SERVED) {
 
@@ -91,7 +92,6 @@ public class EventApplicantService {
                     event.increaseCurrentWinnerCount();
                     eventApplicant.updateApplicantStatus(ApplicantStatus.WINNER);
 
-
                 } else {
                     eventApplicant.updateApplicantStatus(ApplicantStatus.LOSER);
                     event.completeEvent();
@@ -101,9 +101,10 @@ public class EventApplicantService {
                 eventApplicant.updateApplicantStatus(ApplicantStatus.WAITING);
             }
 
+
             EventApplicant savedApplicant = eventApplicantRepository.save(eventApplicant);
             return EventApplicantResponseDto.from(savedApplicant);
-        } catch (CannotAcquireLockException e){
+        } catch (CannotAcquireLockException e) {
             log.error("CannotAcquireLockException occured");
             throw e;
         } catch (ObjectOptimisticLockingFailureException e) {
@@ -113,6 +114,81 @@ public class EventApplicantService {
         } catch (OptimisticLockingFailureException e) {
             log.error("OptimisticLockingFailureException");
             log.warn("Optimistic lock exception occurred while applying for event: {}", code);
+            throw e;
+        }
+    }
+
+    @Retryable(
+            value = {OptimisticLockingFailureException.class, ObjectOptimisticLockingFailureException.class, CannotAcquireLockException.class},
+            maxAttempts = 10,
+            backoff = @Backoff(delay = 100),
+            recover = "recoverFromOptimisticLock"
+    )
+    @Transactional(propagation = Propagation.REQUIRED, timeout = 5)
+    public EventApplicantResponseDto applyForEventForOptimisticLockLogicRevised(String code, EventApplicantRequestDto requestDto) {
+        try {
+
+
+            // 이벤트 조회: 낙관적 락으로 버전 정보를 가져옴.
+            Event event = eventRepository.findByGeneratedCodeForOptimisticLock(code)
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
+
+            // 이벤트 상태 체크
+            if (event.getIsCompleted()) {
+                throw new BadRequestException(ErrorCode.EVENT_ALREADY_CLOSED);
+            }
+            if (event.getIsDeleted()) {
+                throw new BadRequestException(ErrorCode.EVENT_ALREADY_CANCELED);
+            }
+            LocalDateTime now = LocalDateTime.now();
+            if (now.isBefore(event.getStartDatetime())) {
+                throw new BadRequestException(ErrorCode.EVENT_APPLICANT_NOT_STARTED);
+            }
+            if (now.isAfter(event.getEndDatetime())) {
+                throw new BadRequestException(ErrorCode.EVENT_APPLICANT_EXPIRED);
+            }
+
+            if (eventApplicantRepository.existsByEventAndEmailForOptimisticLock(event, requestDto.getEmail())) {
+                throw new BadRequestException(ErrorCode.EMAIL_ALREADY_EXISTS);
+            }
+
+            // 선착순 방식인 경우
+            SelectionMethod selectionMethod = event.getSelectionMethod();
+            ApplicantStatus applicantStatus;
+            if (selectionMethod == SelectionMethod.FIRST_COME_FIRST_SERVED) {
+                // 단일 UPDATE 쿼리로 당첨자 수 증가 시도
+                int updateCount = eventRepository.increaseCurrentWinnerCountIfPossible(event.getId(), event.getVersion());
+                if (updateCount == 1) {
+                    applicantStatus = ApplicantStatus.WINNER;
+                } else {
+                    event.completeEvent();
+                    eventRepository.save(event);
+                    throw new BadRequestException(ErrorCode.EVENT_ALREADY_CLOSED);
+//                    applicantStatus = ApplicantStatus.LOSER;
+                }
+            } else {
+                applicantStatus = ApplicantStatus.WAITING;
+            }
+
+            EventApplicant eventApplicant = EventApplicant.builder()
+                    .event(event)
+                    .applicantName(requestDto.getApplicantName())
+                    .email(requestDto.getEmail())
+                    .applicantPassword(requestDto.getApplicantPassword())
+                    .deliveryAddress(requestDto.getDeliveryAddress())
+                    .applicantStatus(applicantStatus)
+                    .build();
+
+            EventApplicant savedApplicant = eventApplicantRepository.save(eventApplicant);
+            return EventApplicantResponseDto.from(savedApplicant);
+        } catch (CannotAcquireLockException e) {
+            log.error("CannotAcquireLockException occurred");
+            throw e;
+        } catch (ObjectOptimisticLockingFailureException e) {
+            log.error("ObjectOptimisticLockingFailureException occurred");
+            throw e;
+        } catch (OptimisticLockingFailureException e) {
+            log.error("OptimisticLockingFailureException occurred");
             throw e;
         }
     }
