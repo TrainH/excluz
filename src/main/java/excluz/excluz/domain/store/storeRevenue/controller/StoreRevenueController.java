@@ -1,7 +1,6 @@
 package excluz.excluz.domain.store.storeRevenue.controller;
 
 import excluz.excluz.auth.util.SecurityContextUtil;
-import excluz.excluz.common.entity.StoreRevenue;
 import excluz.excluz.domain.store.storeRevenue.dto.response.StoreRevenueResponseDto;
 import excluz.excluz.domain.store.storeRevenue.service.StoreRevenueService;
 import excluz.excluz.domain.user.enums.UserRole;

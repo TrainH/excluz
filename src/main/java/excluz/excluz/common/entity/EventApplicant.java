@@ -3,11 +3,11 @@ package excluz.excluz.common.entity;
 
 import excluz.excluz.domain.event.eventApplicant.enums.ApplicantStatus;
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 
 @Getter
 @Entity
@@ -40,9 +40,6 @@ public class EventApplicant extends BaseEntity  {
     @Column(name = "applicant_status", nullable = false)
     private ApplicantStatus applicantStatus;
 
-    @Version
-    private Integer version;
-
 
     // 생성자: 매개변수 4개 이상이므로 @Builder 패턴 사용
     @Builder
@@ -58,7 +55,6 @@ public class EventApplicant extends BaseEntity  {
         this.applicantPassword = applicantPassword;
         this.deliveryAddress = deliveryAddress;
         this.applicantStatus = applicantStatus;
-        this.version = 0;
     }
 
     // Setter 대신 필요한 필드에 대한 개별 메서드 생성

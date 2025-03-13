@@ -1,6 +1,7 @@
 package excluz.excluz.domain.user.service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -141,7 +142,7 @@ public class UserService {
 		User user = userProfile(userId);
 
 		// 비밀번호 검증로직
-		validatePassword(updateMyProfileRequest.getPassword(), user.getPassword());
+		if (!user.getOauthUser()) { validatePassword(updateMyProfileRequest.getPassword(), user.getPassword()); }
 
 		user.updateUserProfile(
 			updateMyProfileRequest.getNickName(),
@@ -159,7 +160,11 @@ public class UserService {
 		User user = userProfile(userId);
 
 		// 비밀번호 검증 로직
-		validatePassword(updatePasswordRequest.getOldPassword(), user.getPassword());
+		if (user.getOauthUser()) {
+			throw new BadRequestException(ErrorCode.OAUTH_USER_CANT_CHANGE_PASSWORD);
+		} else {
+			validatePassword(updatePasswordRequest.getOldPassword(), user.getPassword());
+		}
 
 		// 새로운 비밀번호가 이전에 사용하던 비밀번호와 같을 경우 예외처리
 		if(passwordEncoder.matches(updatePasswordRequest.getNewPassword(), user.getPassword())) {
@@ -174,6 +179,35 @@ public class UserService {
 		return new UpdatePasswordResponseDto(user);
 	}
 
+	// Oauth 2.0 회원가입
+	@Transactional
+	public User OauthLogin(String email, String name) {
+		if (email == null) {
+			throw new BadRequestException(ErrorCode.EMAIL_NULL);
+		}
+		Optional<User> existingUser = userRepository.findByEmail(email);
+
+		if (existingUser.isPresent()) {
+			return existingUser.get();
+		} else {
+			String randomUUID = passwordEncoder.encode(UUID.randomUUID().toString());
+			String createNickname = email.split("@")[0];
+
+			User user = User.builder()
+				.name(name)
+				.nickName(createNickname)
+				.phoneNumber("")
+				.email(email)
+				.address("")
+				.password(randomUUID)
+				.build();
+
+			user.updateUserStatus(true);
+
+			return userRepository.save(user);
+		}
+	}
+
 	// 기타 메서드(비밀번호 검증)
 	public void validatePassword(String rawPassword, String encodedPassword) {
 		if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
@@ -186,4 +220,6 @@ public class UserService {
 		return userRepository.findById(userId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 	}
+
+
 }

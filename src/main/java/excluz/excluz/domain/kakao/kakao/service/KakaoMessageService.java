@@ -1,7 +1,7 @@
 package excluz.excluz.domain.kakao.kakao.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantResponseDto;
+import excluz.excluz.domain.event.eventApplicant.dto.response.EventApplicantResponseDto;
 import excluz.excluz.domain.event.eventApplicant.enums.ApplicantStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

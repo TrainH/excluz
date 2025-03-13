@@ -5,12 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
-
 import excluz.excluz.auth.filter.JwtFilter;
 import excluz.excluz.auth.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -23,43 +18,32 @@ import lombok.extern.slf4j.Slf4j;
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
 
+	private final JwtUtil jwtUtil;
+
 	@Bean
-	public JwtFilter jwtFilter(JwtUtil jwtUtil) {
+	public JwtFilter jwtFilter() {
 		return new JwtFilter(jwtUtil);
 	}
 
 	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
-
-	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
-		return http
-			.csrf(AbstractHttpConfigurer::disable)
-			.httpBasic(AbstractHttpConfigurer::disable)
-			.formLogin(AbstractHttpConfigurer::disable)
-			.addFilterBefore(jwtFilter, SecurityContextHolderAwareRequestFilter.class)
+		http
+			.csrf(csrf -> csrf.disable())
+			.httpBasic(httpBasic -> httpBasic.disable())
+			.formLogin(formLogin -> formLogin.disable())
+			// oauth2Login 관련 설정 제거: 컨트롤러 방식으로 처리합니다.
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers( // 스트리머 권한 필요
-					// 스토어
+				// 보호가 필요한 엔드포인트는 역할 기반 접근 제어 설정
+				.requestMatchers(
 					"/api/v1/stores/my-store",
 					"/api/v1/stores/my-store/soft",
-					// 스트리머
 					"/api/v1/streamers/profile",
 					"/api/v1/streamers/soft",
-					// 아이템
 					"/api/v1/items/{itemsId}/soft"
-					// 이벤트
-//					"/api/v1/events",
-//					"/api/v1/events/{eventId}",
-//					"/api/v1/events/{eventId}/eventItems",
-//					"/api/v1/events/{eventId}/applicants"
 				).hasRole("STREAMER")
-				.requestMatchers( // 권한 불필요
-					// 상태 체크
+				// oauth/kakao 등 OAuth2 관련 콜백 및 기타 공개 엔드포인트는 permitAll 설정
+				.requestMatchers(
 					"/actuator/health",
-					// 로그인 & 회원가입
 					"/api/v1/users/login",
 					"/api/v1/streamers/login",
 					"/api/v1/users/signup",
@@ -68,18 +52,14 @@ public class SecurityConfig {
 					"/oauth/kakao/**",
 					"/kakao/**",
 					"api/v1/email/**",
-					// 일반 유저
 					"/api/v1/users/{userId}",
-					// 아이템
 					"/api/v1/items",
 					"/api/v2/items",
 					"/api/v3/items",
 					"/api/v4/items",
 					"/api/v1/items/{itemsId}",
-					// 스토어
 					"/api/v1/stores/{storeId}",
 					"/api/v1/stores",
-					// 스트리머
 					"/api/v1/streamers",
 					"/api/v1/streamers/{streamerId}",
 					// 이벤트
@@ -91,7 +71,9 @@ public class SecurityConfig {
 				.requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // 관리자
 				.requestMatchers("/api/v1/users/**").hasRole("CUSTOMER") // 일반 회원
 				.anyRequest().authenticated()
-			)
-			.build();
+			);
+		// JWT 필터를 SecurityContextHolderAwareRequestFilter 앞에 추가
+		http.addFilterBefore(jwtFilter, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.class);
+		return http.build();
 	}
 }

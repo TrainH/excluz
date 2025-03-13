@@ -2,7 +2,6 @@ package excluz.excluz.domain.order.orderItem.controller;
 
 import excluz.excluz.auth.util.SecurityContextUtil;
 import excluz.excluz.domain.order.orderItem.dto.response.OrderItemResponseDto;
-import excluz.excluz.domain.order.orderItem.service.OrderItemV2Service;
 import excluz.excluz.domain.order.orderItem.service.OrderItemV3Service;
 import excluz.excluz.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;

@@ -23,6 +23,8 @@ public enum ErrorCode {
 	FAIL_SEND_EMAIL(HttpStatus.BAD_REQUEST, "인증 코드 발송에 실패하였습니다."),
 	EMAIL_VERIFICATION_NOT_REQUESTED(HttpStatus.BAD_REQUEST, "이메일 인증을 먼저 진행해 주세요"),
 	EMAIL_VERIFICATION_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "이메일 인증이 완료 되지 않았습니다."),
+	OAUTH_USER_CANT_CHANGE_PASSWORD(HttpStatus.BAD_REQUEST, "카카오 로그인 유저는 비밀번호를 변경하실 수 없습니다."),
+	EMAIL_NULL(HttpStatus.BAD_REQUEST, "이메일 정보를 받아오지 못했습니다."),
 
 	// 아이템 관련 예외 코드
 	ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "조회되는 아이템 정보가 없습니다."),

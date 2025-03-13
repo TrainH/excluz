@@ -1,8 +1,8 @@
 package excluz.excluz.domain.event.eventApplicant.controller;
 
-import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantReadRequestDto;
-import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantRequestDto;
-import excluz.excluz.domain.event.eventApplicant.dto.EventApplicantResponseDto;
+import excluz.excluz.domain.event.eventApplicant.dto.request.EventApplicantReadRequestDto;
+import excluz.excluz.domain.event.eventApplicant.dto.request.EventApplicantRequestDto;
+import excluz.excluz.domain.event.eventApplicant.dto.response.EventApplicantResponseDto;
 import excluz.excluz.domain.event.eventApplicant.service.EventApplicantService;
 import excluz.excluz.domain.kakao.kakao.service.KakaoMessageService;
 import jakarta.validation.Valid;
@@ -48,8 +48,6 @@ public class EventApplicantController {
         // 1) 이벤트에 응모
         EventApplicantResponseDto responseDto = eventApplicantService.applyForEventForOptimisticLock(code, requestDto);
 
-
-
         return responseDto;
     }
 
@@ -61,7 +59,6 @@ public class EventApplicantController {
     ) {
         // 1) 이벤트에 응모
         EventApplicantResponseDto responseDto = eventApplicantService.applyForEventForOptimisticLockLogicRevised(code, requestDto);
-
 
         return responseDto;
     }
