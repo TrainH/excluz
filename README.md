@@ -18,7 +18,7 @@
 > **대규모 트래픽 환경**에서도 안정적으로 작동하고 **선착순 이벤트 쿠폰 처리 및 주문 관리 시스템**을 제공하는 스트리머와 팬들을 위한 **굿즈 이커머스 프로젝트**입니다.
 > 
 > 
-(1) 선착순 이벤트 구폰
+(1) 선착순 이벤트 쿠폰
 
 ![img_16](https://github.com/user-attachments/assets/de680dd6-8299-42df-866d-ac61cc706a0c)
 
@@ -206,6 +206,38 @@
     - 클래스, 메서드, 코드 줄, 브랜치 커버리지 **100%** 확보
     - 성공/실패 케이스 및 다양한 예외 처리 검증으로 서비스의 안정성 및 신뢰성 확보 완료
 </details>
+
+<br>
+
+<details>
+    <summary> (6) EventApplicant(이벤트 응모) 동시성 제어: 락 문제 대처 및 동시성 제어  </summary>
+<br>
+1.한 줄 요약
+- 점진적으로 부하가 심해지는 상황에서 낙관적 락(Optimistic Lock)과 비관적 락(Pessimistic Lock)의 성능을 비교 및 개선하여 이벤트 응모 로직의 동시성을 제어하고 최적화함.
+- 비즈니스 목표(4000) 및 과부하 상황(10000)에서 안정적 처리시간(25초, 40초 이내)을 보이는 낙관락 채택
+
+2.도입 배경
+- 이벤트 응모 시 높은 동시성 트래픽이 발생할 가능성이 큼.
+- 선착순 응모 방식(FIRST_COME_FIRST_SERVED)으로 인해 빠른 응답이 중요함.
+-서버 사양
+- 로컬 환경:CPU: AMD Ryzen 5 3600XT (6-Core Processor)
+    -RAM: 16GB
+- 배포 환경:EC2 t3.large (vCPU 2개, RAM 8GB)
+    -EBS(gp3): 100GiB, 3000 IOPS, 125MB/s
+
+![image (7)](https://github.com/user-attachments/assets/a3e2f3b2-291a-4d8c-bb01-1283a060fc28)
+
+3.기술적 선택지
+- Pessimistic Lock(비관적 락):경쟁 상황을 방지하기 위해 응모 시점에서 데이터베이스 레벨에서 락을 걸어 동시 접근을 차단.
+    -단점: 락을 많이 사용하면 성능 저하 발생 가능.
+- Optimistic Lock(낙관적 락):경쟁이 발생하더라도 우선 데이터를 업데이트하고, 충돌 발생 시 재시도(Retry)하는 방식.
+    -단점: 재시도 횟수 증가시 성능 저하 가능성.`
+
+![image (8)](https://github.com/user-attachments/assets/f1bf853d-037e-4555-b471-84cb40c23612)
+
+
+</details>
+
 
 </details>
 
