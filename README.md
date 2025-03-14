@@ -245,7 +245,7 @@
 
 
 
-
+<br>
 <br>
 
 <details>
@@ -311,30 +311,34 @@
     - 스케쥴러 기능을 통해 매출액을 산정하여 db에 저장하는 Excluz-scheduler를 개발하고 있었음
     - 이 스케쥴러는 오늘 실시간으로 가게의 매출액을 산정하고 다음날 새벽에 전날의 일일 매출액을 집계하는 기능이 요구됨
     - 그리고 매월 1일에 전월의 매출액을 산정하고 매년 1일에 전년의 매출액을 산정하는 기능을 가져야 함
-![img_10](https://github.com/user-attachments/assets/34d5759d-4180-40e0-b25b-8ae483fc6414)
 
 
 2. **문제**
     - store_id, revenue_period, start_datetime, end_datetime에 따라 유일하게 1개의 매출액이 집계가 되어야하나 아래그림과 같이 중복으로 데이터가 저장됨
     - 가게별 매출액이 집계되어 데이터가 생기면 store_revenues의 새로운 id가 부여되고 중복되는 데이터도 생성되는 문제를 발견함
+![img_10](https://github.com/user-attachments/assets/34d5759d-4180-40e0-b25b-8ae483fc6414)
 
 
 3. **해결 방안**
     - (방법1) 복합키를 가게ID, 시작시간, 끝시간, 기간로 설정해서 실시간으로 매출액을 집계할 때 만약 동일한 복합키가 있으면 total_revenue만 업데이트
     - (방법2) 매출액의 service단에서 알고리즘을 동일한 가게ID, 시작시간, 끝시간, 기간이 있으면 해당 데이터를 업데이트
     - 가게ID, 시작시간, 끝시간, 기간에 유일하게 1개의 데이터만 만들어지면되기 때문에 service 단의 알고리즘을 수정하지 않아도 되고 관리가 용이한 방법1을 사용함
-
-   가게ID, 시작시간, 끝시간, 기간을 복합키(StoreRevenueId)로 적용해서 중복으로 매출액이 집계되는 문제를 해결함
 ![img_11](https://github.com/user-attachments/assets/c7024ddb-c5ca-40a4-a536-48b02054e3ce)
 
 
-</details>
+4. **결과**
+    - 가게ID, 시작시간, 끝시간, 기간을 복합키(StoreRevenueId)로 적용해서 중복으로 매출액이 집계되는 문제를 해결함
+
+![image](https://github.com/user-attachments/assets/fb546b50-55a5-4256-82d2-f1a6ccc39e6c)
+
 
 </details>
 
+</details>
 
 
 
+<br>
 <br>
 
 <details>
