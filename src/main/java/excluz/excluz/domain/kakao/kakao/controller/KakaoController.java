@@ -49,21 +49,54 @@ public class KakaoController {
         stringBuilder.append("client_id=").append(kakaoRestApiKey);
         stringBuilder.append("&redirect_uri=").append(kakaoRedirectUri);
         stringBuilder.append("&response_type=code");
+        stringBuilder.append("&state=login");
 
         return ResponseEntity.status(HttpStatus.FOUND)
             .header(HttpHeaders.LOCATION, stringBuilder.toString())
             .build();
     }
 
-    // 카카오에서 리다이렉트해줄 콜백: 인가코드(code) 수신 및 자동 회원가입/로그인 처리 후 자체 JWT 토큰 발급
+    // 카카오 로그인 URL로 리다이렉트
+    @GetMapping("/login/messages")
+    public ResponseEntity<?> messageLogin() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("https://kauth.kakao.com/oauth/authorize?");
+        stringBuilder.append("client_id=").append(kakaoRestApiKey);
+        stringBuilder.append("&redirect_uri=").append(kakaoRedirectUri);
+        stringBuilder.append("&response_type=code");
+        stringBuilder.append("&state=message");
+
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .header(HttpHeaders.LOCATION, stringBuilder.toString())
+                .build();
+    }
+
     @GetMapping
-    public ResponseEntity<Map<String, Object>> kakaoAuth(@RequestParam(value = "code", required = false) String code) {
-        // 인가 코드를 통해 Kakao 액세스 토큰 발급
+    public ResponseEntity<Map<String, Object>> kakaoAuth(
+            @RequestParam(value = "code", required = false) String code,
+            @RequestParam(value = "state", required = false) String state
+    ) {
+        // 1) 카카오 액세스 토큰 발급
         String accessToken = getKakaoAccessToken(code);
         if (accessToken == null) {
             throw new UnauthorizedException(ErrorCode.TOKEN_NOT_FOUND);
         }
 
+        // 2) state 값 분기
+        if ("login".equals(state)) {
+            return handleLoginFlow(accessToken);
+
+        } else if ("message".equals(state)) {
+            return handleMessageFlow(accessToken);
+
+        } else {
+            // state 파라미터가 누락됐거나 다른 값일 경우 예외 처리
+            throw new IllegalArgumentException("잘못된 state 파라미터입니다.");
+        }
+    }
+
+    // 카카오에서 리다이렉트해줄 콜백: 인가코드(code) 수신 및 자동 회원가입/로그인 처리 후 자체 JWT 토큰 발급
+    private ResponseEntity<Map<String, Object>> handleLoginFlow(String accessToken) {
         // 액세스 토큰으로 Kakao 사용자 정보 조회
         Map<String, Object> kakaoUserInfo = getKakaoUserInfo(accessToken);
 
@@ -119,6 +152,17 @@ public class KakaoController {
             .headers(responseHeaders)
             .body(responseBody);
     }
+
+    private ResponseEntity<Map<String, Object>> handleMessageFlow(String accessToken) {
+        // JSON 형태로 응답
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("accessToken", accessToken);
+
+        // 필요하다면 refreshToken 같은 것도 추출해서 넣을 수 있음
+        return ResponseEntity.ok(responseBody);
+    }
+
+
 
     // 3) 액세스 토큰 발급 메서드 (인가코드 → 액세스 토큰)
     private String getKakaoAccessToken(String code) {
