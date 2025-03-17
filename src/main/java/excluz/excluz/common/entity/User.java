@@ -31,7 +31,7 @@ public class User extends BaseEntity{
 	private String name;
 
 	@Comment("유저 별명")
-	@Column(name = "nick_name", length = 10, unique = true, nullable = false) // 중복 닉네임 X
+	@Column(name = "nick_name", length = 30, unique = true, nullable = false) // 중복 닉네임 X
 	private String nickName;
 
 	@Comment("유저 전화번호")
