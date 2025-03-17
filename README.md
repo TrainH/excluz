@@ -79,7 +79,7 @@
 ## 3. KEY SUMMARY
 <br>
 <details>
-  <summary>성능 개선 </summary>
+  <summary>📦 성능 개선 </summary>
 <br>
   <details>
     <summary> (1) Order 전체 조회 기능 개선  </summary>
@@ -114,7 +114,6 @@
 ---
   
   </details>
-
 <br>
   <details>
     <summary> (2)  성능 개선 : Item 조회 성능, Cursor 기반 페이지네이션 + 캐시(Caffeine/Redis) 도입으로 응답 속도 99.98% 향상  </summary>
@@ -252,15 +251,10 @@
 
 </details>
 
-
-
-
-
 <br>
 <br>
-
 <details>
-  <summary>트러블 슈팅 </summary>
+  <summary> 📦트러블 슈팅 </summary>
 
 <br>
 
@@ -347,13 +341,10 @@
 
 </details>
 
-
-
 <br>
 <br>
-
 <details>
-  <summary>기술적 의사결정 </summary>
+  <summary>📦 기술적 의사결정 </summary>
 <br>
 <details>
   <summary>(1) 배포 시 서버의 중단시간 최소화 </summary>
@@ -416,13 +407,16 @@
 
 
 ## 4. 인프라 아키택처 및 적용 기술
-### < 아키텍처 다이어그램 >
+<br>
+<details>
+  <summary>📦 아키텍처 다이어그램 </summary>
 ![image](https://github.com/user-attachments/assets/2f79349e-86d9-42fa-a0a1-1bc68bdce660)
 
 
 - 위 아키텍처는 **스트리머 이커머스 서비스** 구조를 나타냅니다.  
 - AWS EC2 서버의 내부망에서 Redis, mysql은 통신하며,깃헙 액션의 CI/CD를 통해 exluz와 excluz-scheduler에 자동 배포됩니다.
 - 사용자는 https://excluz.org 를 통해 요청하고 응답 받는 구조입니다. 
+</details>
 
 <details>
 <summary><b>📦 적용 기술 상세보기</b></summary>
