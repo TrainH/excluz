@@ -26,7 +26,7 @@ public class Streamer extends BaseEntity {
 	@Column(nullable = false, length = 30)
 	private String name;
 
-	@Column(name = "nick_name", nullable = false, unique = true, length = 10)
+	@Column(name = "nick_name", nullable = false, unique = true, length = 30)
 	private String nickName;
 
 	@Column(name = "phone_number", nullable = false, unique = true, columnDefinition = "char(15)")
