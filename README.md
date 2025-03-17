@@ -21,6 +21,10 @@
 ![EXCLUZ 웹 포스터 (1)](https://github.com/user-attachments/assets/a34af539-5009-4245-8d83-7615b6ec123d)
 
 
+<br>
+<details>
+  <summary>📦 핵심 시나리오 와이어프레임 </summary>
+<br>
 
 
 (1) 선착순 이벤트 쿠폰
@@ -33,7 +37,7 @@
 
 ![img_17](https://github.com/user-attachments/assets/58a87f2a-0ea1-4051-b716-90211f7fec27)
 
-
+</details>
 ---
 
 
