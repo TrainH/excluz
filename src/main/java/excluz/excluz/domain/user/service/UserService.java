@@ -50,8 +50,6 @@ public class UserService {
 		// 가입된 유저의 이메일 여부를 확인 (비즈니스 규칙: 탈퇴한 이메일로 재가입 불가능)
 		Optional<User> existingUser = userRepository.findByEmail(signupRequest.getEmail());
 
-		// Oauth 소셜 로그인을 진행했을때 로그인된 이메일과 소셜 로그인 연동을 처리한다. 소셜 로그인이 연동 되어있는 경우에만 메일 발송
-
 		// 이미 가입된 유저의 경우의 예외
 		if (existingUser.isPresent()) {
 			throw new BadRequestException(ErrorCode.EMAIL_ALREADY_EXISTS);
@@ -202,7 +200,7 @@ public class UserService {
 				.password(randomUUID)
 				.build();
 
-			user.updateUserStatus(true);
+			user.updateOAuthUser(true);
 
 			return userRepository.save(user);
 		}
