@@ -43,6 +43,7 @@ public class SecurityConfig {
 				).hasRole("STREAMER")
 				// oauth/kakao 등 OAuth2 관련 콜백 및 기타 공개 엔드포인트는 permitAll 설정
 				.requestMatchers(
+						"/",
 					"/actuator/health",
 					"/api/v1/users/login",
 					"/api/v1/streamers/login",
